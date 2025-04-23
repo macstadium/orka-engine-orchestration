@@ -1,0 +1,28 @@
+- name: Get list of running VMs on each host
+  orka_vm_list:
+    binary_path: "{{ gather_host_facts_engine_binary }}"
+  register: vm_list_result
+
+- name: Set capacity facts for each host
+  set_fact:
+    host_vms: "{{ vm_list_result.vms | list }}"
+    running_vms: "{{ vm_list_result.vms | length }}"
+    available_capacity: "{{ gather_host_facts_max_vms_per_host - (vm_list_result.vms | length) }}"
+    cacheable: true
+
+- name: Add host data for planning
+  set_fact:
+    host_data:
+      hostname: "{{ inventory_hostname }}"
+      vms: "{{ host_vms }}"
+      running_vms: "{{ running_vms | int }}"
+      available_capacity: "{{ available_capacity | int }}"
+      max_vms_per_host: "{{ gather_host_facts_max_vms_per_host | int }}"
+
+- name: Collect capacity data from all hosts
+  set_fact:
+    all_hosts_data: "{{ all_hosts_data | default([]) + [hostvars[item].host_data] }}"
+  loop: "{{ ansible_play_hosts }}"
+  run_once: true
+  delegate_to: localhost
+  delegate_facts: true
