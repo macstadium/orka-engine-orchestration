@@ -1,0 +1,2 @@
+max_vms_per_host: 2
+engine_binary: /usr/local/bin/orka-engine

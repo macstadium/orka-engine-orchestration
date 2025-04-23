@@ -1,0 +1,78 @@
+- name: Check capacity and prepare for deployment
+  hosts: hosts
+  gather_facts: false
+  tags: plan
+  roles:
+    - gather_host_facts
+
+- name: Create deployment plan
+  hosts: localhost
+  gather_facts: false
+  tags: plan
+  tasks: 
+    - name: Analyze VM groups
+      analyze_vm_groups:
+        hosts_data: "{{ all_hosts_data }}"
+        vm_group: "{{ vm_group }}"
+        desired_vms: "{{ desired_vms }}"
+      register: group_result
+
+    - name: Display group VM information
+      debug:
+        msg: >
+          Group '{{ group_result.vm_group }}': 
+          {{ group_result.total_group_vms }} VMs already running,
+          {{ group_result.vms_to_deploy }} more needed
+          (total desired: {{ group_result.desired_vms }})
+  
+    - name: Create deployment plan
+      plan_deployment:
+        hosts_capacity: "{{ all_hosts_data }}"
+        total_vms_to_deploy: "{{ group_result.vms_to_deploy }}"
+      register: deployment_result
+    
+    - name: Display deployment plan summary
+      debug:
+        msg: >
+          Deployment plan created for {{ deployment_result.total_vms }} VMs across 
+          {{ deployment_result.hosts_count }} hosts.
+          Total capacity: {{ deployment_result.total_capacity }} VMs.
+    
+    - name: Display detailed deployment plan
+      debug:
+        var: deployment_result.deployment_plan
+    
+    - name: Share deployment plan with other hosts
+      set_fact:
+        deployment_plan: "{{ deployment_result.deployment_plan }}"
+
+- name: Deploy VMs according to plan
+  hosts: hosts
+  gather_facts: false
+  tasks:
+    - name: Skip hosts without VMs to deploy
+      meta: end_host
+      when: inventory_hostname not in hostvars['localhost'].deployment_plan
+
+    - name: Set VMs to deploy for this host
+      set_fact:
+        vms_to_deploy: "{{ hostvars['localhost']['deployment_plan'][inventory_hostname] | int }}"
+
+    - name: Deploy VMs on this host
+      orka_vm_run:
+        name: "{{ vm_group}}-{{ lookup('community.general.random_string', length=6, special=False) }}"
+        binary_path: "{{ engine_binary }}"
+        image: "{{ vm_image }}"
+      loop: "{{ range(1, vms_to_deploy | int + 1) | list }}"
+
+    - name: Get the running VMs after deployment
+      orka_vm_list:
+        binary_path: "{{ engine_binary }}"
+      register: vm_list_result
+    
+    - name:  Update capacity facts after deployment
+      set_fact:
+        host_vms: "{{ vm_list_result.vms | list }}"
+        running_vms: "{{ vm_list_result.vms | length }}"
+        available_capacity: "{{ max_vms_per_host - (vm_list_result.vms | length) }}"
+        cacheable: true
