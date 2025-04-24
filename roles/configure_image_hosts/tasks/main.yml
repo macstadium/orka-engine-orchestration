@@ -1,0 +1,33 @@
+- name: Get host data from deployment plan
+  set_fact:
+    host_ip: "{{ configure_image_hosts_updated_hosts_data.keys() | first }}"
+  when: configure_image_hosts_new_vm_created
+
+- name: Set host data based on deployment plan
+  set_fact:
+    host_vm_data:
+      - hostname: "{{ host_ip }}"
+        vms: "{{ hostvars[host_ip].host_vms }}"
+  when: configure_image_hosts_new_vm_created
+
+- name: Use all hosts data if new VM was already created
+  set_fact:
+    host_vm_data: "{{ configure_image_hosts_all_hosts_data }}"
+  when: not configure_image_hosts_new_vm_created
+
+- name: Analyze VM groups
+  analyze_vm_groups:
+    hosts_data: "{{ host_vm_data }}"
+    vm_group: "{{ configure_image_hosts_vm_group }}"
+    desired_vms: "1"
+  register: group_analysis
+
+- name: Find item where group_vms_count is 1
+  set_fact:
+    filtered_vm_info: "{{ group_analysis.hosts_group_data | selectattr('group_vms_count', 'equalto', 1) | first }}"
+
+- name: Add VM host to as an image host
+  add_host:
+    name: "{{ filtered_vm_info.hostname }}"
+    groups: "image_hosts"
+    vm: "{{ filtered_vm_info.group_vms[0] }}"
