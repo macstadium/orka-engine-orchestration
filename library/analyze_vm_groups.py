@@ -63,7 +63,12 @@ hosts_group_data:
         {
             "hostname": "host1.example.com",
             "group_vms_count": 1,
-            "group_vms": ["webapp-abc123"]
+            "group_vms": [
+                {
+                    "name": "webapp-abc123",
+                    "state": "running"
+                }
+            ]
         }
     ]
 total_group_vms:
@@ -125,14 +130,13 @@ def main():
         vms = host_info.get('vms', [])
         
         group_vms = filter_group_vms(vms, vm_group)
-        group_vms_names = [vm.get('name') for vm in group_vms]
         group_vms_count = len(group_vms)
         total_group_vms += group_vms_count
         
         host_data = {
             'hostname': hostname,
             'group_vms_count': group_vms_count,
-            'group_vms': group_vms_names
+            'group_vms': group_vms
         }
             
         hosts_group_data.append(host_data)

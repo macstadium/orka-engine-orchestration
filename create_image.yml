@@ -21,7 +21,7 @@
   roles:
     - role: configure_vm_hosts
       vars:
-        configure_vm_hosts_vm_name: "{{ vm }}"
+        configure_vm_hosts_vm_name: "{{ vm.name }}"
 
 - name: Configure VM
   hosts: vms
@@ -43,7 +43,7 @@
   roles:
     - role: push_image
       vars:
-        push_image_source_vm: "{{ vm }}"
+        push_image_source_vm: "{{ vm.name }}"
         push_image_remote_name: "{{ remote_image_name }}"
         push_image_registry_username: "{{ registry_username | default(omit) }}"
         push_image_registry_password: "{{ registry_password | default(omit) }}"
