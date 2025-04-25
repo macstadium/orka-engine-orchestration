@@ -1,0 +1,21 @@
+- set_fact:
+    host_to_wait_for: "{{ ansible_host | default(inventory_hostname) }}"
+
+- name: Upgrade MacOS
+  raw: echo '{{ ansible_become_password }}' |  softwareupdate --install --all --restart --stdinpass --user {{ ansible_user }} --agree-to-license --force
+  register: install_output
+  become: true
+  ignore_errors: true
+  ignore_unreachable: true
+
+- name: Wait for port 22 to become open and contain "OpenSSH"
+  wait_for:
+    port: 22
+    host: "{{ host_to_wait_for }}"
+    timeout: 1800
+    search_regex: OpenSSH
+  delegate_to: "{{ install_os_updates_vm_host }}"
+  become: false
+
+- debug:
+    var: install_output
