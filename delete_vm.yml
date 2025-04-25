@@ -1,0 +1,32 @@
+- name: Delete a single VM by name
+  hosts: hosts
+  gather_facts: false
+  tasks:
+    - name: Check if VM exists on this host
+      orka_vm_list:
+        binary_path: "{{ engine_binary }}"
+      register: vm_list_result
+
+    - name: Set VM existence fact
+      set_fact:
+        vm_exists: "{{ vm_name in (vm_list_result.vms | map(attribute='name') | list) }}"
+
+    - block:
+        - name: Delete the specified VM if it exists
+          orka_vm_delete:
+            name: "{{ vm_name }}"
+            binary_path: "{{ engine_binary }}"
+          register: delete_result
+
+        - name: Get updated list of running VMs
+          orka_vm_list:
+            binary_path: "{{ engine_binary }}"
+          register: updated_vm_list
+
+        - name: Update capacity facts after deletion
+          set_fact:
+            host_vms: "{{ updated_vm_list.vms | list }}"
+            running_vms: "{{ updated_vm_list.vms | length }}"
+            available_capacity: "{{ max_vms_per_host - (updated_vm_list.vms | length) }}"
+            cacheable: true
+      when: vm_exists
