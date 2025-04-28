@@ -1,0 +1,10 @@
+- name: Pull image from registry
+  hosts: hosts
+  gather_facts: false
+  tasks:
+    - name: Pull image from registry
+      orka_image_pull:
+        remote_name: "{{ remote_image_name }}"
+        username: "{{ registry_username | default(omit) }}"
+        password: "{{ registry_password | default(omit) }}"
+        insecure: "{{ insecure_pull | default(false) }}"

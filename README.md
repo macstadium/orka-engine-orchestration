@@ -14,6 +14,7 @@ This project provides an Ansible-based orchestration system for managing Orka VM
 ```
 ├── deploy.yml           # Main deployment playbook
 ├── delete.yml           # Main deletion playbook
+├── pull_image.yml       # Main playbook for pulling an image on all hosts
 ├── dev/                 # Development environment
 │   ├── inventory        # Inventory file for development
 │   └── group_vars/      # Test vars for development
@@ -110,3 +111,16 @@ To list the VMs from a group:
 ```bash
 ansible-playbook list.yml -i dev/inventory -e "vm_group=test"
 ```
+
+### Pull OCI image to hosts
+
+To pull an OCI image to the hosts run:
+
+```bash
+ansible-playbook pull_image.yml -i dev/inventory -e "remote_image_name=<image_to_pull>"
+```
+
+where `image_to_pull` is the OCI image you want to pull. Optionally you could also specify the following variables:  
+- `registry_username` - The username to authenticate to the registry with
+- `registry_password` - The password to authenticate to the registry with
+- `insecure_pull` - Whether to allow pulling via HTTP
