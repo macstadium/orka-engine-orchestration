@@ -102,3 +102,11 @@ ansible-playbook delete.yml -i dev/inventory -e "vm_group=test" -e "delete_count
 1. **Capacity Check**: The system first checks the current capacity and running VMs on each host.
 2. **Planning**: Creates a deletion plan based on available capacity and desired deletion count. **NOTE** The playbook fails if you want to delete more VMs than available.
 3. **Deployment**: Executes the deletion plan, deleting VMs across hosts according to the plan.
+
+### Listing VMs from a group
+
+To list the VMs from a group:
+
+```bash
+ansible-playbook list.yml -i dev/inventory -e "vm_group=test"
+```
