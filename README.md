@@ -13,6 +13,7 @@ This project provides an Ansible-based orchestration system for managing Orka VM
 
 ```
 ├── deploy.yml           # Main deployment playbook
+├── delete.yml           # Main deletion playbook
 ├── dev/                 # Development environment
 │   ├── inventory        # Inventory file for development
 │   └── group_vars/      # Test vars for development
@@ -73,3 +74,31 @@ ansible-playbook deploy.yml -i dev/inventory -e "vm_group=test" -e "desired_vms=
 1. **Capacity Check**: The system first checks the current capacity and running VMs on each host.
 2. **Planning**: Creates a deployment plan based on available capacity and desired VM count. **NOTE** The playbook deploys only the amount of VMs needed to reach the desired count.
 3. **Deployment**: Executes the deployment plan, creating VMs across hosts according to the plan.
+
+### Planning Deletion
+
+To plan a deletion without actually deleting VMs:
+
+```bash
+ansible-playbook delete.yml -i dev/inventory -e "vm_group=test" -e "delete_count=1" --tags plan
+```
+
+This will:
+- Check capacity on all hosts
+- Analyze VM groups
+- Create a deletion plan
+- Display the plan without executing it
+
+### Executing Deletion
+
+To actually delete the VMs:
+
+```bash
+ansible-playbook delete.yml -i dev/inventory -e "vm_group=test" -e "delete_count=1"
+```
+
+### How It Works
+
+1. **Capacity Check**: The system first checks the current capacity and running VMs on each host.
+2. **Planning**: Creates a deletion plan based on available capacity and desired deletion count. **NOTE** The playbook fails if you want to delete more VMs than available.
+3. **Deployment**: Executes the deletion plan, deleting VMs across hosts according to the plan.

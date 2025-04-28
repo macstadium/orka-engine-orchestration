@@ -1,0 +1,74 @@
+- name: Gather VM data from all hosts
+  hosts: hosts
+  gather_facts: false
+  tags: plan
+  roles:
+    - gather_host_facts
+
+- name: Create deletion plan
+  hosts: localhost
+  gather_facts: false
+  tags: plan
+  tasks:
+    - name: Select VMs for deletion
+      plan_deletion:
+        hosts_data: "{{ all_hosts_data }}"
+        vm_group: "{{ vm_group }}"
+        vms_to_delete: "{{ delete_count }}"
+      register: deletion_result
+    
+    - name: Display deletion plan summary
+      debug:
+        msg: >
+          Deletion plan created for {{ deletion_result.vms_selected }} VMs from 
+          group '{{ deletion_result.group_name }}'. 
+          Total VMs in group: {{ deletion_result.total_group_vms }}.
+    
+    - name: Display detailed deletion plan
+      debug:
+        var: deletion_result.deletion_plan
+
+    - name: Share deletion plan with other hosts
+      set_fact:
+        deletion_plan: "{{ deletion_result.deletion_plan }}"
+
+- name: Delete VMs according to plan
+  hosts: hosts
+  gather_facts: false
+  tasks:
+    - name: Skip hosts without VMs to delete
+      meta: end_host
+      when: inventory_hostname not in hostvars['localhost'].deletion_plan
+    
+    - name: Set VMs to delete for this host
+      set_fact:
+        vms_to_delete: "{{ hostvars['localhost'].deletion_plan[inventory_hostname] }}"
+
+    - name: Display VMs to be deleted
+      debug:
+        msg: "Deleting {{ vms_to_delete | length }} VMs from host {{ inventory_hostname }}: {{ vms_to_delete | join(', ') }}"
+
+    - name: Delete VMs on this host
+      orka_vm_delete:
+        name: "{{ item }}"
+        binary_path: "{{ engine_binary }}"
+      loop: "{{ vms_to_delete }}"
+      register: delete_results
+
+    - name: Check for deletion failures
+      fail:
+        msg: "Failed to delete one or more VMs. Please check the logs."
+      when: delete_results.failed is defined and delete_results.failed
+    
+    - name: Get list of running VMs after deletion
+      orka_vm_list:
+        binary_path: "{{ engine_binary }}"
+      register: vm_list_result
+
+    - name: Update capacity facts after deletion
+      set_fact:
+        host_vms: "{{ vm_list_result.vms | list }}"
+        running_vms: "{{ vm_list_result.vms | length }}"
+        available_capacity: "{{ max_vms_per_host - (vm_list_result.vms | length) }}"
+        cacheable: true
+
