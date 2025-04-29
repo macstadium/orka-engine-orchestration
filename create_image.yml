@@ -39,9 +39,9 @@
       vars:
         push_image_source_vm: "{{ vm }}"
         push_image_remote_name: "{{ remote_image_name }}"
-        push_image_registry_username: "{{ registry_username }}"
-        push_image_registry_password: "{{ registry_password }}"
-        push_image_insecure_push: "{{ insecure_push }}"
+        push_image_registry_username: "{{ registry_username | default(omit) }}"
+        push_image_registry_password: "{{ registry_password | default(omit) }}"
+        push_image_insecure_push: "{{ insecure_push | default(false) }}"
 
 - name: Ensure VM is deleted
   import_playbook: delete.yml
