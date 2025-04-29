@@ -11,6 +11,7 @@
       remote_name: "{{ push_image_remote_name }}"
       username: "{{ push_image_registry_username }}"
       password: "{{ push_image_registry_password }}"
+      insecure: "{{ push_image_insecure_push }}"
 
   always:
     - name: Delete image

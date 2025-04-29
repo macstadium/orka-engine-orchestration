@@ -26,7 +26,7 @@
   set_fact:
     filtered_vm_info: "{{ group_analysis.hosts_group_data | selectattr('group_vms_count', 'equalto', 1) | first }}"
 
-- name: Add VM host to as an image host
+- name: Add VM host to inventory
   add_host:
     name: "{{ filtered_vm_info.hostname }}"
     groups: "image_hosts"

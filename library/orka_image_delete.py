@@ -100,7 +100,7 @@ def main():
     if rc == 0:
         result['changed'] = True
     else:
-        module.fail_json(**result)
+        module.fail_json(msg=f"Failed to delete image: {stderr}", **result)
 
     module.exit_json(**result)
 
