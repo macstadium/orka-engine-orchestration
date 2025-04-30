@@ -19,6 +19,7 @@ This project provides an Ansible-based orchestration system for managing Orka VM
 ├── pull_image.yml       # Main playbook for pulling an image on all hosts
 ├── create_image.yml     # Main playbook for creating an image and pushing it to a remote registry
 ├── list.yml             # Main playbook for listing VMs
+├── install-engine.yml   # Main playbook for installing Orka Engine
 ├── dev/                 # Development environment
 │   ├── inventory        # Inventory file for development
 │   └── group_vars/      # Test vars for development
@@ -51,6 +52,20 @@ This project provides an Ansible-based orchestration system for managing Orka VM
 - `engine_binary`: Path to the Orka engine binary (default: defined in your inventory or group vars)
 
 ## Usage
+
+### Installing Engine
+
+To install Orka Engine run
+
+```bash
+ansible-playbook install_engine.yml -i dev/inventory -e "orka_license_key=<license_key>" -e "engine_url=<engine_url>"
+```
+
+where:
+- `orka_license_key` - is the Engine license key
+- `engine_url` - is the URL to download Engine from
+
+**Note** - To force redeployment or upgrade pass `-e "install_engine_force=true"`.
 
 ### Planning Deployment
 

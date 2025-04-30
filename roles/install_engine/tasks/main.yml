@@ -1,0 +1,38 @@
+- name: Check if orka-engine is installed
+  stat:
+    path: /usr/local/bin/orka-engine
+  register: orka_engine_check
+  changed_when: false
+
+- name: Install and activate Orka Engine
+  block:
+    - name: Download PKG file
+      get_url:
+        url: "{{ install_engine_pkg_url }}"
+        dest: "{{ install_engine_pkg_path }}"
+        mode: '0644'
+
+    - name: Install PKG file
+      become: true
+      command: installer -pkg "{{ install_engine_pkg_path }}" -target /
+
+    - name: Clean up downloaded PKG file
+      file:
+        path: "{{ install_engine_pkg_path }}"
+        state: absent
+
+    - name: Deploy launch agent
+      become: true
+      template:
+        src: "com.macstadium.orka-engine.server.managed.plist.j2"
+        dest: "{{ install_engine_service_path }}"
+
+    - name: Run Orka Engine Server
+      community.general.launchd:
+        name: "{{ install_engine_service_id }}"
+        state: restarted
+
+    - name: Activate Orka Engine
+      orka_engine_activate:
+        license_key: "{{ orka_license_key }}"
+  when: not orka_engine_check.stat.exists or install_engine_force | bool

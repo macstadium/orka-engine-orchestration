@@ -1,0 +1,11 @@
+- hosts: hosts
+  gather_facts: false
+  pre_tasks:
+    - name: Gather minimal facts
+      setup:
+        filter:
+          - "ansible_env"
+  roles:
+    - role: install_engine
+      vars:
+        install_engine_pkg_url: "{{ engine_url }}"
