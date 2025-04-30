@@ -8,6 +8,7 @@ This project provides an Ansible-based orchestration system for managing Orka VM
 - Orka Engine installed on all remote hosts
 - SSH access to remote hosts
 - Python 3.x on both control and remote machines
+- sshpass installed on the Ansible runner
 
 ## Project Structure
 
@@ -15,6 +16,7 @@ This project provides an Ansible-based orchestration system for managing Orka VM
 ├── deploy.yml           # Main deployment playbook
 ├── delete.yml           # Main deletion playbook
 ├── pull_image.yml       # Main playbook for pulling an image on all hosts
+├── create_image.yml     # Main playbook for creating an image and pushing it to a remote registry
 ├── dev/                 # Development environment
 │   ├── inventory        # Inventory file for development
 │   └── group_vars/      # Test vars for development
@@ -124,3 +126,25 @@ where `image_to_pull` is the OCI image you want to pull. Optionally you could al
 - `registry_username` - The username to authenticate to the registry with
 - `registry_password` - The password to authenticate to the registry with
 - `insecure_pull` - Whether to allow pulling via HTTP
+
+### Configure an OCI image and push it to a registry
+
+This workflow:
+1. Deploys a VM from a specified base image
+2. Configures the VM by running all bash scripts inside the [scripts](/scripts) folder
+3. Pushes an image from the VM to a specified remote OCI registry
+4. Deletes the VM
+
+**Note** By default, VMs are not accessible from outside of the host they are deployed on. To connect to the VMs and to configure them we use port forwarding. SSHPass is required on the Ansible runner in order to be able to connect to the VM.
+
+To configure and image and push it to a remote registry:
+1. Ensure you have added your bash scripts to the [scripts](/scripts) folder
+2. Run 
+```bash
+ansible-playbook create_image.yml -i dev/inventory -e "remote_image_name=<remote_destination>" -e "vm_image=<base_image>"
+```
+
+where `remote_destination` is the OCI image you want to push to. `base_image` is the image you want to deploy from. Optionally you could also specify the following variables:  
+- `registry_username` - The username to authenticate to the registry with
+- `registry_password` - The password to authenticate to the registry with
+- `insecure_push` - Whether to allow pushing via HTTP

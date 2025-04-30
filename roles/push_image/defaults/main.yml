@@ -1,0 +1,5 @@
+push_image_engine_binary: "{{ engine_binary }}"
+push_image_local_name: "push-{{ vm | lower }}"
+push_image_registry_username: "{{ registry_username }}"
+push_image_registry_password: "{{ registry_password }}"
+push_image_insecure_push: false

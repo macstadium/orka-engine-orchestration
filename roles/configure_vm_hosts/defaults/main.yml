@@ -1,0 +1,4 @@
+configure_vm_hosts_vm_user: "admin"
+configure_vm_hosts_vm_password: "admin"
+configure_vm_hosts_vm_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyCommand='ssh -W %h:%p -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {{ ansible_user }}@{{ inventory_hostname }}'"
+configure_vm_hosts_binary_path: "{{ engine_binary }}"

@@ -1,0 +1,51 @@
+- name: Ensure VM is created
+  import_playbook: deploy.yml
+  vars:
+    desired_vms: 1
+    vm_group: image_host
+
+- name: Add VM host to inventory
+  hosts: localhost
+  gather_facts: false
+  vars:
+    vm_group: image_host
+  roles:
+    - role: configure_image_hosts
+      vars:
+        configure_image_hosts_new_vms: "{{ deployment_plan }}"
+        configure_image_hosts_vm_group: "{{ vm_group }}"
+
+- name: Configure VM hosts
+  hosts: image_hosts
+  gather_facts: false
+  roles:
+    - role: configure_vm_hosts
+      vars:
+        configure_vm_hosts_vm_name: "{{ vm }}"
+
+- name: Configure VM
+  hosts: vms
+  gather_facts: false
+  roles:
+    - role: execute_scripts
+      vars:
+        execute_scripts_scripts_directory: "{{ playbook_dir }}/scripts"
+
+- name: Push image
+  hosts: image_hosts
+  gather_facts: false
+  roles:
+    - role: push_image
+      vars:
+        push_image_source_vm: "{{ vm }}"
+        push_image_remote_name: "{{ remote_image_name }}"
+        push_image_registry_username: "{{ registry_username | default(omit) }}"
+        push_image_registry_password: "{{ registry_password | default(omit) }}"
+        push_image_insecure_push: "{{ insecure_push | default(false) }}"
+
+- name: Ensure VM is deleted
+  import_playbook: delete.yml
+  tags: delete
+  vars:
+    delete_count: 1
+    vm_group: image_host
