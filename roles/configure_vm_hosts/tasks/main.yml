@@ -14,4 +14,5 @@
     ansible_user: "{{ configure_vm_hosts_vm_user }}"
     ansible_ssh_common_args: "{{ configure_vm_hosts_vm_ssh_common_args }}"
     ansible_password: "{{ configure_vm_hosts_vm_password }}"
+    ansible_become_password: "{{ configure_vm_hosts_vm_password }}"
     groups: "vms"

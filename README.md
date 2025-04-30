@@ -148,3 +148,4 @@ where `remote_destination` is the OCI image you want to push to. `base_image` is
 - `registry_username` - The username to authenticate to the registry with
 - `registry_password` - The password to authenticate to the registry with
 - `insecure_push` - Whether to allow pushing via HTTP
+- `upgrade_os` - Whether you want the OS to be upgraded as part of the image creation process

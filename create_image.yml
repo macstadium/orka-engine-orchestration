@@ -26,7 +26,12 @@
 - name: Configure VM
   hosts: vms
   gather_facts: false
+  tags: configure
   roles:
+    - role: install_os_updates
+      vars:
+        install_os_updates_vm_host: "{{ groups['image_hosts'][0] }}"
+      when: upgrade_os | default(false)
     - role: execute_scripts
       vars:
         execute_scripts_scripts_directory: "{{ playbook_dir }}/scripts"
@@ -34,6 +39,7 @@
 - name: Push image
   hosts: image_hosts
   gather_facts: false
+  tags: push
   roles:
     - role: push_image
       vars:
