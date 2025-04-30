@@ -1,57 +1,54 @@
 - name: Gather VM data from all hosts
   hosts: hosts
   gather_facts: false
-  tasks:
-    - name: Get list of running VMs on each host
-      orka_vm_list:
-        binary_path: "{{ engine_binary }}"
-      register: vm_list_result
-
-    - name: Set capacity facts for each host
-      set_fact:
-        host_vms: "{{ vm_list_result.vms | list }}"
-        running_vms: "{{ vm_list_result.vms | length }}"
-        available_capacity: "{{ max_vms_per_host - (vm_list_result.vms | length) }}"
-        cacheable: true
-
-    - name: Add host data for VM selection
-      set_fact:
-        host_data:
-          hostname: "{{ inventory_hostname }}"
-          vms: "{{ host_vms }}"
-    
-    - name: Collect host data for VM selection
-      set_fact:
-        all_hosts_data: "{{ all_hosts_data | default([]) + [hostvars[item].host_data] }}"
-      loop: "{{ ansible_play_hosts }}"
-      run_once: true
-      delegate_to: localhost
-      delegate_facts: true
+  roles:
+    - gather_host_facts
 
 - name: List VMs from group
   hosts: localhost
   gather_facts: false
   tasks:
-    - name: Analyze VM groups
-      analyze_vm_groups:
-        hosts_data: "{{ all_hosts_data }}"
-        vm_group: "{{ vm_group }}"
-        desired_vms: "2147483647" # maximum 32-bit integer
-      register: group_analysis
+    - name: Analyze and display VM groups
+      when: vm_group is defined
+      block:
+        - name: Analyze VM groups
+          analyze_vm_groups:
+            hosts_data: "{{ all_hosts_data }}"
+            vm_group: "{{ vm_group }}"
+            desired_vms: "2147483647" # maximum 32-bit integer
+          register: group_analysis
 
-    - name: Display detailed VM list
+        - name: Display detailed VM list
+          debug:
+            msg: |
+              Count: {{ group_analysis.total_group_vms }}
+              VMs in group '{{ vm_group }}':
+              --------------------------------------------------
+              {% for host_data in group_analysis.hosts_group_data %}
+              {% if host_data.group_vms | length > 0 %}
+              Host: {{ host_data.hostname }}
+              VMs:
+              {% for vm in host_data.group_vms %}
+                - {{ vm.name }} | {{ vm.state }}
+              {% endfor %}
+              {% endif %}
+              {% endfor %}
+
+    - name: Display all host data
       debug:
         msg: |
-          Count: {{ group_analysis.total_group_vms }}
-          VMs in group '{{ vm_group }}':
+          All VMs across hosts:
           --------------------------------------------------
-          {% for host_data in group_analysis.hosts_group_data %}
-          {% if host_data.group_vms | length > 0 %}
-          {% for vm_name in host_data.group_vms %}
-          Host: {{ host_data.hostname }} | VM: {{ vm_name }}
+          {% for host_data in all_hosts_data %}
+          {% if host_data.vms | length > 0 %}
+          Host: {{ host_data.hostname }}
+          VMs:
+          {% for vm in host_data.vms %}
+            - {{ vm.name }} | {{ vm.state }}
           {% endfor %}
-          {% endif %}
           {% else %}
-          No VMs found in group '{{ vm_group }}'
-          {% endfor %}
+          Host: {{ host_data.hostname }} - No VMs
+          {% endif %}
           --------------------------------------------------
+          {% endfor %}
+      when: vm_group is not defined

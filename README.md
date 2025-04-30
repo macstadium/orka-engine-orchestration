@@ -114,6 +114,12 @@ To list the VMs from a group:
 ansible-playbook list.yml -i dev/inventory -e "vm_group=test"
 ```
 
+You can also list all VMs accross all hosts:
+
+```bash
+ansible-playbook list.yml -i dev/inventory
+```
+
 ### Pull OCI image to hosts
 
 To pull an OCI image to the hosts run:
