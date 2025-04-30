@@ -15,8 +15,10 @@ This project provides an Ansible-based orchestration system for managing Orka VM
 ```
 ├── deploy.yml           # Main deployment playbook
 ├── delete.yml           # Main deletion playbook
+├── delete_vm.yml        # Main playbook for deleting a specific VM
 ├── pull_image.yml       # Main playbook for pulling an image on all hosts
 ├── create_image.yml     # Main playbook for creating an image and pushing it to a remote registry
+├── list.yml             # Main playbook for listing VMs
 ├── dev/                 # Development environment
 │   ├── inventory        # Inventory file for development
 │   └── group_vars/      # Test vars for development
@@ -105,6 +107,23 @@ ansible-playbook delete.yml -i dev/inventory -e "vm_group=test" -e "delete_count
 1. **Capacity Check**: The system first checks the current capacity and running VMs on each host.
 2. **Planning**: Creates a deletion plan based on available capacity and desired deletion count. **NOTE** The playbook fails if you want to delete more VMs than available.
 3. **Deployment**: Executes the deletion plan, deleting VMs across hosts according to the plan.
+
+### Deleting a single VM
+
+If you want to delete a sinlge VM run:
+```bash
+ansible-playbook delete_vm.yml -i dev/inventory -e "vm_name=<vm_name>"
+```
+
+where `vm_name` is the name of the VM you want to delete.
+
+**NOTE** - This playbook deletes only all VM with that name. If you want to delete a VM on a specific host you need to use:
+
+```bash
+ansible-playbook delete_vm.yml -i dev/inventory -e "vm_name=<vm_name>" --limit <host>
+```
+
+where `host` is the host you want to delete a VM from.
 
 ### Listing VMs from a group
 
