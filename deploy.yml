@@ -21,7 +21,7 @@
       debug:
         msg: >
           Group '{{ group_result.vm_group }}': 
-          {{ group_result.total_group_vms }} VMs already running,
+          {{ group_result.total_group_vms }} VMs already deployed,
           {{ group_result.vms_to_deploy }} more needed
           (total desired: {{ group_result.desired_vms }})
   
@@ -73,6 +73,4 @@
     - name:  Update capacity facts after deployment
       set_fact:
         host_vms: "{{ vm_list_result.vms | list }}"
-        running_vms: "{{ vm_list_result.vms | length }}"
-        available_capacity: "{{ max_vms_per_host - (vm_list_result.vms | length) }}"
         cacheable: true

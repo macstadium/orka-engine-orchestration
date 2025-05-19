@@ -16,7 +16,7 @@ options:
     hosts_capacity:
         description:
             - List of dictionaries containing host capacity information.
-            - Each dictionary must have 'hostname' and 'running_vms' keys.
+            - Each dictionary must have 'hostname' and 'vms' keys.
         required: true
         type: list
         elements: dict
@@ -50,11 +50,19 @@ EXAMPLES = r'''
   plan_deployment:
     hosts_capacity:
       - hostname: "host1.example.com"
-        running_vms: 1
+        vms:
+          - name: "vm1"
+            state: "running"
+          - name: "vm2"
+            state: "stopped"
       - hostname: "host2.example.com"
-        running_vms: 0
+        vms: []
       - hostname: "host3.example.com"
-        running_vms: 2
+        vms:
+          - name: "vm3"
+            state: "running"
+          - name: "vm4"
+            state: "running"
     total_vms_to_deploy: 5
   register: deployment_plan
 
@@ -62,9 +70,11 @@ EXAMPLES = r'''
   plan_deployment:
     hosts_capacity:
       - hostname: "host1.example.com"
-        running_vms: 1
+        vms:
+          - name: "vm1"
+            state: "running"
       - hostname: "host2.example.com"
-        running_vms: 0
+        vms: []
     total_vms_to_deploy: 10
     max_vms_per_host: 4
     strategy: 'balanced'
@@ -116,15 +126,16 @@ def main():
     for host_info in hosts_capacity:
         if 'hostname' not in host_info:
             module.fail_json(msg="Each host in hosts_capacity must have a 'hostname' key")
-        if 'running_vms' not in host_info:
-            module.fail_json(msg="Each host in hosts_capacity must have a 'running_vms' key")
+        if 'vms' not in host_info:
+            module.fail_json(msg="Each host in hosts_capacity must have a 'vms' key")
     
     hosts_with_capacity = []
     for host_info in hosts_capacity:
         hostname = host_info['hostname']
-        running_vms = int(host_info['running_vms']) 
-        available_capacity = max_vms_per_host - running_vms
+        vms = host_info['vms'] if host_info['vms'] is not None else []
+        running_vms = sum(1 for vm in vms if vm.get('state') == 'running')
         
+        available_capacity = max_vms_per_host - running_vms
         if available_capacity > 0:
             hosts_with_capacity.append({
                 'hostname': hostname,
