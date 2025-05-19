@@ -15,7 +15,7 @@ This project provides an Ansible-based orchestration system for managing Orka VM
 ```
 ├── deploy.yml           # Main deployment playbook
 ├── delete.yml           # Main deletion playbook
-├── delete_vm.yml        # Main playbook for deleting a specific VM
+├── vm.yml               # Main playbook for managing (delete, start, stop) a specific VM
 ├── pull_image.yml       # Main playbook for pulling an image on all hosts
 ├── create_image.yml     # Main playbook for creating an image and pushing it to a remote registry
 ├── list.yml             # Main playbook for listing VMs
@@ -127,18 +127,52 @@ ansible-playbook delete.yml -i dev/inventory -e "vm_group=test" -e "delete_count
 
 If you want to delete a sinlge VM run:
 ```bash
-ansible-playbook delete_vm.yml -i dev/inventory -e "vm_name=<vm_name>"
+ansible-playbook vm.yml -i dev/inventory -e "vm_name=<vm_name>" -e "desired_state=absent"
 ```
 
 where `vm_name` is the name of the VM you want to delete.
 
-**NOTE** - This playbook deletes only all VM with that name. If you want to delete a VM on a specific host you need to use:
+**NOTE** - This playbook deletes all VM with that name. If you want to delete a VM on a specific host you need to use:
 
 ```bash
-ansible-playbook delete_vm.yml -i dev/inventory -e "vm_name=<vm_name>" --limit <host>
+ansible-playbook vm.yml -i dev/inventory -e "vm_name=<vm_name>"   -e "desired_state=absent" --limit <host>
 ```
 
 where `host` is the host you want to delete a VM from.
+
+### Stop a single VM
+
+If you want to stop a sinlge VM run:
+```bash
+ansible-playbook vm.yml -i dev/inventory -e "vm_name=<vm_name>" -e "desired_state=stopped"
+```
+
+where `vm_name` is the name of the VM you want to stop.
+
+**NOTE** - This playbook stops all VM with that name. If you want to stop a VM on a specific host you need to use:
+
+```bash
+ansible-playbook vm.yml -i dev/inventory -e "vm_name=<vm_name>" --limit <host>
+```
+
+where `host` is the host you want to stop a VM from.
+
+### Start a single VM
+
+If you want to start a sinlge VM run:
+```bash
+ansible-playbook vm.yml -i dev/inventory -e "vm_name=<vm_name>" -e "desired_state=running"
+```
+
+where `vm_name` is the name of the VM you want to start.
+
+**NOTE** - This playbook starts all VM with that name. If you want to start a VM on a specific host you need to use:
+
+```bash
+ansible-playbook vm.yml -i dev/inventory -e "vm_name=<vm_name>" -e "desired_state=running" --limit <host>
+```
+
+where `host` is the host you want to start a VM from.
 
 ### Listing VMs from a group
 
