@@ -49,8 +49,9 @@
         msg: "Deleting {{ vms_to_delete | length }} VMs from host {{ inventory_hostname }}: {{ vms_to_delete | join(', ') }}"
 
     - name: Delete VMs on this host
-      orka_vm_delete:
+      orka_vm:
         name: "{{ item }}"
+        state: absent
         binary_path: "{{ engine_binary }}"
       loop: "{{ vms_to_delete }}"
       register: delete_results

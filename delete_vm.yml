@@ -13,8 +13,9 @@
 
     - block:
         - name: Delete the specified VM if it exists
-          orka_vm_delete:
+          orka_vm:
             name: "{{ vm_name }}"
+            state: absent
             binary_path: "{{ engine_binary }}"
           register: delete_result
 
