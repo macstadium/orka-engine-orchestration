@@ -69,7 +69,5 @@
     - name: Update capacity facts after deletion
       set_fact:
         host_vms: "{{ vm_list_result.vms | list }}"
-        running_vms: "{{ vm_list_result.vms | length }}"
-        available_capacity: "{{ max_vms_per_host - (vm_list_result.vms | length) }}"
         cacheable: true
 
