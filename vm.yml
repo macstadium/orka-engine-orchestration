@@ -1,4 +1,4 @@
-- name: Delete a single VM by name
+- name: Manage a single VM by name
   hosts: hosts
   gather_facts: false
   tasks:
@@ -12,11 +12,11 @@
         vm_exists: "{{ vm_name in (vm_list_result.vms | map(attribute='name') | list) }}"
 
     - block:
-        - name: Delete the specified VM if it exists
-          orka_vm_delete:
+        - name: Manage the specified VM if it exists
+          orka_vm:
             name: "{{ vm_name }}"
+            state: "{{ desired_state }}"
             binary_path: "{{ engine_binary }}"
-          register: delete_result
 
         - name: Get updated list of running VMs
           orka_vm_list:
