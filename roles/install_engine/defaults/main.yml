@@ -5,3 +5,4 @@ install_engine_path: /usr/local/libexec/orka-engine.app/Contents/MacOS
 install_engine_service_path: /Library/LaunchAgents/com.macstadium.orka-engine.server.managed.plist
 install_engine_service_id: com.macstadium.orka-engine.server.managed
 install_engine_force: false
+install_engine_license_key: "{{ orka_license_key }}"

@@ -31,8 +31,4 @@
       community.general.launchd:
         name: "{{ install_engine_service_id }}"
         state: restarted
-
-    - name: Activate Orka Engine
-      orka_engine_activate:
-        license_key: "{{ orka_license_key }}"
   when: not orka_engine_check.stat.exists or install_engine_force | bool
