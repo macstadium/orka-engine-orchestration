@@ -30,6 +30,10 @@ options:
         description: Amount of memory to allocate (e.g., "4096M")
         required: false
         type: str
+    network_interface:
+        description: Network interface to use for the VM
+        required: false
+        type: str
     binary_path:
         description: Path to the orka-engine binary
         required: false
@@ -37,6 +41,7 @@ options:
         default: "orka-engine"
 author:
     - "Ivan Spasov (@ispasov)"
+    - "Bob Elwell (@relwell)"
 '''
 
 EXAMPLES = r'''
@@ -52,6 +57,12 @@ EXAMPLES = r'''
     cpu: 4
     memory: "8192M"
     detached: true
+
+- name: Create VM with specific network interface
+  orka_vm_run:
+    name: network_vm
+    image: ghcr.io/macstadium/orka-images/sonoma:latest
+    network_interface: en0
 '''
 
 RETURN = r'''
@@ -77,7 +88,8 @@ def run_module():
         detached=dict(type='bool', required=False, default=True),
         cpu=dict(type='int', required=False),
         memory=dict(type='str', required=False),
-        binary_path=dict(type='str', required=False, default='orka-engine')
+        binary_path=dict(type='str', required=False, default='orka-engine'),
+        network_interface=dict(type='str', required=False)
     ),
         supports_check_mode=True
     )
@@ -87,6 +99,7 @@ def run_module():
     detached = module.params['detached']
     cpu = module.params['cpu']
     memory = module.params['memory']
+    network_interface = module.params['network_interface']
     image = module.params['image']
     result = dict(
         changed=False,
@@ -115,7 +128,9 @@ def run_module():
         cmd.extend(['--cpu', str(cpu)])
     if memory:
         cmd.extend(['--memory', memory])
-    
+    if network_interface:
+        cmd.extend(['--net-interface', network_interface])
+
     result['command'] = ' '.join(cmd)
     
     try:
