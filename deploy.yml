@@ -63,6 +63,7 @@
         name: "{{ vm_group}}-{{ lookup('community.general.random_string', length=6, special=False) }}"
         binary_path: "{{ engine_binary }}"
         image: "{{ vm_image }}"
+        network_interface: "{{ network_interface | default(omit) }}"
       loop: "{{ range(1, vms_to_deploy | int + 1) | list }}"
 
     - name: Get the running VMs after deployment

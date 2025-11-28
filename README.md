@@ -50,6 +50,7 @@ This project provides an Ansible-based orchestration system for managing Orka VM
 - `vm_image`: The image used to deploy VMs from
 - `ansible_user`: The user used to connect to the Mac hosts
 - `engine_binary`: Path to the Orka engine binary (default: defined in your inventory or group vars)
+- `network_interface`: The network to attach the VM to, such as `en0` (default: none, will deploy via NAT mode)
 
 ## Usage
 

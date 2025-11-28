@@ -30,8 +30,13 @@ options:
         required: false
         type: int
         default: 60
+    network_interface:
+        description: Network interface to use for the VM
+        required: false
+        type: str
 author:
     - "Ivan Spasov (@ispasov)"
+    - "Bob Elwell (@relwell)"
 '''
 
 EXAMPLES = r'''
@@ -39,6 +44,12 @@ EXAMPLES = r'''
   orka_vm:
     name: test_vm
     state: running
+
+- name: Start a VM with bridged networking
+  orka_vm:
+    name: test_vm
+    state: running
+    network_interface: en0
 
 - name: Stop a VM with custom binary path
   orka_vm:
@@ -87,8 +98,12 @@ def wait_for_vm_state(module, name, desired_state, binary_path, result, timeout=
     
     return False
 
-def start_vm(module, name, binary_path, result, wait_timeout=60):
+def start_vm(module, name, binary_path, result, wait_timeout=60, network_interface=None):
     start_cmd = [binary_path, 'vm', 'start', '-d', name]
+
+    if network_interface:
+        start_cmd.extend(["--net-interface", network_interface])
+
     result['command'] = ' '.join(start_cmd)
     
     try:
@@ -171,7 +186,8 @@ def main():
             name=dict(type='str', required=True),
             state=dict(type='str', required=True, choices=['running', 'stopped', 'absent']),
             binary_path=dict(type='str', required=False, default='orka-engine'),
-            wait_timeout=dict(type='int', required=False, default=60)
+            wait_timeout=dict(type='int', required=False, default=60),
+            network_interface=dict(type="str", required=False),
         ),
         supports_check_mode=True
     )
@@ -180,6 +196,7 @@ def main():
     desired_state = module.params['state']
     binary_path = module.params['binary_path']
     wait_timeout = module.params['wait_timeout']
+    network_interface = module.params['network_interface']
 
     result = dict(
         changed=False,
@@ -217,7 +234,7 @@ def main():
         exit_with_result(True)
     
     if desired_state == 'running':
-        start_vm(module, name, binary_path, result, wait_timeout)
+        start_vm(module, name, binary_path, result, wait_timeout=wait_timeout, network_interface=network_interface)
     elif desired_state == 'stopped':
         stop_vm(module, name, binary_path, result, wait_timeout)
     elif desired_state == 'absent':
