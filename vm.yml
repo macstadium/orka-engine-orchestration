@@ -17,6 +17,7 @@
             name: "{{ vm_name }}"
             state: "{{ desired_state }}"
             binary_path: "{{ engine_binary }}"
+            network_interface: "{{ network_interface | default(omit) }}"
 
         - name: Get updated list of running VMs
           orka_vm_list:
