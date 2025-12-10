@@ -1,0 +1,6 @@
+# global owners are Orka dev team
+* @macstadium/orka-dev
+
+# documentation and license owned by Orka dev and Product
+*.md @macstadium/orka-dev @macstadium/product
+LICENSE @macstadium/orka-dev @macstadium/product
