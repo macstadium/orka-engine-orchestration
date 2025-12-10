@@ -4,11 +4,11 @@ This project provides an Ansible-based orchestration system for managing Orka VM
 
 ## Prerequisites
 
-- Ansible installed on the control machine
-- Orka Engine installed on all remote hosts
+- Ansible installed on the control host
+- Orka Engine License Key and URL to installer
 - SSH access to remote hosts
-- Python 3.x on both control and remote machines
-- sshpass installed on the Ansible runner
+- Python 3.x on both control and remote hosts
+- sshpass installed on the control host for the Ansible runner
 
 ## Project Structure
 
