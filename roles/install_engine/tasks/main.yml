@@ -10,6 +10,7 @@
       get_url:
         url: "{{ install_engine_pkg_url }}"
         dest: "{{ install_engine_pkg_path }}"
+        force: true
         mode: '0644'
 
     - name: Install PKG file
@@ -21,7 +22,14 @@
         path: "{{ install_engine_pkg_path }}"
         state: absent
 
-    - name: Deploy launch agent
+    - name: Override Orka Engine CLI helper
+      become: true
+      ansible.builtin.template:
+        src: "orka-engine.sh.j2"
+        dest: "{{ install_engine_helper_path }}"
+        mode: "0755"
+
+    - name: Deploy launch daemon
       become: true
       template:
         src: "com.macstadium.orka-engine.server.managed.plist.j2"
@@ -31,4 +39,6 @@
       community.general.launchd:
         name: "{{ install_engine_service_id }}"
         state: restarted
+        enabled: true
+      become: true
   when: not orka_engine_check.stat.exists or install_engine_force | bool
