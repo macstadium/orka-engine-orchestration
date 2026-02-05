@@ -13,7 +13,15 @@
 		<key>ORKA_ENGINE_LICENSE_KEY</key>
 		<string>{{ install_engine_license_key }}</string>
 		<key>LOG_FILE</key>
-		<string>{{ ansible_env.HOME }}/.local/state/orka/logs/{{ install_engine_service_id }}.log</string>
+		<string>{{ install_engine_log_file }}</string>
+		<key>XDG_DATA_HOME</key>
+		<string>{{ install_engine_data_home }}</string>
+		<key>XDG_STATE_HOME</key>
+		<string>{{ install_engine_state_home }}</string>
+		<key>ORKA_ENGINE_SOCK</key>
+		<string>{{ install_engine_socket_path }}</string>
+		<key>ORKA_ENGINE_VIRTUAL_MACHINE_USER</key>
+		<string>{{ install_engine_vm_user }}</string>
 	</dict>
 	<key>KeepAlive</key>
 	<dict>

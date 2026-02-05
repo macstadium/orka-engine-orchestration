@@ -1,0 +1,7 @@
+#!/bin/bash
+
+export XDG_DATA_HOME=${XDG_DATA_HOME:-{{ install_engine_data_home }}}
+export XDG_STATE_HOME=${XDG_STATE_HOME:-{{ install_engine_state_home }}}
+export ORKA_ENGINE_SOCK=${ORKA_ENGINE_SOCK:-{{ install_engine_socket_path }}}
+
+exec "/usr/local/libexec/orka-engine.app/Contents/MacOS/orka-engine" "$@"

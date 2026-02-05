@@ -2,7 +2,14 @@ install_engine_pkg_url: ""
 install_engine_target_folder: "/tmp/"
 install_engine_pkg_path: "{{ install_engine_target_folder }}/orka-engine.pkg"
 install_engine_path: /usr/local/libexec/orka-engine.app/Contents/MacOS
-install_engine_service_path: /Library/LaunchAgents/com.macstadium.orka-engine.server.managed.plist
+install_engine_service_path: /Library/LaunchDaemons/{{ install_engine_service_id }}.plist
 install_engine_service_id: com.macstadium.orka-engine.server.managed
 install_engine_force: false
 install_engine_license_key: "{{ orka_license_key }}"
+install_engine_data_home: "/opt"
+install_engine_state_home: "/opt"
+install_engine_state_dir: "{{ install_engine_state_home }}/orka"
+install_engine_log_file: "{{ install_engine_state_dir }}/logs/{{ install_engine_service_id }}.log"
+install_engine_socket_path: "/var/run/orka-engine.sock"
+install_engine_vm_user: "{{ ansible_user }}"
+install_engine_helper_path: "/usr/local/bin/orka-engine"
