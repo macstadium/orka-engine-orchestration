@@ -1,0 +1,59 @@
+# Semaphore UI
+
+[Ansible Semaphore](https://semaphoreui.com/) provides a web interface for running the orchestration playbooks without CLI access.
+
+## Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/) (included with Docker Desktop)
+
+## Quick Start
+
+1. Copy the example environment file and fill in your values:
+   ```bash
+   cp semaphore/.env.example semaphore/.env
+   ```
+
+2. Generate an encryption key and add it to `semaphore/.env`:
+   ```bash
+   head -c32 /dev/urandom | base64
+   ```
+
+3. Set your admin credentials in `semaphore/.env`.
+
+4. Start Semaphore:
+   ```bash
+   docker compose up -d
+   ```
+
+5. Open http://localhost:3000 (or your configured `SEMAPHORE_PORT`) and log in with the admin credentials from your `.env` file.
+
+6. Navigate to **Key Store** and edit the **Mac Hosts SSH** key — replace the placeholder credentials with the real SSH username and password for your Mac hosts.
+
+All task templates, the repository, and the inventory are pre-configured automatically on first launch via `semaphore/project-seed.json`.
+
+## Task Templates
+
+The following templates are available in the **Orka Engine Orchestration** project. Each template prompts for its required inputs via a form when you click **Run**.
+
+| Template        | Playbook             | Survey Variables                                                |
+|-----------------|----------------------|-----------------------------------------------------------------|
+| Deploy VMs      | `deploy.yml`         | `vm_group`, `desired_vms`                                       |
+| Delete VMs      | `delete.yml`         | `vm_group`, `delete_count`                                      |
+| Manage VM       | `vm.yml`             | `vm_name`, `desired_state` (`running`, `stopped`, `absent`)     |
+| List VMs        | `list.yml`           | `vm_group` (optional)                                           |
+| Pull Image      | `pull_image.yml`     | `remote_image_name`                                             |
+| Install Engine  | `install_engine.yml` | `orka_license_key`, `engine_url`                                |
+| Create Image    | `create_image.yml`   | `remote_image_name`, `vm_image`                                 |
+
+## Stopping Semaphore
+
+```bash
+docker compose down
+```
+
+To remove all data (database, task history):
+
+```bash
+docker compose down -v
+```

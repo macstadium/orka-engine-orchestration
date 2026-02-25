@@ -1,0 +1,184 @@
+{
+  "meta": {
+    "name": "Orka Engine Orchestration",
+    "alert": false,
+    "max_parallel_tasks": 0,
+    "type": ""
+  },
+  "keys": [
+    {
+      "name": "Mac Hosts SSH",
+      "type": "login_password"
+    }
+  ],
+  "repositories": [
+    {
+      "name": "Local Playbooks",
+      "git_url": "/opt/orka",
+      "git_branch": "",
+      "ssh_key": "Mac Hosts SSH"
+    }
+  ],
+  "inventories": [
+    {
+      "name": "Dev Inventory",
+      "type": "file",
+      "inventory": "/opt/orka/dev/inventory",
+      "ssh_key": "Mac Hosts SSH"
+    }
+  ],
+  "environments": [],
+  "templates": [
+    {
+      "name": "Deploy VMs",
+      "playbook": "deploy.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "survey_vars": [
+        {
+          "name": "vm_group",
+          "title": "VM Group",
+          "required": true,
+          "type": "",
+          "description": "Name of the VM group to deploy"
+        },
+        {
+          "name": "desired_vms",
+          "title": "Desired VMs",
+          "required": true,
+          "type": "int",
+          "description": "Number of VMs to deploy"
+        }
+      ]
+    },
+    {
+      "name": "Delete VMs",
+      "playbook": "delete.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "survey_vars": [
+        {
+          "name": "vm_group",
+          "title": "VM Group",
+          "required": true,
+          "type": "",
+          "description": "Name of the VM group to delete from"
+        },
+        {
+          "name": "delete_count",
+          "title": "Delete Count",
+          "required": true,
+          "type": "int",
+          "description": "Number of VMs to delete"
+        }
+      ]
+    },
+    {
+      "name": "Manage VM",
+      "playbook": "vm.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "survey_vars": [
+        {
+          "name": "vm_name",
+          "title": "VM Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the VM to manage"
+        },
+        {
+          "name": "desired_state",
+          "title": "Desired State",
+          "required": true,
+          "type": "enum",
+          "description": "Target VM state",
+          "values": [
+            { "name": "running", "value": "running" },
+            { "name": "stopped", "value": "stopped" },
+            { "name": "absent", "value": "absent" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "List VMs",
+      "playbook": "list.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "survey_vars": [
+        {
+          "name": "vm_group",
+          "title": "VM Group",
+          "required": false,
+          "type": "",
+          "description": "Filter by VM group name (leave empty to list all)"
+        }
+      ]
+    },
+    {
+      "name": "Pull Image",
+      "playbook": "pull_image.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "survey_vars": [
+        {
+          "name": "remote_image_name",
+          "title": "Remote Image Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the image to pull from the registry"
+        }
+      ]
+    },
+    {
+      "name": "Install Engine",
+      "playbook": "install_engine.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "survey_vars": [
+        {
+          "name": "orka_license_key",
+          "title": "Orka License Key",
+          "required": true,
+          "type": "",
+          "description": "License key for Orka Engine"
+        },
+        {
+          "name": "engine_url",
+          "title": "Engine URL",
+          "required": true,
+          "type": "",
+          "description": "URL to download the engine package"
+        }
+      ]
+    },
+    {
+      "name": "Create Image",
+      "playbook": "create_image.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "survey_vars": [
+        {
+          "name": "remote_image_name",
+          "title": "Remote Image Name",
+          "required": true,
+          "type": "",
+          "description": "Name for the new image"
+        },
+        {
+          "name": "vm_image",
+          "title": "VM Image",
+          "required": true,
+          "type": "",
+          "description": "Source image to create the VM from"
+        }
+      ]
+    }
+  ],
+  "views": [],
+  "integrations": [],
+  "integration_aliases": [],
+  "schedules": [],
+  "secret_storages": [],
+  "roles": []
+}
