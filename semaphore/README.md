@@ -10,11 +10,13 @@
 ## Quick Start
 
 1. Copy the example environment file and fill in your values:
+
    ```bash
    cp semaphore/.env.example semaphore/.env
    ```
 
 2. Generate an encryption key and add it to `semaphore/.env`:
+
    ```bash
    head -c32 /dev/urandom | base64
    ```
@@ -22,6 +24,7 @@
 3. Set your admin credentials in `semaphore/.env`.
 
 4. Start Semaphore:
+
    ```bash
    docker compose up -d
    ```
@@ -36,15 +39,15 @@ All task templates, the repository, and the inventory are pre-configured automat
 
 The following templates are available in the **Orka Engine Orchestration** project. Each template prompts for its required inputs via a form when you click **Run**.
 
-| Template        | Playbook             | Survey Variables                                                |
-|-----------------|----------------------|-----------------------------------------------------------------|
-| Deploy VMs      | `deploy.yml`         | `vm_group`, `desired_vms`                                       |
-| Delete VMs      | `delete.yml`         | `vm_group`, `delete_count`                                      |
-| Manage VM       | `vm.yml`             | `vm_name`, `desired_state` (`running`, `stopped`, `absent`)     |
-| List VMs        | `list.yml`           | `vm_group` (optional)                                           |
-| Pull Image      | `pull_image.yml`     | `remote_image_name`                                             |
-| Install Engine  | `install_engine.yml` | `orka_license_key`, `engine_url`                                |
-| Create Image    | `create_image.yml`   | `remote_image_name`, `vm_image`                                 |
+| Template       | Playbook             | Survey Variables                                            |
+| -------------- | -------------------- | ----------------------------------------------------------- |
+| Deploy VMs     | `deploy.yml`         | `vm_group`, `desired_vms`                                   |
+| Delete VMs     | `delete.yml`         | `vm_group`, `delete_count`                                  |
+| Manage VM      | `vm.yml`             | `vm_name`, `desired_state` (`running`, `stopped`, `absent`) |
+| List VMs       | `list.yml`           | `vm_group` (optional)                                       |
+| Pull Image     | `pull_image.yml`     | `remote_image_name`                                         |
+| Install Engine | `install_engine.yml` | `orka_license_key`, `engine_url`                            |
+| Create Image   | `create_image.yml`   | `remote_image_name`, `vm_image`                             |
 
 ## Stopping Semaphore
 

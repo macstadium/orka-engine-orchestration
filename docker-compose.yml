@@ -8,11 +8,6 @@ services:
     environment:
       SEMAPHORE_DB_DIALECT: bolt
       SEMAPHORE_DB: /var/lib/semaphore/database.boltdb
-      SEMAPHORE_ADMIN: ${SEMAPHORE_ADMIN}
-      SEMAPHORE_ADMIN_PASSWORD: ${SEMAPHORE_ADMIN_PASSWORD}
-      SEMAPHORE_ADMIN_NAME: ${SEMAPHORE_ADMIN_NAME}
-      SEMAPHORE_ADMIN_EMAIL: ${SEMAPHORE_ADMIN_EMAIL}
-      SEMAPHORE_ACCESS_KEY_ENCRYPTION: ${SEMAPHORE_ACCESS_KEY_ENCRYPTION}
       ANSIBLE_CONFIG: /opt/orka/semaphore/ansible.cfg
       SEMAPHORE_IMPORT_PROJECT_FILE: /opt/orka/semaphore/project-seed.json
     volumes:
@@ -21,7 +16,8 @@ services:
       - semaphore-data:/var/lib/semaphore
     restart: unless-stopped
     env_file:
-      - semaphore/.env
+      - path: semaphore/.env
+        required: true
 
 volumes:
   semaphore-data:
