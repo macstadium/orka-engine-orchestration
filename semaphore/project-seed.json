@@ -24,16 +24,26 @@
       "name": "Dev Inventory",
       "type": "file",
       "inventory": "/opt/orka/dev/inventory",
-      "ssh_key": "Mac Hosts SSH"
+      "ssh_key": "Mac Hosts SSH",
+      "become_key": "Mac Hosts SSH"
     }
   ],
-  "environments": [],
+  "environments": [
+    {
+      "name": "Default",
+      "json": "{}",
+      "env": null,
+      "password": null
+    }
+  ],
   "templates": [
     {
       "name": "Deploy VMs",
+      "app": "ansible",
       "playbook": "deploy.yml",
       "repository": "Local Playbooks",
       "inventory": "Dev Inventory",
+      "environment": "Default",
       "survey_vars": [
         {
           "name": "vm_group",
@@ -53,9 +63,11 @@
     },
     {
       "name": "Delete VMs",
+      "app": "ansible",
       "playbook": "delete.yml",
       "repository": "Local Playbooks",
       "inventory": "Dev Inventory",
+      "environment": "Default",
       "survey_vars": [
         {
           "name": "vm_group",
@@ -75,9 +87,11 @@
     },
     {
       "name": "Manage VM",
+      "app": "ansible",
       "playbook": "vm.yml",
       "repository": "Local Playbooks",
       "inventory": "Dev Inventory",
+      "environment": "Default",
       "survey_vars": [
         {
           "name": "vm_name",
@@ -102,9 +116,11 @@
     },
     {
       "name": "List VMs",
+      "app": "ansible",
       "playbook": "list.yml",
       "repository": "Local Playbooks",
       "inventory": "Dev Inventory",
+      "environment": "Default",
       "survey_vars": [
         {
           "name": "vm_group",
@@ -117,9 +133,11 @@
     },
     {
       "name": "Pull Image",
+      "app": "ansible",
       "playbook": "pull_image.yml",
       "repository": "Local Playbooks",
       "inventory": "Dev Inventory",
+      "environment": "Default",
       "survey_vars": [
         {
           "name": "remote_image_name",
@@ -132,9 +150,11 @@
     },
     {
       "name": "Install Engine",
+      "app": "ansible",
       "playbook": "install_engine.yml",
       "repository": "Local Playbooks",
       "inventory": "Dev Inventory",
+      "environment": "Default",
       "survey_vars": [
         {
           "name": "orka_license_key",
@@ -154,9 +174,11 @@
     },
     {
       "name": "Create Image",
+      "app": "ansible",
       "playbook": "create_image.yml",
       "repository": "Local Playbooks",
       "inventory": "Dev Inventory",
+      "environment": "Default",
       "survey_vars": [
         {
           "name": "remote_image_name",
