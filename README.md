@@ -10,6 +10,10 @@ This project provides an Ansible-based orchestration system for managing Orka VM
 - Python 3.x on both control and remote machines
 - sshpass installed on the Ansible runner
 
+## Semaphore UI
+
+A web-based UI for running playbooks is available via [Ansible Semaphore](https://semaphoreui.com/). This lets end users execute playbooks from a browser without needing CLI access. See [semaphore/README.md](semaphore/README.md) for setup instructions.
+
 ## Project Structure
 
 ```

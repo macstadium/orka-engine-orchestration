@@ -1,0 +1,23 @@
+services:
+  semaphore:
+    build:
+      context: semaphore
+      dockerfile: Dockerfile
+    ports:
+      - "${SEMAPHORE_PORT:-3000}:3000"
+    environment:
+      SEMAPHORE_DB_DIALECT: bolt
+      SEMAPHORE_DB: /var/lib/semaphore/database.boltdb
+      ANSIBLE_CONFIG: /opt/orka/semaphore/ansible.cfg
+      SEMAPHORE_IMPORT_PROJECT_FILE: /opt/orka/semaphore/project-seed.json
+    volumes:
+      - .:/opt/orka:ro
+      - ./dev:/opt/orka/dev
+      - semaphore-data:/var/lib/semaphore
+    restart: unless-stopped
+    env_file:
+      - path: semaphore/.env
+        required: true
+
+volumes:
+  semaphore-data:
