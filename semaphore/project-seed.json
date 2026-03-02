@@ -23,7 +23,7 @@
     {
       "name": "Dev Inventory",
       "type": "file",
-      "inventory": "/opt/orka/dev/inventory",
+      "inventory": "dev/inventory",
       "ssh_key": "Mac Hosts SSH",
       "become_key": "Mac Hosts SSH"
     }
