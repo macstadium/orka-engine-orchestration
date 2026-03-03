@@ -1,7 +1,13 @@
 - hosts: hosts
   gather_facts: false
   pre_tasks:
+    - name: Check if Python is installed
+      ansible.builtin.raw: python3 --version
+      register: python_output
+      ignore_errors: true
+
     - name: Install Dev Tools
+      when: python_output.rc != 0
       block:
         - name: Prepare to Install Command Line Tools
           ansible.builtin.raw: touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
