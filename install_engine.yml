@@ -1,6 +1,28 @@
 - hosts: hosts
   gather_facts: false
   pre_tasks:
+    - name: Install Dev Tools
+      block:
+        - name: Prepare to Install Command Line Tools
+          ansible.builtin.raw: touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+
+        - name: Search for Command Line Tools Package
+          ansible.builtin.raw: >
+            softwareupdate -l |
+            grep -B 1 -E 'Command Line Tools' |
+            awk -F'*' '/^\*/ {print $2}' |
+            sed -e 's/^ *Label: //' -e 's/^ *//' |
+            sort -V |
+            tail -n1
+          register: software_update_result
+
+        - name: Install Command Line Tools
+          ansible.builtin.raw: softwareupdate -i '{{ software_update_result.stdout | regex_search('Command Line Tools for Xcode(.)+', ignorecase=True) | trim }}'
+          register: install_result
+          failed_when: '"No such update" in install_result.stdout'
+      always:
+        - name: Remove Installation Lock File
+          ansible.builtin.raw: rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
     - name: Gather minimal facts
       setup:
         filter:
@@ -8,4 +30,4 @@
   roles:
     - role: install_engine
       vars:
-        install_engine_pkg_url: "{{ engine_url }}"
+        install_engine_pkg_url: "{{ engine_url | default('https://distribution.macstadium.com/orka-engine/official/3.5.2/orka-engine.pkg') }}"

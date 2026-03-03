@@ -166,6 +166,7 @@
         {
           "name": "engine_url",
           "title": "Engine URL",
+          "default": "https://distribution.macstadium.com/orka-engine/official/3.5.2/orka-engine.pkg",
           "required": true,
           "type": "",
           "description": "URL to download the engine package"
