@@ -53,6 +53,13 @@
           "description": "Name of the VM group to deploy"
         },
         {
+          "name": "vm_image",
+          "title": "VM Image",
+          "type": "string",
+          "required": true,
+          "description": "An OCI URL for an Orka VM image"
+        },
+        {
           "name": "desired_vms",
           "title": "Desired VMs",
           "required": true,
@@ -166,6 +173,7 @@
         {
           "name": "engine_url",
           "title": "Engine URL",
+          "default_value": "https://distribution.macstadium.com/orka-engine/official/3.5.2/orka-engine.pkg",
           "required": true,
           "type": "",
           "description": "URL to download the engine package"
@@ -184,14 +192,14 @@
           "name": "remote_image_name",
           "title": "Remote Image Name",
           "required": true,
-          "type": "",
-          "description": "Name for the new image"
+          "type": "string",
+          "description": "OCI URL for the remote image"
         },
         {
           "name": "vm_image",
           "title": "VM Image",
           "required": true,
-          "type": "",
+          "type": "string",
           "description": "Source image to create the VM from"
         }
       ]
