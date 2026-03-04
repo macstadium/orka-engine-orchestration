@@ -44,7 +44,7 @@
           Host: {{ host_data.hostname }}
           VMs:
           {% for vm in host_data.vms %}
-            - {{ vm.name }} | {{ vm.state }}
+            - {{ vm.name }} | {{ vm.state }} | {{ vm.ip }}
           {% endfor %}
           {% else %}
           Host: {{ host_data.hostname }} - No VMs
