@@ -65,13 +65,28 @@
         image: "{{ vm_image }}"
         network_interface: "{{ network_interface | default(omit) }}"
       loop: "{{ range(1, vms_to_deploy | int + 1) | list }}"
+      register: deploy_results
 
-    - name: Get the running VMs after deployment
+    - name: Collect deployed VM names
+      set_fact:
+        deployed_vm_names: "{{ deploy_results.results | map(attribute='name') | list }}"
+
+    - name: Wait for all VMs to have IPs assigned
       orka_vm_list:
         binary_path: "{{ engine_binary }}"
       register: vm_list_result
-    
-    - name:  Update capacity facts after deployment
+      until: vm_list_result.vms | selectattr('ip', 'defined') | selectattr('ip', 'ne', '') | list | length == vm_list_result.vms | length
+      retries: 24
+      delay: 5
+
+    - name: Update capacity facts after deployment
       set_fact:
         host_vms: "{{ vm_list_result.vms | list }}"
         cacheable: true
+
+    - name: Display deployed VMs
+      debug:
+        msg: "{{ item.name }} | {{ item.ip }} | {{ item.state }}"
+      loop: "{{ vm_list_result.vms | selectattr('name', 'in', deployed_vm_names) | list }}"
+      loop_control:
+        label: "{{ item.name }}"
