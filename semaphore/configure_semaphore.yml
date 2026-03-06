@@ -1,0 +1,260 @@
+---
+# Configure Semaphore via API: add an SSH key and update project resources to use it.
+#
+# Usage:
+#   ansible-playbook semaphore/configure_semaphore.yml \
+#     -e ssh_key_file=/path/to/id_rsa
+#
+# Variables:
+#   ssh_key_file        (required) Path to the SSH private key file to upload
+#   ssh_key_name        (optional) Name for the key in Semaphore (default: "SSH Key")
+#   semaphore_url       (optional) Semaphore base URL (default: http://localhost:3000)
+#   semaphore_admin     (optional) Admin username (default: $SEMAPHORE_ADMIN env var)
+#   semaphore_password  (optional) Admin password (default: $SEMAPHORE_ADMIN_PASSWORD env var)
+#   project_name        (optional) Project to update (default: "Orka Engine Orchestration")
+#   repository_name     (optional) Repository to update (default: "Local Playbooks")
+#   inventory_name      (optional) Inventory to update (default: "Dev Inventory")
+
+- name: Configure Semaphore SSH key and update project resources
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    semaphore_url: "http://localhost:3000"
+    semaphore_admin: "{{ lookup('env', 'SEMAPHORE_ADMIN') | default('admin', true) }}"
+    semaphore_password: "{{ lookup('env', 'SEMAPHORE_ADMIN_PASSWORD') | default('changeme', true) }}"
+    ssh_key_name: "SSH Key"
+    project_name: "Orka Engine Orchestration"
+    repository_name: "Local Playbooks"
+    inventory_name: "Dev Inventory"
+
+  tasks:
+    - name: Validate required variables
+      ansible.builtin.assert:
+        that:
+          - ssh_key_file is defined
+          - ssh_key_file | length > 0
+        fail_msg: "ssh_key_file is required. Pass with: -e ssh_key_file=/path/to/private_key"
+
+    - name: Read SSH private key from file
+      ansible.builtin.slurp:
+        src: "{{ ssh_key_file }}"
+      register: ssh_key_raw
+
+    - name: Log in to Semaphore
+      ansible.builtin.uri:
+        url: "{{ semaphore_url }}/api/auth/login"
+        method: POST
+        body_format: json
+        body:
+          auth: "{{ semaphore_admin }}"
+          password: "{{ semaphore_password }}"
+        status_code: 204
+      register: login_result
+
+    - name: Build cookie header from login response
+      ansible.builtin.set_fact:
+        auth_cookie: "{% for k, v in login_result.cookies.items() %}{{ k }}={{ v }}{% if not loop.last %}; {% endif %}{% endfor %}"
+
+    - name: Get all projects
+      ansible.builtin.uri:
+        url: "{{ semaphore_url }}/api/projects"
+        method: GET
+        headers:
+          Cookie: "{{ auth_cookie }}"
+        status_code: 200
+      register: projects_result
+
+    - name: Locate target project
+      ansible.builtin.set_fact:
+        target_project: >-
+          {{ projects_result.json
+             | selectattr('name', 'equalto', project_name)
+             | list | first }}
+
+    - name: Fail if project not found
+      ansible.builtin.assert:
+        that: target_project is defined and target_project.id is defined
+        fail_msg: "Project '{{ project_name }}' not found in Semaphore"
+
+    - name: Get existing keys in project
+      ansible.builtin.uri:
+        url: "{{ semaphore_url }}/api/project/{{ target_project.id }}/keys"
+        method: GET
+        headers:
+          Cookie: "{{ auth_cookie }}"
+        status_code: 200
+      register: keys_result
+
+    - name: Check whether key already exists
+      ansible.builtin.set_fact:
+        existing_key: >-
+          {{ keys_result.json
+             | selectattr('name', 'equalto', ssh_key_name)
+             | list | first | default({}) }}
+
+    - name: Create SSH key (if it does not exist)
+      ansible.builtin.uri:
+        url: "{{ semaphore_url }}/api/project/{{ target_project.id }}/keys"
+        method: POST
+        headers:
+          Cookie: "{{ auth_cookie }}"
+          Content-Type: "application/json"
+        body_format: raw
+        body: >-
+          {{ {'name': ssh_key_name, 'type': 'ssh',
+              'project_id': target_project.id | int,
+              'override_secret': true,
+              'ssh': {'login': '', 'passphrase': '',
+                      'private_key': ssh_key_raw.content | b64decode}
+             } | to_json }}
+        status_code: 201
+        return_content: true
+      register: create_key_result
+      when: existing_key.id is not defined
+
+    - name: Update SSH key (if it already exists)
+      ansible.builtin.uri:
+        url: "{{ semaphore_url }}/api/project/{{ target_project.id }}/keys/{{ existing_key.id }}"
+        method: PUT
+        headers:
+          Cookie: "{{ auth_cookie }}"
+          Content-Type: "application/json"
+        body_format: raw
+        body: >-
+          {{ {'id': existing_key.id | int, 'name': ssh_key_name, 'type': 'ssh',
+              'project_id': target_project.id | int,
+              'override_secret': true,
+              'ssh': {'login': '', 'passphrase': '',
+                      'private_key': ssh_key_raw.content | b64decode}
+             } | to_json }}
+        status_code: 204
+      when: existing_key.id is defined
+
+    - name: Set SSH key ID
+      ansible.builtin.set_fact:
+        ssh_key_id: >-
+          {{ create_key_result.json.id
+             if existing_key.id is not defined
+             else existing_key.id }}
+
+    # --- Repository ---
+
+    - name: Get repositories in project
+      ansible.builtin.uri:
+        url: "{{ semaphore_url }}/api/project/{{ target_project.id }}/repositories"
+        method: GET
+        headers:
+          Cookie: "{{ auth_cookie }}"
+        status_code: 200
+      register: repos_result
+
+    - name: Locate target repository
+      ansible.builtin.set_fact:
+        target_repo: >-
+          {{ repos_result.json
+             | selectattr('name', 'equalto', repository_name)
+             | list | first }}
+
+    - name: Fail if repository not found
+      ansible.builtin.assert:
+        that: target_repo is defined and target_repo.id is defined
+        fail_msg: "Repository '{{ repository_name }}' not found in project '{{ project_name }}'"
+
+    - name: Update repository to use SSH key
+      ansible.builtin.uri:
+        url: "{{ semaphore_url }}/api/project/{{ target_project.id }}/repositories/{{ target_repo.id }}"
+        method: PUT
+        headers:
+          Cookie: "{{ auth_cookie }}"
+          Content-Type: "application/json"
+        body_format: raw
+        body: >-
+          {{ {'id': target_repo.id | int, 'name': target_repo.name,
+              'project_id': target_project.id | int,
+              'git_url': target_repo.git_url,
+              'git_branch': target_repo.git_branch | default(''),
+              'ssh_key_id': ssh_key_id | int
+             } | to_json }}
+        status_code: 204
+
+    # --- Inventory ---
+
+    - name: Get inventories in project
+      ansible.builtin.uri:
+        url: "{{ semaphore_url }}/api/project/{{ target_project.id }}/inventory"
+        method: GET
+        headers:
+          Cookie: "{{ auth_cookie }}"
+        status_code: 200
+        return_content: true
+      register: inventories_result
+
+    - name: Debug inventories response
+      ansible.builtin.debug:
+        msg: "Inventories: {{ inventories_result.json }}"
+
+    - name: Locate target inventory
+      ansible.builtin.set_fact:
+        target_inventory: >-
+          {{ inventories_result.json
+             | selectattr('name', 'equalto', inventory_name)
+             | list | first }}
+
+    - name: Fail if inventory not found
+      ansible.builtin.assert:
+        that: target_inventory is defined and target_inventory.id is defined
+        fail_msg: "Inventory '{{ inventory_name }}' not found in project '{{ project_name }}'"
+
+    - name: Debug inventory details
+      ansible.builtin.debug:
+        msg: "Found inventory: {{ target_inventory }}"
+
+    - name: Test GET single inventory (path probe)
+      ansible.builtin.uri:
+        url: "{{ semaphore_url }}/api/project/{{ target_project.id }}/inventory/{{ target_inventory.id }}"
+        method: GET
+        headers:
+          Cookie: "{{ auth_cookie }}"
+        status_code: [200, 404]
+        return_content: true
+      register: inventory_get_probe
+
+    - name: Debug single inventory GET result
+      ansible.builtin.debug:
+        msg: "GET /inventory/{{ target_inventory.id }} status={{ inventory_get_probe.status }} body={{ inventory_get_probe.content }}"
+
+    - name: Update inventory to use SSH key with no sudo key
+      ansible.builtin.uri:
+        url: "{{ semaphore_url }}/api/project/{{ target_project.id }}/inventory/{{ target_inventory.id }}"
+        method: PUT
+        headers:
+          Cookie: "{{ auth_cookie }}"
+          Content-Type: "application/json"
+        body_format: raw
+        body: >-
+          {{ {'id': target_inventory.id | int, 'name': target_inventory.name,
+              'project_id': target_project.id | int,
+              'inventory': target_inventory.inventory,
+              'ssh_key_id': ssh_key_id | int,
+              'become_key_id': none,
+              'type': target_inventory.type
+             } | to_json }}
+        status_code: 204
+
+    - name: Log out of Semaphore
+      ansible.builtin.uri:
+        url: "{{ semaphore_url }}/api/auth/logout"
+        method: POST
+        headers:
+          Cookie: "{{ auth_cookie }}"
+        status_code: 204
+      ignore_errors: true
+
+    - name: Summary
+      ansible.builtin.debug:
+        msg:
+          - "SSH key '{{ ssh_key_name }}' (ID: {{ ssh_key_id }}) added/updated"
+          - "Repository '{{ repository_name }}' updated to use SSH key"
+          - "Inventory '{{ inventory_name }}' updated to use SSH key, become key cleared"
