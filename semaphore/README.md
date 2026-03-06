@@ -41,10 +41,10 @@ The following templates are available in the **Orka Engine Orchestration** proje
 
 | Template       | Playbook             | Survey Variables                                            |
 | -------------- | -------------------- | ----------------------------------------------------------- |
-| Deploy VMs     | `deploy.yml`         | `vm_group`, `desired_vms`                                   |
-| Delete VMs     | `delete.yml`         | `vm_group`, `delete_count`                                  |
+| Deploy VMs     | `deploy.yml`         | `vm_name`, `vm_image`                                       |
+| Delete VMs     | `delete.yml`         | `vm_name`                                                   |
 | Manage VM      | `vm.yml`             | `vm_name`, `desired_state` (`running`, `stopped`, `absent`) |
-| List VMs       | `list.yml`           | `vm_group` (optional)                                       |
+| List VMs       | `list.yml`           | `vm_name` (optional)                                        |
 | Pull Image     | `pull_image.yml`     | `remote_image_name`                                         |
 | Install Engine | `install_engine.yml` | `orka_license_key`, `engine_url`                            |
 | Create Image   | `create_image.yml`   | `remote_image_name`, `vm_image`                             |

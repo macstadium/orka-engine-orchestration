@@ -38,7 +38,7 @@
   ],
   "templates": [
     {
-      "name": "Deploy VMs",
+      "name": "Deploy VM",
       "app": "ansible",
       "playbook": "deploy.yml",
       "repository": "Local Playbooks",
@@ -46,11 +46,11 @@
       "environment": "Default",
       "survey_vars": [
         {
-          "name": "vm_group",
-          "title": "VM Group",
+          "name": "vm_name",
+          "title": "VM Name",
           "required": true,
           "type": "",
-          "description": "Name of the VM group to deploy"
+          "description": "Name of the VM to deploy"
         },
         {
           "name": "vm_image",
@@ -58,18 +58,11 @@
           "type": "string",
           "required": true,
           "description": "An OCI URL for an Orka VM image"
-        },
-        {
-          "name": "desired_vms",
-          "title": "Desired VMs",
-          "required": true,
-          "type": "int",
-          "description": "Number of VMs to deploy"
         }
       ]
     },
     {
-      "name": "Delete VMs",
+      "name": "Delete VM",
       "app": "ansible",
       "playbook": "delete.yml",
       "repository": "Local Playbooks",
@@ -77,18 +70,11 @@
       "environment": "Default",
       "survey_vars": [
         {
-          "name": "vm_group",
-          "title": "VM Group",
+          "name": "vm_name",
+          "title": "VM Name",
           "required": true,
           "type": "",
-          "description": "Name of the VM group to delete from"
-        },
-        {
-          "name": "delete_count",
-          "title": "Delete Count",
-          "required": true,
-          "type": "int",
-          "description": "Number of VMs to delete"
+          "description": "Name of the VM to delete"
         }
       ]
     },
@@ -130,11 +116,11 @@
       "environment": "Default",
       "survey_vars": [
         {
-          "name": "vm_group",
-          "title": "VM Group",
+          "name": "vm_name",
+          "title": "VM Name",
           "required": false,
           "type": "",
-          "description": "Filter by VM group name (leave empty to list all)"
+          "description": "Filter by VM name (leave empty to list all)"
         }
       ]
     },
