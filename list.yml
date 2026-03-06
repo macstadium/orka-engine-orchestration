@@ -4,35 +4,30 @@
   roles:
     - gather_host_facts
 
-- name: List VMs from group
+- name: List VMs
   hosts: localhost
   gather_facts: false
   tasks:
-    - name: Analyze and display VM groups
-      when: vm_group is defined
-      block:
-        - name: Analyze VM groups
-          analyze_vm_groups:
-            hosts_data: "{{ all_hosts_data }}"
-            vm_group: "{{ vm_group }}"
-            desired_vms: "2147483647" # maximum 32-bit integer
-          register: group_analysis
-
-        - name: Display detailed VM list
-          debug:
-            msg: |
-              Count: {{ group_analysis.total_group_vms }}
-              VMs in group '{{ vm_group }}':
-              --------------------------------------------------
-              {% for host_data in group_analysis.hosts_group_data %}
-              {% if host_data.group_vms | length > 0 %}
-              Host: {{ host_data.hostname }}
-              VMs:
-              {% for vm in host_data.group_vms %}
-                - {{ vm.name }} | {{ vm.state }}
-              {% endfor %}
-              {% endif %}
-              {% endfor %}
+    - name: Display VMs matching name prefix
+      debug:
+        msg: |
+          VMs matching '{{ vm_name }}':
+          --------------------------------------------------
+          {% set ns = namespace(count=0) %}
+          {% for host_data in all_hosts_data %}
+          {% set matching = host_data.vms | selectattr('name', 'match', '^' ~ vm_name) | list %}
+          {% if matching | length > 0 %}
+          Host: {{ host_data.hostname }}
+          VMs:
+          {% for vm in matching %}
+            - {{ vm.name }} | {{ vm.state }} | {{ vm.ip }}
+          {% set ns.count = ns.count + 1 %}
+          {% endfor %}
+          {% endif %}
+          {% endfor %}
+          --------------------------------------------------
+          Count: {{ ns.count }}
+      when: vm_name is defined
 
     - name: Display all host data
       debug:
@@ -51,4 +46,4 @@
           {% endif %}
           --------------------------------------------------
           {% endfor %}
-      when: vm_group is not defined
+      when: vm_name is not defined

@@ -15,11 +15,10 @@
     host_vm_data: "{{ configure_image_hosts_all_hosts_data }}"
   when: not configure_image_hosts_new_vm_created
 
-- name: Analyze VM groups
+- name: Analyze VMs
   analyze_vm_groups:
     hosts_data: "{{ host_vm_data }}"
-    vm_group: "{{ configure_image_hosts_vm_group }}"
-    desired_vms: "1"
+    vm_name: "{{ configure_image_hosts_vm_name }}"
   register: group_analysis
 
 - name: Find item where group_vms_count is 1

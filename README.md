@@ -48,8 +48,7 @@ A web-based UI for running playbooks is available via [Ansible Semaphore](https:
 
 ## Variables
 
-- `vm_group`: Name of the VM group to deploy (required)
-- `desired_vms`: Total number of VMs desired in the group (required)
+- `vm_name`: Name of the VM to deploy or manage (required)
 - `max_vms_per_host`: Maximum number of VMs allowed per host (default: defined in your inventory or group vars)
 - `vm_image`: The image used to deploy VMs from
 - `ansible_user`: The user used to connect to the Mac hosts
@@ -77,56 +76,56 @@ where:
 To plan a deployment without actually creating VMs:
 
 ```bash
-ansible-playbook deploy.yml -i dev/inventory -e "vm_group=test" -e "desired_vms=1" --tags plan
+ansible-playbook deploy.yml -i dev/inventory -e "vm_name=my-vm" --tags plan
 ```
 
 This will:
 - Check capacity on all hosts
-- Analyze VM groups
+- Check if a VM with the given name already exists
 - Create a deployment plan
 - Display the plan without executing it
 
 ### Executing Deployment
 
-To actually deploy the VMs:
+To actually deploy the VM:
 
 ```bash
-ansible-playbook deploy.yml -i dev/inventory -e "vm_group=test" -e "desired_vms=1"
+ansible-playbook deploy.yml -i dev/inventory -e "vm_name=my-vm" -e "vm_image=<image>"
 ```
 
 ### How It Works
 
 1. **Capacity Check**: The system first checks the current capacity and running VMs on each host.
-2. **Planning**: Creates a deployment plan based on available capacity and desired VM count. **NOTE** The playbook deploys only the amount of VMs needed to reach the desired count.
-3. **Deployment**: Executes the deployment plan, creating VMs across hosts according to the plan.
+2. **Planning**: Creates a deployment plan. If a VM with the given name already exists, no new VM is deployed.
+3. **Deployment**: Executes the deployment plan, creating the VM on the selected host.
 
 ### Planning Deletion
 
-To plan a deletion without actually deleting VMs:
+To plan a deletion without actually deleting a VM:
 
 ```bash
-ansible-playbook delete.yml -i dev/inventory -e "vm_group=test" -e "delete_count=1" --tags plan
+ansible-playbook delete.yml -i dev/inventory -e "vm_name=my-vm" --tags plan
 ```
 
 This will:
 - Check capacity on all hosts
-- Analyze VM groups
+- Find the VM with the given name
 - Create a deletion plan
 - Display the plan without executing it
 
 ### Executing Deletion
 
-To actually delete the VMs:
+To actually delete the VM:
 
 ```bash
-ansible-playbook delete.yml -i dev/inventory -e "vm_group=test" -e "delete_count=1"
+ansible-playbook delete.yml -i dev/inventory -e "vm_name=my-vm"
 ```
 
 ### How It Works
 
 1. **Capacity Check**: The system first checks the current capacity and running VMs on each host.
-2. **Planning**: Creates a deletion plan based on available capacity and desired deletion count. **NOTE** The playbook fails if you want to delete more VMs than available.
-3. **Deployment**: Executes the deletion plan, deleting VMs across hosts according to the plan.
+2. **Planning**: Finds the VM by name and creates a deletion plan. The playbook fails if no VM with the given name is found.
+3. **Deletion**: Executes the deletion plan, removing the VM from its host.
 
 ### Deleting a single VM
 
@@ -179,15 +178,15 @@ ansible-playbook vm.yml -i dev/inventory -e "vm_name=<vm_name>" -e "desired_stat
 
 where `host` is the host you want to start a VM from.
 
-### Listing VMs from a group
+### Listing VMs by name
 
-To list the VMs from a group:
+To find a specific VM by name:
 
 ```bash
-ansible-playbook list.yml -i dev/inventory -e "vm_group=test"
+ansible-playbook list.yml -i dev/inventory -e "vm_name=my-vm"
 ```
 
-You can also list all VMs accross all hosts:
+You can also list all VMs across all hosts:
 
 ```bash
 ansible-playbook list.yml -i dev/inventory
