@@ -26,10 +26,12 @@ options:
         description: Number of CPU cores to allocate
         required: false
         type: int
+        default: 2
     memory:
-        description: Amount of memory to allocate (e.g., "4096M")
+        description: Amount of memory (in MB) to allocate
         required: false
-        type: str
+        type: int
+        default: 4096
     network_interface:
         description: Network interface to use for the VM
         required: false
@@ -86,8 +88,8 @@ def run_module():
         name=dict(type='str', required=True),
         image=dict(type='str', required=True),
         detached=dict(type='bool', required=False, default=True),
-        cpu=dict(type='int', required=False),
-        memory=dict(type='str', required=False),
+        cpu=dict(type='int', required=False, default=2),
+        memory=dict(type='int', required=False, default=8),
         binary_path=dict(type='str', required=False, default='orka-engine'),
         network_interface=dict(type='str', required=False)
     ),
@@ -121,29 +123,29 @@ def run_module():
         exit_with_result(True, f"Would create VM '{name}' (check mode)")
 
     cmd = [binary_path, 'vm', 'run', name, '--image', image]
-    
+
     if detached:
         cmd.append('-d')
-    if cpu:
+    if cpu is not None:
         cmd.extend(['--cpu', str(cpu)])
-    if memory:
-        cmd.extend(['--memory', memory])
+    if memory is not None:
+        cmd.extend(['--memory', str(memory)])
     if network_interface:
         cmd.extend(['--net-interface', network_interface])
 
     result['command'] = ' '.join(cmd)
-    
+
     try:
         proc = subprocess.run(cmd, check=True, capture_output=True, text=True)
         result['changed'] = True
         result['name'] = name
-        
+
         try:
             result['process_id'] = int(proc.stdout.strip())
         except ValueError:
             result['process_id'] = None
             result['raw_output'] = proc.stdout.strip()
-            
+
         module.exit_json(**result)
     except subprocess.CalledProcessError as e:
         module.fail_json(

@@ -20,7 +20,7 @@
           Host: {{ host_data.hostname }}
           VMs:
           {% for vm in matching %}
-            - {{ vm.name }} | {{ vm.state }} | {{ vm.ip }}
+            - {{ vm.name }} | {{ vm.state }} | {{ vm.ip }} | CPU: {{ vm.cpu }} | Mem: {{ vm.memory }}MB
           {% set ns.count = ns.count + 1 %}
           {% endfor %}
           {% endif %}
@@ -39,7 +39,7 @@
           Host: {{ host_data.hostname }}
           VMs:
           {% for vm in host_data.vms %}
-            - {{ vm.name }} | {{ vm.state }} | {{ vm.ip }}
+            - {{ vm.name }} | {{ vm.state }} | {{ vm.ip }} | CPU: {{ vm.cpu }} | Mem: {{ vm.memory }}MB
           {% endfor %}
           {% else %}
           Host: {{ host_data.hostname }} - No VMs
