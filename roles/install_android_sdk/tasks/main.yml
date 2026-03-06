@@ -1,0 +1,105 @@
+- name: Check if Java is installed
+  stat:
+    path: "{{ install_android_sdk_java_home }}/bin/java"
+  register: java_check
+  changed_when: false
+
+- name: Install Java JDK
+  when: not java_check.stat.exists or install_android_sdk_force | bool
+  block:
+    - name: Download JDK pkg
+      get_url:
+        url: "{{ install_android_sdk_java_dist_url }}"
+        dest: "/tmp/jdk.pkg"
+        force: true
+        mode: "0644"
+
+    - name: Install JDK pkg
+      become: true
+      ansible.builtin.command:
+        cmd: installer -pkg /tmp/jdk.pkg -target /
+
+    - name: Clean up JDK pkg
+      file:
+        path: "/tmp/jdk.pkg"
+        state: absent
+        
+- name: Check if Android SDK is installed
+  stat:
+    path: "{{ install_android_sdk_home }}/cmdline-tools/latest/bin/sdkmanager"
+  register: android_sdk_check
+  changed_when: false
+
+- name: Install Android SDK
+  when: not android_sdk_check.stat.exists or install_android_sdk_force | bool
+  block:
+    - name: Create Android SDK directory
+      become: true
+      file:
+        path: "{{ install_android_sdk_home }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        mode: "0755"
+
+    - name: Create Android SDK cmdline-tools directory
+      become: true
+      file:
+        path: "{{ install_android_sdk_home }}/cmdline-tools/latest"
+        state: directory
+        owner: "{{ ansible_user }}"
+        mode: "0755"
+
+    - name: Download Android command-line tools
+      get_url:
+        url: "{{ install_android_sdk_cmdline_tools_url }}"
+        dest: "{{ install_android_sdk_cmdline_tools_zip }}"
+        force: true
+        mode: "0644"
+
+    - name: Create cmdline-tools directory
+      file:
+        path: "{{ install_android_sdk_home }}/cmdline-tools/latest"
+        state: directory
+        mode: "0755"
+
+    - name: Extract command-line tools
+      ansible.builtin.unarchive:
+        src: "{{ install_android_sdk_cmdline_tools_zip }}"
+        dest: "{{ install_android_sdk_cmdline_tools_tmp_dir }}"
+        remote_src: true
+
+    - name: Move cmdline-tools contents to latest directory
+      ansible.builtin.shell: cp -a {{ install_android_sdk_cmdline_tools_tmp_dir }}/cmdline-tools/* {{ install_android_sdk_home }}/cmdline-tools/latest/
+
+    - name: Clean up extracted cmdline-tools tmp directory
+      file:
+        path: "{{ install_android_sdk_cmdline_tools_tmp_dir }}/cmdline-tools"
+        state: absent
+
+    - name: Clean up downloaded zip
+      file:
+        path: "{{ install_android_sdk_cmdline_tools_zip }}"
+        state: absent
+
+    - name: Accept Android SDK licenses
+      ansible.builtin.shell: yes | {{ install_android_sdk_home }}/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root={{ install_android_sdk_home }}
+      register: license_result
+      changed_when: "'All SDK package licenses accepted' in license_result.stdout"
+
+    - name: Install SDK packages
+      ansible.builtin.shell: >
+        {{ install_android_sdk_home }}/cmdline-tools/latest/bin/sdkmanager
+        --sdk_root={{ install_android_sdk_home }}
+        "{{ item }}"
+      loop: "{{ install_android_sdk_packages }}"
+
+- name: Set ANDROID_HOME in shell profile
+  ansible.builtin.blockinfile:
+    path: "{{ ansible_env.HOME }}/.zshrc"
+    marker: "# {mark} ANDROID SDK"
+    block: |
+      export JAVA_HOME={{ install_android_sdk_java_home }}
+      export ANDROID_HOME={{ install_android_sdk_home }}
+      export PATH=$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+    create: true
+    mode: "0644"
