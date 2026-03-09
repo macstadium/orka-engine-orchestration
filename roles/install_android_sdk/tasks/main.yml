@@ -102,4 +102,5 @@
       export ANDROID_HOME={{ install_android_sdk_home }}
       export PATH=$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
     create: true
+    owner: "{{ ansible_user }}"
     mode: "0644"
