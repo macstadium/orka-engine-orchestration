@@ -20,7 +20,7 @@
       debug:
         msg: >
           VM '{{ group_result.vm_name }}':
-          {{ group_result.total_group_vms }} already deployed,
+          {{ group_result.total_vms }} already deployed,
           {{ group_result.vms_to_deploy }} more needed
 
     - name: Create deployment plan
