@@ -41,6 +41,7 @@
       ansible.builtin.slurp:
         src: "{{ ssh_key_file }}"
       register: ssh_key_raw
+      no_log: true
 
     - name: Log in to Semaphore
       ansible.builtin.uri:
