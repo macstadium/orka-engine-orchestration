@@ -4,7 +4,7 @@
   roles:
     - gather_host_facts
 
-- name: List VMs from group
+- name: List VMs
   hosts: localhost
   gather_facts: false
   tasks:
@@ -28,6 +28,7 @@
           --------------------------------------------------
           Count: {{ ns.count }}
       when: vm_name is defined
+
     - name: Display all host data
       debug:
         msg: |
@@ -45,4 +46,4 @@
           {% endif %}
           --------------------------------------------------
           {% endfor %}
-      when: vm_group is not defined
+      when: vm_name is not defined

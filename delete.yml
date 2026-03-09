@@ -10,20 +10,17 @@
   gather_facts: false
   tags: plan
   tasks:
-    - name: Select VMs for deletion
+    - name: Select VM for deletion
       plan_deletion:
         hosts_data: "{{ all_hosts_data }}"
-        vm_group: "{{ vm_group }}"
-        vms_to_delete: "{{ delete_count }}"
+        vm_name: "{{ vm_name }}"
       register: deletion_result
-    
+
     - name: Display deletion plan summary
       debug:
         msg: >
-          Deletion plan created for {{ deletion_result.vms_selected }} VMs from 
-          group '{{ deletion_result.group_name }}'. 
-          Total VMs in group: {{ deletion_result.total_group_vms }}.
-    
+          Deletion plan created for VM '{{ deletion_result.vm_name }}'.
+
     - name: Display detailed deletion plan
       debug:
         var: deletion_result.deletion_plan
@@ -39,7 +36,7 @@
     - name: Skip hosts without VMs to delete
       meta: end_host
       when: inventory_hostname not in hostvars['localhost'].deletion_plan
-    
+
     - name: Set VMs to delete for this host
       set_fact:
         vms_to_delete: "{{ hostvars['localhost'].deletion_plan[inventory_hostname] }}"
@@ -60,7 +57,7 @@
       fail:
         msg: "Failed to delete one or more VMs. Please check the logs."
       when: delete_results.failed is defined and delete_results.failed
-    
+
     - name: Get list of running VMs after deletion
       orka_vm_list:
         binary_path: "{{ engine_binary }}"
@@ -70,4 +67,3 @@
       set_fact:
         host_vms: "{{ vm_list_result.vms | list }}"
         cacheable: true
-

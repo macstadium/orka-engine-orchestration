@@ -9,39 +9,37 @@
   hosts: localhost
   gather_facts: false
   tags: plan
-  tasks: 
-    - name: Analyze VM groups
+  tasks:
+    - name: Analyze VMs
       analyze_vm_groups:
         hosts_data: "{{ all_hosts_data }}"
-        vm_group: "{{ vm_group }}"
-        desired_vms: "{{ desired_vms }}"
+        vm_name: "{{ vm_name }}"
       register: group_result
 
-    - name: Display group VM information
+    - name: Display VM information
       debug:
         msg: >
-          Group '{{ group_result.vm_group }}': 
-          {{ group_result.total_group_vms }} VMs already deployed,
+          VM '{{ group_result.vm_name }}':
+          {{ group_result.total_vms }} already deployed,
           {{ group_result.vms_to_deploy }} more needed
-          (total desired: {{ group_result.desired_vms }})
-  
+
     - name: Create deployment plan
       plan_deployment:
         hosts_capacity: "{{ all_hosts_data }}"
         total_vms_to_deploy: "{{ group_result.vms_to_deploy }}"
       register: deployment_result
-    
+
     - name: Display deployment plan summary
       debug:
         msg: >
-          Deployment plan created for {{ deployment_result.total_vms }} VMs across 
+          Deployment plan created for {{ deployment_result.total_vms }} VMs across
           {{ deployment_result.hosts_count }} hosts.
           Total capacity: {{ deployment_result.total_capacity }} VMs.
-    
+
     - name: Display detailed deployment plan
       debug:
         var: deployment_result.deployment_plan
-    
+
     - name: Share deployment plan with other hosts
       set_fact:
         deployment_plan: "{{ deployment_result.deployment_plan }}"
@@ -60,7 +58,7 @@
 
     - name: Deploy VMs on this host
       orka_vm_run:
-        name: "{{ vm_group}}-{{ lookup('community.general.random_string', length=6, special=False) }}"
+        name: "{{ vm_name }}"
         binary_path: "{{ engine_binary }}"
         image: "{{ vm_image }}"
         cpu: "{{ cpu | default(2) }}"
