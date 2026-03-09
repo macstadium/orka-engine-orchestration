@@ -6,6 +6,7 @@
 
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/) (included with Docker Desktop)
+- [uv](https://docs.astral.sh/uv/)
 
 ## Quick Start
 
@@ -31,7 +32,13 @@
 
 5. Open http://localhost:3000 (or your configured `SEMAPHORE_PORT`) and log in with the admin credentials from your `.env` file.
 
-6. Navigate to **Key Store** and edit the **Mac Hosts SSH** key — replace the placeholder credentials with the real SSH username and password for your Mac hosts.
+6. Execute the following to properly configure the SSH key you've generated:
+
+```bash
+SEMAPHORE_ADMIN=$YOUR_ADMIN \
+SEMAPHORE_ADMIN_PASSWORD=$YOUR_ADMIN_PASSWORD \
+uv run ./semaphore/configure_semaphore.py --ssh-key-file $YOUR_KEY
+```
 
 All task templates, the repository, and the inventory are pre-configured automatically on first launch via `semaphore/project-seed.json`.
 
