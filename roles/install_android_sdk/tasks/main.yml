@@ -100,7 +100,7 @@
     block: |
       export JAVA_HOME={{ install_android_sdk_java_home }}
       export ANDROID_HOME={{ install_android_sdk_home }}
-      export PATH=$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+      export PATH=$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH
     create: true
     owner: "{{ ansible_user }}"
     mode: "0644"
