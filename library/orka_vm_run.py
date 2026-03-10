@@ -89,7 +89,7 @@ def run_module():
         image=dict(type='str', required=True),
         detached=dict(type='bool', required=False, default=True),
         cpu=dict(type='int', required=False, default=2),
-        memory=dict(type='int', required=False, default=8),
+        memory=dict(type='int', required=False, default=4096),
         binary_path=dict(type='str', required=False, default='orka-engine'),
         network_interface=dict(type='str', required=False)
     ),
