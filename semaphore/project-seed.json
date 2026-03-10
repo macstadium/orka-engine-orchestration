@@ -58,6 +58,29 @@
           "type": "string",
           "required": true,
           "description": "An OCI URL for an Orka VM image"
+        },
+        {
+          "name": "cpu",
+          "title": "CPU Cores",
+          "type": "integer",
+          "required": false,
+          "default_value": "2",
+          "description": "Number of CPU cores to allocate"
+        },
+        {
+          "name": "memory",
+          "title": "Memory (MB)",
+          "type": "integer",
+          "required": false,
+          "default_value": "4096",
+          "description": "Amount of memory in MB to allocate"
+        },
+        {
+          "name": "network_interface",
+          "title": "Network Interface",
+          "type": "string",
+          "required": false,
+          "description": "Network interface to use for the VM"
         }
       ]
     },

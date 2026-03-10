@@ -61,6 +61,8 @@
         name: "{{ vm_name }}"
         binary_path: "{{ engine_binary }}"
         image: "{{ vm_image }}"
+        cpu: "{{ cpu | default(2) }}"
+        memory: "{{ memory | default(4096) }}"
         network_interface: "{{ network_interface | default(omit) }}"
       loop: "{{ range(1, vms_to_deploy | int + 1) | list }}"
       register: deploy_results
