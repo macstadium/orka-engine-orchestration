@@ -2,7 +2,6 @@
 name: Lint
 
 on:
-  push:
   pull_request:
 jobs:
   ruff:
@@ -19,7 +18,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install required Ansible collections
-        run: ansible-galaxy collection install community.general
       - name: Run ansible-lint
         uses: ansible/ansible-lint@v25
