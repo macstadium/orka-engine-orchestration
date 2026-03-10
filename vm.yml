@@ -1,33 +1,40 @@
 ---
-- name: Manage a single VM by name
+- name: Manage VMs by name or prefix
   hosts: hosts
   gather_facts: false
   tasks:
-    - name: Check if VM exists on this host
+    - name: Get list of VMs on this host
       orka_vm_list:
         binary_path: "{{ engine_binary }}"
       register: vm_list_result
 
-    - name: Set VM existence fact
+    - name: Find matching VMs
       ansible.builtin.set_fact:
-        vm_exists: "{{ vm_name in (vm_list_result.vms | map(attribute='name') | list) }}"
+        matching_vms: "{{ vm_list_result.vms | selectattr('name', 'match', '^' ~ vm_name) | list }}"
 
-    - name: Manage VM if it exists
-      when: vm_exists
+    - name: Manage matching VMs
+      when: matching_vms | length > 0
       block:
-        - name: Manage the specified VM if it exists
+        - name: Display matching VMs
+          ansible.builtin.debug:
+            msg: "Found {{ matching_vms | length }} VM(s) matching '{{ vm_name }}': {{ matching_vms | map(attribute='name') | join(', ') }}"
+
+        - name: Manage each matching VM
           orka_vm:
-            name: "{{ vm_name }}"
+            name: "{{ item.name }}"
             state: "{{ desired_state }}"
             binary_path: "{{ engine_binary }}"
             network_interface: "{{ network_interface | default(omit) }}"
+          loop: "{{ matching_vms }}"
+          loop_control:
+            label: "{{ item.name }}"
 
         - name: Get updated list of running VMs
           orka_vm_list:
             binary_path: "{{ engine_binary }}"
           register: updated_vm_list
 
-        - name: Update capacity facts after deletion
+        - name: Update capacity facts
           ansible.builtin.set_fact:
             gather_host_facts_host_vms: "{{ updated_vm_list.vms | list }}"
             cacheable: true

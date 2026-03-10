@@ -4,12 +4,12 @@
 DOCUMENTATION = r"""
 ---
 module: plan_deletion
-short_description: Select a VM by name for deletion
+short_description: Select VMs by name or prefix for deletion
 version_added: "1.0"
 description:
-    - This module selects a VM with the specified name for deletion.
-    - The output is a deletion plan that specifies which host the VM should be deleted from.
-    - The module fails if no VM with the given name is found.
+    - This module selects VMs matching the specified name or prefix for deletion.
+    - The output is a deletion plan that specifies which hosts the VMs should be deleted from.
+    - The module fails if no matching VMs are found.
 
 options:
     hosts_data:
@@ -22,7 +22,8 @@ options:
         elements: dict
     vm_name:
         description:
-            - The exact name of the VM to delete.
+            - The name or prefix of VMs to delete.
+            - Matches VMs whose name starts with this value.
         required: true
         type: str
 author:
@@ -30,16 +31,17 @@ author:
 """
 
 EXAMPLES = r"""
-- name: Select VM to delete
+- name: Select VMs to delete by prefix
   plan_deletion:
     hosts_data:
       - hostname: "host1.example.com"
         vms:
-          - name: "my-vm"
+          - name: "my-vm-1"
+          - name: "my-vm-2"
           - name: "other-vm"
       - hostname: "host2.example.com"
         vms:
-          - name: "another-vm"
+          - name: "my-vm-3"
     vm_name: "my-vm"
   register: deletion_plan
 """
@@ -49,35 +51,39 @@ deletion_plan:
     description: Dictionary mapping host names to a list of VM names to delete
     type: dict
     returned: success
-    sample: {"host1.example.com": ["my-vm"]}
+    sample: {"host1.example.com": ["my-vm-1", "my-vm-2"], "host2.example.com": ["my-vm-3"]}
 vms_selected:
-    description: Total number of VMs selected for deletion (0 or 1)
+    description: Total number of VMs selected for deletion
     type: int
     returned: success
-    sample: 1
+    sample: 3
 total_vms:
-    description: Total number of VMs found with the specified name
+    description: Total number of matching VMs found
     type: int
     returned: success
-    sample: 1
+    sample: 3
 vm_name:
-    description: The name of the VM that was targeted
+    description: The name or prefix that was searched for
     type: str
     returned: success
     sample: "my-vm"
 hosts_with_vms:
-    description: List of hosts that have a VM with the specified name
+    description: List of hosts that have matching VMs
     type: list
     returned: success
-    sample: ["host1.example.com"]
+    sample: ["host1.example.com", "host2.example.com"]
 """
 
 from ansible.module_utils.basic import AnsibleModule
 
 
-def filter_vm_by_name(vms, vm_name):
-    """Filter VMs that match the specified name exactly."""
-    return [vm for vm in vms if isinstance(vm, dict) and vm.get("name") == vm_name]
+def filter_vms_by_prefix(vms, vm_name):
+    """Filter VMs whose name starts with the specified prefix."""
+    return [
+        vm
+        for vm in vms
+        if isinstance(vm, dict) and vm.get("name", "").startswith(vm_name)
+    ]
 
 
 def main():
@@ -98,37 +104,28 @@ def main():
         if not isinstance(host_info.get("vms", []), list):
             module.fail_json(msg="The 'vms' key for each host must be a list")
 
-    all_matching_vms = []
+    deletion_plan = {}
     hosts_with_vms = []
 
     for host_info in hosts_data:
         hostname = host_info.get("hostname")
         vms = host_info.get("vms", [])
 
-        matching_vms = filter_vm_by_name(vms, vm_name)
+        matching_vms = filter_vms_by_prefix(vms, vm_name)
 
         if matching_vms:
             hosts_with_vms.append(hostname)
-            for vm in matching_vms:
-                all_matching_vms.append((hostname, vm))
+            deletion_plan[hostname] = [vm.get("name") for vm in matching_vms]
 
-    total_vms = len(all_matching_vms)
+    total_vms = sum(len(names) for names in deletion_plan.values())
 
     if total_vms == 0:
-        module.fail_json(msg=f"Error: No VM named '{vm_name}' was found.")
-
-    selected_vms = all_matching_vms[:1]
-
-    deletion_plan = {}
-    for hostname, vm in selected_vms:
-        if hostname not in deletion_plan:
-            deletion_plan[hostname] = []
-        deletion_plan[hostname].append(vm.get("name"))
+        module.fail_json(msg=f"Error: No VMs matching '{vm_name}' were found.")
 
     result = {
         "changed": False,
         "deletion_plan": deletion_plan,
-        "vms_selected": len(selected_vms),
+        "vms_selected": total_vms,
         "total_vms": total_vms,
         "vm_name": vm_name,
         "hosts_with_vms": hosts_with_vms,
