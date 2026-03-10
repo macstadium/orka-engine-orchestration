@@ -1,2 +1,3 @@
+---
 gather_host_facts_engine_binary: "{{ engine_binary }}"
 gather_host_facts_max_vms_per_host: "{{ max_vms_per_host }}"

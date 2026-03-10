@@ -1,3 +1,4 @@
+---
 - name: Pull image from registry
   hosts: hosts
   gather_facts: false

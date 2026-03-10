@@ -1,3 +1,4 @@
+---
 - name: Gather VM data from all hosts
   hosts: hosts
   gather_facts: false
@@ -12,21 +13,21 @@
   tasks:
     - name: Select VM for deletion
       plan_deletion:
-        hosts_data: "{{ all_hosts_data }}"
+        hosts_data: "{{ gather_host_facts_all_hosts_data }}"
         vm_name: "{{ vm_name }}"
       register: deletion_result
 
     - name: Display deletion plan summary
-      debug:
+      ansible.builtin.debug:
         msg: >
           Deletion plan created for VM '{{ deletion_result.vm_name }}'.
 
     - name: Display detailed deletion plan
-      debug:
+      ansible.builtin.debug:
         var: deletion_result.deletion_plan
 
     - name: Share deletion plan with other hosts
-      set_fact:
+      ansible.builtin.set_fact:
         deletion_plan: "{{ deletion_result.deletion_plan }}"
 
 - name: Delete VMs according to plan
@@ -34,15 +35,15 @@
   gather_facts: false
   tasks:
     - name: Skip hosts without VMs to delete
-      meta: end_host
+      ansible.builtin.meta: end_host
       when: inventory_hostname not in hostvars['localhost'].deletion_plan
 
     - name: Set VMs to delete for this host
-      set_fact:
+      ansible.builtin.set_fact:
         vms_to_delete: "{{ hostvars['localhost'].deletion_plan[inventory_hostname] }}"
 
     - name: Display VMs to be deleted
-      debug:
+      ansible.builtin.debug:
         msg: "Deleting {{ vms_to_delete | length }} VMs from host {{ inventory_hostname }}: {{ vms_to_delete | join(', ') }}"
 
     - name: Delete VMs on this host
@@ -54,7 +55,7 @@
       register: delete_results
 
     - name: Check for deletion failures
-      fail:
+      ansible.builtin.fail:
         msg: "Failed to delete one or more VMs. Please check the logs."
       when: delete_results.failed is defined and delete_results.failed
 
@@ -64,6 +65,6 @@
       register: vm_list_result
 
     - name: Update capacity facts after deletion
-      set_fact:
-        host_vms: "{{ vm_list_result.vms | list }}"
+      ansible.builtin.set_fact:
+        gather_host_facts_host_vms: "{{ vm_list_result.vms | list }}"
         cacheable: true

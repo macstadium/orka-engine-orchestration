@@ -1,4 +1,5 @@
-configure_image_hosts_all_hosts_data: "{{ all_hosts_data }}"
+---
+configure_image_hosts_all_hosts_data: "{{ gather_host_facts_all_hosts_data }}"
 configure_image_hosts_updated_hosts_data: "{{ deployment_plan }}"
 configure_image_hosts_new_vm_created: "{{ configure_image_hosts_new_vms != {} }}"
 configure_image_hosts_vm_name: "{{ vm_name }}"

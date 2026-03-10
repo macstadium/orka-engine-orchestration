@@ -1,3 +1,4 @@
+---
 - name: Gather VM data from all hosts
   hosts: hosts
   gather_facts: false
@@ -9,41 +10,34 @@
   gather_facts: false
   tasks:
     - name: Display VMs matching name prefix
-      debug:
-        msg: |
-          VMs matching '{{ vm_name }}':
-          --------------------------------------------------
-          {% set ns = namespace(count=0) %}
-          {% for host_data in all_hosts_data %}
-          {% set matching = host_data.vms | selectattr('name', 'match', '^' ~ vm_name) | list %}
-          {% if matching | length > 0 %}
-          Host: {{ host_data.hostname }}
-          VMs:
-          {% for vm in matching %}
-            - {{ vm.name }} | {{ vm.state }} | {{ vm.ip }} | CPU: {{ vm.cpu }} | Mem: {{ vm.memory }}
-          {% set ns.count = ns.count + 1 %}
-          {% endfor %}
-          {% endif %}
-          {% endfor %}
-          --------------------------------------------------
-          Count: {{ ns.count }}
-      when: vm_name is defined
+      ansible.builtin.debug:
+        msg: >-
+          {{ vm_name }} |
+          {{ item.1.name }} |
+          {{ item.1.state }} |
+          {{ item.1.ip }} |
+          CPU: {{ item.1.cpu }} |
+          Mem: {{ item.1.memory }} |
+          Host: {{ item.0.hostname }}
+      loop: >-
+        {{ gather_host_facts_all_hosts_data | subelements('vms') }}
+      loop_control:
+        label: "{{ item.1.name }}"
+      when:
+        - vm_name is defined
+        - item.1.name is match('^' ~ vm_name)
 
-    - name: Display all host data
-      debug:
-        msg: |
-          All VMs across hosts:
-          --------------------------------------------------
-          {% for host_data in all_hosts_data %}
-          {% if host_data.vms | length > 0 %}
-          Host: {{ host_data.hostname }}
-          VMs:
-          {% for vm in host_data.vms %}
-            - {{ vm.name }} | {{ vm.state }} | {{ vm.ip }} | CPU: {{ vm.cpu }} | Mem: {{ vm.memory }}
-          {% endfor %}
-          {% else %}
-          Host: {{ host_data.hostname }} - No VMs
-          {% endif %}
-          --------------------------------------------------
-          {% endfor %}
+    - name: Display all VMs
+      ansible.builtin.debug:
+        msg: >-
+          {{ item.1.name }} |
+          {{ item.1.state }} |
+          {{ item.1.ip }} |
+          CPU: {{ item.1.cpu }} |
+          Mem: {{ item.1.memory }} |
+          Host: {{ item.0.hostname }}
+      loop: >-
+        {{ gather_host_facts_all_hosts_data | subelements('vms') }}
+      loop_control:
+        label: "{{ item.1.name }}"
       when: vm_name is not defined

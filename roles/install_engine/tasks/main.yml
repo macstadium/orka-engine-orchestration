@@ -1,24 +1,27 @@
+---
 - name: Check if orka-engine is installed
-  stat:
+  ansible.builtin.stat:
     path: /usr/local/bin/orka-engine
-  register: orka_engine_check
+  register: install_engine_check
   changed_when: false
 
 - name: Install and activate Orka Engine
+  when: not install_engine_check.stat.exists or install_engine_force | bool
   block:
     - name: Download PKG file
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ install_engine_pkg_url }}"
         dest: "{{ install_engine_pkg_path }}"
         force: true
-        mode: '0644'
+        mode: "0644"
 
     - name: Install PKG file
       become: true
-      command: installer -pkg "{{ install_engine_pkg_path }}" -target /
+      ansible.builtin.command: installer -pkg "{{ install_engine_pkg_path }}" -target /
+      changed_when: true
 
     - name: Clean up downloaded PKG file
-      file:
+      ansible.builtin.file:
         path: "{{ install_engine_pkg_path }}"
         state: absent
 
@@ -31,9 +34,10 @@
 
     - name: Deploy launch daemon
       become: true
-      template:
+      ansible.builtin.template:
         src: "com.macstadium.orka-engine.server.managed.plist.j2"
         dest: "{{ install_engine_service_path }}"
+        mode: "0644"
 
     - name: Run Orka Engine Server
       community.general.launchd:
@@ -41,4 +45,3 @@
         state: restarted
         enabled: true
       become: true
-  when: not orka_engine_check.stat.exists or install_engine_force | bool

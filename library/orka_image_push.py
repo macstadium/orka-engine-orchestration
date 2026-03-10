@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: orka_image_push
 short_description: Push container images using orka-engine
@@ -49,9 +49,9 @@ notes:
     - This module requires the orka-engine tool to be installed on the target host.
 author:
     - Ivan Spasov (@ispasov)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Push local image to remote registry
   orka_image_push:
     local_name: orkaSequoia
@@ -69,9 +69,9 @@ EXAMPLES = r'''
     local_name: legacy-app
     remote_name: insecure-registry:5000/test-image:latest
     insecure: true
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 command:
     description: The command that was executed
     type: str
@@ -97,65 +97,63 @@ changed:
     type: bool
     returned: always
     sample: true
-'''
+"""
 
 from ansible.module_utils.basic import AnsibleModule
+
 
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-        local_name=dict(type='str', required=True),
-        remote_name=dict(type='str', required=True),
-        username=dict(type='str', required=False, no_log=True),
-        password=dict(type='str', required=False, no_log=True),
-        insecure=dict(type='bool', required=False, default=False),
-        binary_path=dict(type='str', required=False, default='/usr/local/bin/orka-engine')
-    ),
-        supports_check_mode=False
+            local_name=dict(type="str", required=True),
+            remote_name=dict(type="str", required=True),
+            username=dict(type="str", required=False, no_log=True),
+            password=dict(type="str", required=False, no_log=True),
+            insecure=dict(type="bool", required=False, default=False),
+            binary_path=dict(
+                type="str", required=False, default="/usr/local/bin/orka-engine"
+            ),
+        ),
+        supports_check_mode=False,
     )
 
-    local_name = module.params['local_name']
-    remote_name = module.params['remote_name']
-    username = module.params['username']
-    password = module.params['password']
-    insecure = module.params['insecure']
-    binary_path = module.params['binary_path']
+    local_name = module.params["local_name"]
+    remote_name = module.params["remote_name"]
+    username = module.params["username"]
+    password = module.params["password"]
+    insecure = module.params["insecure"]
+    binary_path = module.params["binary_path"]
 
-    result = dict(
-        changed=False,
-        command='',
-        rc=0,
-        stdout='',
-        stderr=''
-    )
+    result = dict(changed=False, command="", rc=0, stdout="", stderr="")
 
-    cmd = [binary_path, 'image', 'push']
-    
+    cmd = [binary_path, "image", "push"]
+
     if insecure:
-        cmd.append('--insecure')
-    
+        cmd.append("--insecure")
+
     if username:
-        cmd.extend(['--username', username])
-    
+        cmd.extend(["--username", username])
+
     if password:
-        cmd.extend(['--password', password])
-    
+        cmd.extend(["--password", password])
+
     cmd.append(local_name)
     cmd.append(remote_name)
 
-    result['command'] = ' '.join(cmd)
+    result["command"] = " ".join(cmd)
 
     rc, stdout, stderr = module.run_command(cmd)
-    result['rc'] = rc
-    result['stdout'] = stdout
-    result['stderr'] = stderr
+    result["rc"] = rc
+    result["stdout"] = stdout
+    result["stderr"] = stderr
 
     if rc == 0:
-        result['changed'] = True
+        result["changed"] = True
     else:
         module.fail_json(msg=f"Failed to push image: {stderr}", **result)
 
     module.exit_json(**result)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

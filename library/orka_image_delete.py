@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: orka_image_delete
 short_description: Delete container images using orka-engine
@@ -26,9 +26,9 @@ notes:
     - This operation is irreversible and will permanently remove the image.
 author:
     - Ivan Spasov (@ispasov)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Delete a local image
   orka_image_delete:
     image_name: orkaSequoia
@@ -36,9 +36,9 @@ EXAMPLES = r'''
 - name: Delete a specific image tag
   orka_image_delete:
     image_name: ghcr.io/macstadium/example:v1.2.3
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 command:
     description: The command that was executed
     type: str
@@ -64,45 +64,49 @@ changed:
     type: bool
     returned: always
     sample: true
-'''
+"""
 
 from ansible.module_utils.basic import AnsibleModule
+
 
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-        image_name=dict(type='str', required=True),
-        binary_path=dict(type='str', required=False, default='/usr/local/bin/orka-engine')
-    ),
-        supports_check_mode=False
+            image_name=dict(type="str", required=True),
+            binary_path=dict(
+                type="str", required=False, default="/usr/local/bin/orka-engine"
+            ),
+        ),
+        supports_check_mode=False,
     )
 
-    image_name = module.params['image_name']
-    binary_path = module.params['binary_path']
+    image_name = module.params["image_name"]
+    binary_path = module.params["binary_path"]
 
     result = dict(
         changed=False,
-        command='',
+        command="",
         rc=0,
-        stdout='',
-        stderr='',
+        stdout="",
+        stderr="",
     )
 
-    cmd = [binary_path, 'image', 'delete', image_name]
+    cmd = [binary_path, "image", "delete", image_name]
 
-    result['command'] = ' '.join(cmd)
+    result["command"] = " ".join(cmd)
 
     rc, stdout, stderr = module.run_command(cmd)
-    result['rc'] = rc
-    result['stdout'] = stdout
-    result['stderr'] = stderr
+    result["rc"] = rc
+    result["stdout"] = stdout
+    result["stderr"] = stderr
 
     if rc == 0:
-        result['changed'] = True
+        result["changed"] = True
     else:
         module.fail_json(msg=f"Failed to delete image: {stderr}", **result)
 
     module.exit_json(**result)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

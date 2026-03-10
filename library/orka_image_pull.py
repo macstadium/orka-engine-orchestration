@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: orka_image_pull
 short_description: Pull container images using orka-engine
@@ -56,9 +56,9 @@ notes:
     - This module requires the orka-engine tool to be installed on the target host.
 author:
     - Ivan Spasov @(ispasov)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Pull latest version of an image
   orka_image_pull:
     remote_name: 0123456789.dkr.ecr.us-east-1.amazonaws.com/orka-image:latest
@@ -79,9 +79,9 @@ EXAMPLES = r'''
   orka_image_pull:
     remote_name: insecure-registry:5000/test-image:latest
     insecure: true
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 command:
     description: The command that was executed
     type: str
@@ -107,72 +107,76 @@ changed:
     type: bool
     returned: always
     sample: true
-'''
+"""
 
 from ansible.module_utils.basic import AnsibleModule
+
 
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-        remote_name=dict(type='str', required=True),
-        local_name=dict(type='str', required=False),
-        username=dict(type='str', required=False, no_log=True),
-        password=dict(type='str', required=False, no_log=True),
-        insecure=dict(type='bool', required=False, default=False),
-        clean_cache=dict(type='bool', required=False, default=True),
-        binary_path=dict(type='str', required=False, default='/usr/local/bin/orka-engine')
-    ),
-        supports_check_mode=False
+            remote_name=dict(type="str", required=True),
+            local_name=dict(type="str", required=False),
+            username=dict(type="str", required=False, no_log=True),
+            password=dict(type="str", required=False, no_log=True),
+            insecure=dict(type="bool", required=False, default=False),
+            clean_cache=dict(type="bool", required=False, default=True),
+            binary_path=dict(
+                type="str", required=False, default="/usr/local/bin/orka-engine"
+            ),
+        ),
+        supports_check_mode=False,
     )
 
-    remote_name = module.params['remote_name']
-    local_name = module.params['local_name']
-    username = module.params['username']
-    password = module.params['password']
-    insecure = module.params['insecure']
-    clean_cache = module.params['clean_cache']
-    binary_path = module.params['binary_path']
+    remote_name = module.params["remote_name"]
+    local_name = module.params["local_name"]
+    username = module.params["username"]
+    password = module.params["password"]
+    insecure = module.params["insecure"]
+    clean_cache = module.params["clean_cache"]
+    binary_path = module.params["binary_path"]
 
     result = dict(
         changed=False,
-        command='',
+        command="",
         rc=0,
-        stdout='',
-        stderr='',
+        stdout="",
+        stderr="",
     )
 
-    cmd = [binary_path, 'image', 'pull']
-    
+    cmd = [binary_path, "image", "pull"]
+
     if insecure:
-        cmd.append('--insecure')
-    
+        cmd.append("--insecure")
+
     if username:
-        cmd.extend(['--username', username])
-    
+        cmd.extend(["--username", username])
+
     if password:
-        cmd.extend(['--password', password])
-    
+        cmd.extend(["--password", password])
+
     cmd.append(remote_name)
-    
+
     if local_name:
         cmd.append(local_name)
-    
-    if clean_cache:
-        cmd.append('--clean-cache')
 
-    result['command'] = ' '.join(cmd)
+    if clean_cache:
+        cmd.append("--clean-cache")
+
+    result["command"] = " ".join(cmd)
 
     rc, stdout, stderr = module.run_command(cmd)
-    result['rc'] = rc
-    result['stdout'] = stdout
-    result['stderr'] = stderr
+    result["rc"] = rc
+    result["stdout"] = stdout
+    result["stderr"] = stderr
 
     if rc != 0:
         module.fail_json(msg=f"Failed to pull image: {stderr}", **result)
 
-    result['changed'] = True if "Image already up to date" not in stdout else False
+    result["changed"] = True if "Image already up to date" not in stdout else False
 
     module.exit_json(**result)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

@@ -1,3 +1,4 @@
+---
 - name: Manage a single VM by name
   hosts: hosts
   gather_facts: false
@@ -8,10 +9,12 @@
       register: vm_list_result
 
     - name: Set VM existence fact
-      set_fact:
+      ansible.builtin.set_fact:
         vm_exists: "{{ vm_name in (vm_list_result.vms | map(attribute='name') | list) }}"
 
-    - block:
+    - name: Manage VM if it exists
+      when: vm_exists
+      block:
         - name: Manage the specified VM if it exists
           orka_vm:
             name: "{{ vm_name }}"
@@ -25,7 +28,6 @@
           register: updated_vm_list
 
         - name: Update capacity facts after deletion
-          set_fact:
-            host_vms: "{{ updated_vm_list.vms | list }}"
+          ansible.builtin.set_fact:
+            gather_host_facts_host_vms: "{{ updated_vm_list.vms | list }}"
             cacheable: true
-      when: vm_exists

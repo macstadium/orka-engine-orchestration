@@ -1,1 +1,2 @@
+---
 execute_scripts_scripts_directory: "{{ playbook_dir }}/scripts"

@@ -35,12 +35,25 @@ def die(msg: str) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--ssh-key-file", required=True, help="Path to SSH private key file")
-    parser.add_argument("--ssh-key-name", default="SSH Key", help="Name for the key in Semaphore")
-    parser.add_argument("--semaphore-url", default="http://localhost:3000", help="Semaphore base URL")
-    parser.add_argument("--semaphore-admin", default=os.environ.get("SEMAPHORE_ADMIN", "admin"))
-    parser.add_argument("--semaphore-password", default=os.environ.get("SEMAPHORE_ADMIN_PASSWORD", "changeme"))
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        "--ssh-key-file", required=True, help="Path to SSH private key file"
+    )
+    parser.add_argument(
+        "--ssh-key-name", default="SSH Key", help="Name for the key in Semaphore"
+    )
+    parser.add_argument(
+        "--semaphore-url", default="http://localhost:3000", help="Semaphore base URL"
+    )
+    parser.add_argument(
+        "--semaphore-admin", default=os.environ.get("SEMAPHORE_ADMIN", "admin")
+    )
+    parser.add_argument(
+        "--semaphore-password",
+        default=os.environ.get("SEMAPHORE_ADMIN_PASSWORD", "changeme"),
+    )
     parser.add_argument("--project-name", default="Orka Engine Orchestration")
     parser.add_argument("--repository-name", default="Local Playbooks")
     parser.add_argument("--inventory-name", default="Dev Inventory")
@@ -58,7 +71,10 @@ def main() -> None:
     session = requests.Session()
 
     # Login
-    resp = session.post(f"{base}/api/auth/login", json={"auth": args.semaphore_admin, "password": args.semaphore_password})
+    resp = session.post(
+        f"{base}/api/auth/login",
+        json={"auth": args.semaphore_admin, "password": args.semaphore_password},
+    )
     if resp.status_code != 204:
         die(f"Login failed ({resp.status_code}): {resp.text}")
     print("Logged in to Semaphore")
@@ -88,7 +104,9 @@ def main() -> None:
     if existing:
         key_id = existing[0]["id"]
         key_payload["id"] = key_id
-        resp = session.put(f"{base}/api/project/{project_id}/keys/{key_id}", json=key_payload)
+        resp = session.put(
+            f"{base}/api/project/{project_id}/keys/{key_id}", json=key_payload
+        )
         if resp.status_code != 204:
             die(f"Failed to update SSH key ({resp.status_code}): {resp.text}")
         print(f"Updated SSH key '{args.ssh_key_name}' (ID: {key_id})")
@@ -104,7 +122,9 @@ def main() -> None:
     resp.raise_for_status()
     repos = [r for r in resp.json() if r["name"] == args.repository_name]
     if not repos:
-        die(f"Repository '{args.repository_name}' not found in project '{args.project_name}'")
+        die(
+            f"Repository '{args.repository_name}' not found in project '{args.project_name}'"
+        )
     repo = repos[0]
     repo_payload = {
         "id": repo["id"],
@@ -114,7 +134,9 @@ def main() -> None:
         "git_branch": repo.get("git_branch", ""),
         "ssh_key_id": key_id,
     }
-    resp = session.put(f"{base}/api/project/{project_id}/repositories/{repo['id']}", json=repo_payload)
+    resp = session.put(
+        f"{base}/api/project/{project_id}/repositories/{repo['id']}", json=repo_payload
+    )
     if resp.status_code != 204:
         die(f"Failed to update repository ({resp.status_code}): {resp.text}")
     print(f"Updated repository '{args.repository_name}' to use SSH key")
@@ -124,7 +146,9 @@ def main() -> None:
     resp.raise_for_status()
     inventories = [i for i in resp.json() if i["name"] == args.inventory_name]
     if not inventories:
-        die(f"Inventory '{args.inventory_name}' not found in project '{args.project_name}'")
+        die(
+            f"Inventory '{args.inventory_name}' not found in project '{args.project_name}'"
+        )
     inv = inventories[0]
     inv_payload = {
         "id": inv["id"],
@@ -135,10 +159,14 @@ def main() -> None:
         "become_key_id": None,
         "type": inv["type"],
     }
-    resp = session.put(f"{base}/api/project/{project_id}/inventory/{inv['id']}", json=inv_payload)
+    resp = session.put(
+        f"{base}/api/project/{project_id}/inventory/{inv['id']}", json=inv_payload
+    )
     if resp.status_code != 204:
         die(f"Failed to update inventory ({resp.status_code}): {resp.text}")
-    print(f"Updated inventory '{args.inventory_name}' to use SSH key, become key cleared")
+    print(
+        f"Updated inventory '{args.inventory_name}' to use SSH key, become key cleared"
+    )
 
     # Logout
     session.post(f"{base}/api/auth/logout")
@@ -146,7 +174,9 @@ def main() -> None:
     print("\nSummary:")
     print(f"  SSH key '{args.ssh_key_name}' (ID: {key_id}) added/updated")
     print(f"  Repository '{args.repository_name}' updated to use SSH key")
-    print(f"  Inventory '{args.inventory_name}' updated to use SSH key, become key cleared")
+    print(
+        f"  Inventory '{args.inventory_name}' updated to use SSH key, become key cleared"
+    )
 
 
 if __name__ == "__main__":
