@@ -23,7 +23,8 @@ A web-based UI for running playbooks is available via [Ansible Semaphore](https:
 ├── pull_image.yml       # Main playbook for pulling an image on all hosts
 ├── create_image.yml     # Main playbook for creating an image and pushing it to a remote registry
 ├── list.yml             # Main playbook for listing VMs
-├── install-engine.yml   # Main playbook for installing Orka Engine
+├── install-engine.yml       # Main playbook for installing Orka Engine
+├── install_android_sdk.yml  # Main playbook for installing Android SDK
 ├── dev/                 # Development environment
 │   ├── inventory        # Inventory file for development
 │   └── group_vars/      # Test vars for development
@@ -70,6 +71,23 @@ where:
 - `engine_url` - is the URL to download Engine from
 
 **Note** - To force redeployment or upgrade pass `-e "install_engine_force=true"`.
+
+### Installing Android SDK
+
+To install the Android SDK (including Java JDK, command-line tools, and platform-tools) on target hosts:
+
+```bash
+ansible-playbook install_android_sdk.yml -i dev/inventory
+```
+
+This will:
+- Install Eclipse Temurin JDK 21 (if not already present)
+- Download and set up Android command-line tools
+- Accept Android SDK licenses
+- Install base SDK packages
+- Configure `JAVA_HOME`, `ANDROID_HOME`, and `PATH` in the user's `.zshrc`
+
+**Note** - To force reinstallation pass `-e "install_android_sdk_force=true"`.
 
 ### Planning Deployment
 
