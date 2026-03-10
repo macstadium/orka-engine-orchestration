@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: plan_deployment
 short_description: Plan VM deployments across multiple hosts based on capacity
@@ -43,9 +43,9 @@ options:
 
 author:
     - Ivan Spasov (@ispasov)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create a deployment plan for 5 VMs
   plan_deployment:
     hosts_capacity:
@@ -79,9 +79,9 @@ EXAMPLES = r'''
     max_vms_per_host: 4
     strategy: 'balanced'
   register: deployment_plan
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 deployment_plan:
     description: Dictionary mapping host names to the number of VMs to deploy on each
     type: dict
@@ -102,85 +102,92 @@ total_vms:
     type: int
     returned: success
     sample: 5
-'''
+"""
 
 from ansible.module_utils.basic import AnsibleModule
+
 
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            hosts_capacity=dict(type='list', elements='dict', required=True),
-            total_vms_to_deploy=dict(type='int', required=True),
-            max_vms_per_host=dict(type='int', required=False, default=2),
-            strategy=dict(type='str', required=False, default='fill', 
-                          choices=['balanced', 'fill']),
+            hosts_capacity=dict(type="list", elements="dict", required=True),
+            total_vms_to_deploy=dict(type="int", required=True),
+            max_vms_per_host=dict(type="int", required=False, default=2),
+            strategy=dict(
+                type="str", required=False, default="fill", choices=["balanced", "fill"]
+            ),
         ),
         supports_check_mode=True,
     )
-    
-    hosts_capacity = module.params['hosts_capacity']
-    total_vms_to_deploy = module.params['total_vms_to_deploy']
-    max_vms_per_host = module.params['max_vms_per_host']
-    strategy = module.params['strategy']
-    
+
+    hosts_capacity = module.params["hosts_capacity"]
+    total_vms_to_deploy = module.params["total_vms_to_deploy"]
+    max_vms_per_host = module.params["max_vms_per_host"]
+    strategy = module.params["strategy"]
+
     for host_info in hosts_capacity:
-        if 'hostname' not in host_info:
-            module.fail_json(msg="Each host in hosts_capacity must have a 'hostname' key")
-        if 'vms' not in host_info:
+        if "hostname" not in host_info:
+            module.fail_json(
+                msg="Each host in hosts_capacity must have a 'hostname' key"
+            )
+        if "vms" not in host_info:
             module.fail_json(msg="Each host in hosts_capacity must have a 'vms' key")
-    
+
     hosts_with_capacity = []
     for host_info in hosts_capacity:
-        hostname = host_info['hostname']
-        vms = host_info['vms'] if host_info['vms'] is not None else []
-        running_vms = sum(1 for vm in vms if vm.get('state') == 'running')
-        
+        hostname = host_info["hostname"]
+        vms = host_info["vms"] if host_info["vms"] is not None else []
+        running_vms = sum(1 for vm in vms if vm.get("state") == "running")
+
         available_capacity = max_vms_per_host - running_vms
         if available_capacity > 0:
-            hosts_with_capacity.append({
-                'hostname': hostname,
-                'available_capacity': available_capacity,
-                'running_vms': running_vms
-            })
-    
-    if strategy == 'balanced':
-        hosts_with_capacity.sort(key=lambda h: h['available_capacity'], reverse=True)
-    elif strategy == 'fill':
-        hosts_with_capacity.sort(key=lambda h: h['running_vms'], reverse=True)
-    
-    total_available_capacity = sum(h['available_capacity'] for h in hosts_with_capacity)
-    
+            hosts_with_capacity.append(
+                {
+                    "hostname": hostname,
+                    "available_capacity": available_capacity,
+                    "running_vms": running_vms,
+                }
+            )
+
+    if strategy == "balanced":
+        hosts_with_capacity.sort(key=lambda h: h["available_capacity"], reverse=True)
+    elif strategy == "fill":
+        hosts_with_capacity.sort(key=lambda h: h["running_vms"], reverse=True)
+
+    total_available_capacity = sum(h["available_capacity"] for h in hosts_with_capacity)
+
     if total_available_capacity < total_vms_to_deploy:
         module.fail_json(
             msg=f"Not enough capacity to deploy {total_vms_to_deploy} VMs. "
-                f"Only {total_available_capacity} slots available."
+            f"Only {total_available_capacity} slots available."
         )
-    
+
     deployment_plan = {}
     remaining_vms = total_vms_to_deploy
-    
+
     for host in hosts_with_capacity:
-        hostname = host['hostname']
-        capacity = host['available_capacity']
-        
+        hostname = host["hostname"]
+        capacity = host["available_capacity"]
+
         to_deploy = min(capacity, remaining_vms)
-        
+
         if to_deploy > 0:
             deployment_plan[hostname] = to_deploy
             remaining_vms -= to_deploy
-        
+
         if remaining_vms <= 0:
             break
-    
+
     result = {
-        'changed': False,
-        'deployment_plan': deployment_plan,
-        'total_vms': total_vms_to_deploy,
-        'total_capacity': total_available_capacity,
-        'hosts_count': len(deployment_plan)
+        "changed": False,
+        "deployment_plan": deployment_plan,
+        "total_vms": total_vms_to_deploy,
+        "total_capacity": total_available_capacity,
+        "hosts_count": len(deployment_plan),
     }
-    
+
     module.exit_json(**result)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

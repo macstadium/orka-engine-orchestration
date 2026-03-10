@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: orka_vm_run
 short_description: Create and run a VM using Orka Engine
@@ -44,9 +44,9 @@ options:
 author:
     - "Ivan Spasov (@ispasov)"
     - "Bob Elwell (@relwell)"
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create and run a VM
   orka_vm_run:
     name: test_vm
@@ -65,9 +65,9 @@ EXAMPLES = r'''
     name: network_vm
     image: ghcr.io/macstadium/orka-images/sonoma:latest
     network_interface: en0
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 name:
     description: Name of the VM
     type: str
@@ -76,43 +76,44 @@ process_id:
     description: Process ID of the VM if successfully created
     type: int
     returned: on success
-'''
+"""
 
 import subprocess
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.orka_utils import get_vm_info
 
+
 def run_module():
     module = AnsibleModule(
         argument_spec=dict(
-        name=dict(type='str', required=True),
-        image=dict(type='str', required=True),
-        detached=dict(type='bool', required=False, default=True),
-        cpu=dict(type='int', required=False, default=2),
-        memory=dict(type='int', required=False, default=4096),
-        binary_path=dict(type='str', required=False, default='orka-engine'),
-        network_interface=dict(type='str', required=False)
-    ),
-        supports_check_mode=True
+            name=dict(type="str", required=True),
+            image=dict(type="str", required=True),
+            detached=dict(type="bool", required=False, default=True),
+            cpu=dict(type="int", required=False, default=2),
+            memory=dict(type="int", required=False, default=4096),
+            binary_path=dict(type="str", required=False, default="orka-engine"),
+            network_interface=dict(type="str", required=False),
+        ),
+        supports_check_mode=True,
     )
 
-    name = module.params['name']
-    binary_path = module.params['binary_path']
-    detached = module.params['detached']
-    cpu = module.params['cpu']
-    memory = module.params['memory']
-    network_interface = module.params['network_interface']
-    image = module.params['image']
+    name = module.params["name"]
+    binary_path = module.params["binary_path"]
+    detached = module.params["detached"]
+    cpu = module.params["cpu"]
+    memory = module.params["memory"]
+    network_interface = module.params["network_interface"]
+    image = module.params["image"]
     result = dict(
         changed=False,
-        name='',
-        command='',
+        name="",
+        command="",
     )
 
     def exit_with_result(changed, message):
-        result['changed'] = changed
-        result['name'] = name
-        result['message'] = message
+        result["changed"] = changed
+        result["name"] = name
+        result["message"] = message
         module.exit_json(**result)
 
     vm = get_vm_info(module, name, binary_path, result)
@@ -122,29 +123,29 @@ def run_module():
     if module.check_mode:
         exit_with_result(True, f"Would create VM '{name}' (check mode)")
 
-    cmd = [binary_path, 'vm', 'run', name, '--image', image]
+    cmd = [binary_path, "vm", "run", name, "--image", image]
 
     if detached:
-        cmd.append('-d')
+        cmd.append("-d")
     if cpu is not None:
-        cmd.extend(['--cpu', str(cpu)])
+        cmd.extend(["--cpu", str(cpu)])
     if memory is not None:
-        cmd.extend(['--memory', str(memory)])
+        cmd.extend(["--memory", str(memory)])
     if network_interface:
-        cmd.extend(['--net-interface', network_interface])
+        cmd.extend(["--net-interface", network_interface])
 
-    result['command'] = ' '.join(cmd)
+    result["command"] = " ".join(cmd)
 
     try:
         proc = subprocess.run(cmd, check=True, capture_output=True, text=True)
-        result['changed'] = True
-        result['name'] = name
+        result["changed"] = True
+        result["name"] = name
 
         try:
-            result['process_id'] = int(proc.stdout.strip())
+            result["process_id"] = int(proc.stdout.strip())
         except ValueError:
-            result['process_id'] = None
-            result['raw_output'] = proc.stdout.strip()
+            result["process_id"] = None
+            result["raw_output"] = proc.stdout.strip()
 
         module.exit_json(**result)
     except subprocess.CalledProcessError as e:
@@ -153,11 +154,13 @@ def run_module():
             rc=e.returncode,
             stdout=e.stdout,
             stderr=e.stderr,
-            **result
+            **result,
         )
+
 
 def main():
     run_module()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

@@ -1,16 +1,17 @@
+---
 - name: Find VM
   orka_vm_list:
     name: "{{ configure_vm_hosts_vm_name }}"
     binary_path: "{{ configure_vm_hosts_binary_path }}"
-  register: vm_info
-  until: vm_info.vms[0].ip is defined and vm_info.vms[0].ip != ""
+  register: configure_vm_hosts_vm_info
+  until: configure_vm_hosts_vm_info.vms[0].ip is defined and configure_vm_hosts_vm_info.vms[0].ip != ""
   retries: 30
   delay: 5
 
 - name: Add VM to inventory
-  add_host:
-    name: "{{ vm_info.vms[0].name }}"
-    ansible_host: "{{ vm_info.vms[0].ip }}"
+  ansible.builtin.add_host:
+    name: "{{ configure_vm_hosts_vm_info.vms[0].name }}"
+    ansible_host: "{{ configure_vm_hosts_vm_info.vms[0].ip }}"
     ansible_user: "{{ configure_vm_hosts_vm_user }}"
     ansible_ssh_common_args: "{{ configure_vm_hosts_vm_ssh_common_args }}"
     ansible_password: "{{ configure_vm_hosts_vm_password }}"

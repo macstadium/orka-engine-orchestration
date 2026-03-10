@@ -1,17 +1,19 @@
-- block: 
-  - name: Save Image 
-    orka_vm_save:
-      binary_path: "{{ push_image_engine_binary }}"
-      vm_name: "{{ push_image_source_vm }}"
-      image_name: "{{ push_image_local_name }}"
+---
+- name: Save and push image
+  block:
+    - name: Save Image
+      orka_vm_save:
+        binary_path: "{{ push_image_engine_binary }}"
+        vm_name: "{{ push_image_source_vm }}"
+        image_name: "{{ push_image_local_name }}"
 
-  - name: Push image to registry
-    orka_image_push:
-      local_name: "{{ push_image_local_name }}"
-      remote_name: "{{ push_image_remote_name }}"
-      username: "{{ push_image_registry_username }}"
-      password: "{{ push_image_registry_password }}"
-      insecure: "{{ push_image_insecure_push }}"
+    - name: Push image to registry
+      orka_image_push:
+        local_name: "{{ push_image_local_name }}"
+        remote_name: "{{ push_image_remote_name }}"
+        username: "{{ push_image_registry_username }}"
+        password: "{{ push_image_registry_password }}"
+        insecure: "{{ push_image_insecure_push }}"
 
   always:
     - name: Delete image
