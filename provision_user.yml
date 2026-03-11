@@ -1,0 +1,67 @@
+---
+- name: Find VM on hosts and add to inventory
+  hosts: hosts
+  gather_facts: false
+  tasks:
+    - name: Get list of VMs on this host
+      orka_vm_list:
+        binary_path: "{{ engine_binary }}"
+      register: vm_list_result
+
+    - name: Find matching VM
+      ansible.builtin.set_fact:
+        matching_vms: "{{ vm_list_result.vms | selectattr('name', 'equalto', vm_name) | list }}"
+
+    - name: Add VM to inventory
+      when: matching_vms | length > 0 and matching_vms[0].ip != ""
+      ansible.builtin.add_host:
+        name: "{{ matching_vms[0].name }}"
+        ansible_host: "{{ matching_vms[0].ip }}"
+        ansible_user: "{{ vm_username }}"
+        ansible_password: "{{ vm_password }}"
+        ansible_become_password: "{{ vm_password }}"
+        ansible_ssh_common_args: >-
+          -o StrictHostKeyChecking=no
+          -o UserKnownHostsFile=/dev/null
+          -o ProxyCommand='ssh -W %h:%p
+          -o StrictHostKeyChecking=no
+          -o UserKnownHostsFile=/dev/null
+          {{ ansible_user }}@{{ inventory_hostname }}'
+        groups: vms
+
+- name: Provision user on VM
+  hosts: vms
+  gather_facts: false
+  roles:
+    - role: install_dev_tools
+  tasks:
+    - name: Check if user already exists
+      ansible.builtin.command:
+        argv:
+          - id
+          - "{{ new_username }}"
+      register: user_exists
+      failed_when: false
+      changed_when: false
+
+    - name: Create user account
+      ansible.builtin.command:
+        argv:
+          - sysadminctl
+          - -addUser
+          - "{{ new_username }}"
+          - -password
+          - "{{ new_user_password }}"
+          - -admin
+      become: true
+      when: user_exists.rc != 0
+
+    - name: Create home directory
+      ansible.builtin.command:
+        argv:
+          - createhomedir
+          - -c
+          - -u
+          - "{{ new_username }}"
+      become: true
+      when: user_exists.rc != 0

@@ -20,9 +20,15 @@ Options:
     --project-name      Project to update (default: "Orka Engine Orchestration")
     --repository-name   Repository to update (default: "Local Playbooks")
     --inventory-name    Inventory to update (default: "Dev Inventory")
+    --base-vm-username  Base VM image username
+                        (default: admin, can also be overridden with $BASE_VM_USERNAME)
+    --base-vm-password  Base VM image password
+                        (default: admin, can also be overridden with $BASE_VM_PASSWORD)
+    --environment-name  Environment to update with VM credentials (default: "Base VM Credentials")
 """
 
 import argparse
+import json
 import os
 import sys
 
@@ -57,6 +63,13 @@ def main() -> None:
     parser.add_argument("--project-name", default="Orka Engine Orchestration")
     parser.add_argument("--repository-name", default="Local Playbooks")
     parser.add_argument("--inventory-name", default="Dev Inventory")
+    parser.add_argument(
+        "--base-vm-username", default=os.environ.get("BASE_VM_USERNAME", "admin")
+    )
+    parser.add_argument(
+        "--base-vm-password", default=os.environ.get("BASE_VM_PASSWORD", "admin")
+    )
+    parser.add_argument("--environment-name", default="Base VM Credentials")
     args = parser.parse_args()
 
     base = args.semaphore_url.rstrip("/")
@@ -168,6 +181,37 @@ def main() -> None:
         f"Updated inventory '{args.inventory_name}' to use SSH key, become key cleared"
     )
 
+    # Update Base VM Credentials environment
+    if args.base_vm_username or args.base_vm_password:
+        resp = session.get(f"{base}/api/project/{project_id}/environment")
+        resp.raise_for_status()
+        envs = [e for e in resp.json() if e["name"] == args.environment_name]
+        if not envs:
+            die(
+                f"Environment '{args.environment_name}' not found in project '{args.project_name}'"
+            )
+        env = envs[0]
+        current = json.loads(env.get("json") or "{}")
+        if args.base_vm_username:
+            current["vm_username"] = args.base_vm_username
+        if args.base_vm_password:
+            current["vm_password"] = args.base_vm_password
+        env_payload = {
+            "id": env["id"],
+            "name": env["name"],
+            "project_id": project_id,
+            "json": json.dumps(current),
+            "env": env.get("env"),
+            "password": env.get("password"),
+        }
+        resp = session.put(
+            f"{base}/api/project/{project_id}/environment/{env['id']}",
+            json=env_payload,
+        )
+        if resp.status_code != 204:
+            die(f"Failed to update environment ({resp.status_code}): {resp.text}")
+        print(f"Updated environment '{args.environment_name}' with VM credentials")
+
     # Logout
     session.post(f"{base}/api/auth/logout")
 
@@ -177,6 +221,8 @@ def main() -> None:
     print(
         f"  Inventory '{args.inventory_name}' updated to use SSH key, become key cleared"
     )
+    if args.base_vm_username or args.base_vm_password:
+        print(f"  Environment '{args.environment_name}' updated with VM credentials")
 
 
 if __name__ == "__main__":

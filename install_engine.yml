@@ -3,40 +3,10 @@
   hosts: hosts
   gather_facts: false
   pre_tasks:
-    - name: Check if Python is installed
-      ansible.builtin.raw: python3 --version
-      register: python_output
-      ignore_errors: true
-      changed_when: false
-
     - name: Install Dev Tools
-      when: python_output.rc != 0
-      block:
-        - name: Prepare to Install Command Line Tools
-          ansible.builtin.raw: touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
-          changed_when: true
+      ansible.builtin.include_role:
+        name: install_dev_tools
 
-        - name: Search for Command Line Tools Package
-          ansible.builtin.raw: >
-            softwareupdate -l |
-            grep -B 1 -E 'Command Line Tools' |
-            awk -F'*' '/^\*/ {print $2}' |
-            sed -e 's/^ *Label: //' -e 's/^ *//' |
-            sort -V |
-            tail -n1
-          register: software_update_result
-          changed_when: false
-
-        - name: Install Command Line Tools
-          ansible.builtin.raw: softwareupdate -i '{{ software_update_result.stdout | regex_search('Command Line Tools for Xcode(.)+', ignorecase=True) | trim
-            }}'
-          register: install_result
-          failed_when: '"No such update" in install_result.stdout'
-          changed_when: true
-      always:
-        - name: Remove Installation Lock File
-          ansible.builtin.raw: rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
-          changed_when: true
     - name: Gather minimal facts
       ansible.builtin.setup:
         filter:

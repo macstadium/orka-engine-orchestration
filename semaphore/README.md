@@ -40,6 +40,10 @@ SEMAPHORE_ADMIN_PASSWORD=$YOUR_ADMIN_PASSWORD \
 uv run ./semaphore/configure_semaphore.py --ssh-key-file $YOUR_KEY
 ```
 
+Please review `configure_semaphore.py` for additional parameters that can be
+passed during setup, including the default username and password for any custom
+base image.
+
 All task templates, the repository, and the inventory are pre-configured automatically on first launch via `semaphore/project-seed.json`.
 
 ## Task Templates

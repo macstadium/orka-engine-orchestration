@@ -34,6 +34,12 @@
       "json": "{}",
       "env": null,
       "password": null
+    },
+    {
+      "name": "Base VM Credentials",
+      "json": "{\"vm_username\": \"\", \"vm_password\": \"\"}",
+      "env": null,
+      "password": null
     }
   ],
   "templates": [
@@ -232,6 +238,37 @@
           "required": true,
           "type": "string",
           "description": "Source image to create the VM from"
+        }
+      ]
+    },
+    {
+      "name": "Provision User to VM",
+      "app": "ansible",
+      "playbook": "provision_user.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Base VM Credentials",
+      "survey_vars": [
+        {
+          "name": "vm_name",
+          "title": "VM Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the VM to provision the user on"
+        },
+        {
+          "name": "new_username",
+          "title": "New Username",
+          "required": true,
+          "type": "",
+          "description": "Username for the new user account"
+        },
+        {
+          "name": "new_user_password",
+          "title": "New User Password",
+          "required": true,
+          "type": "",
+          "description": "Password for the new user account"
         }
       ]
     }
