@@ -114,7 +114,7 @@
           "title": "VM Name",
           "required": true,
           "type": "",
-          "description": "Name of the VM to manage"
+          "description": "Name of the VM to manage (supports partial matches)"
         },
         {
           "name": "desired_state",
@@ -143,7 +143,7 @@
           "title": "VM Name",
           "required": false,
           "type": "",
-          "description": "Filter by VM name (leave empty to list all)"
+          "description": "Filter by VM name (supports partial matches; leave empty to list all)"
         }
       ]
     },
