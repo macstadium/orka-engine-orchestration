@@ -1,0 +1,114 @@
+- name: Check if Java is installed
+  ansible.builtin.stat:
+    path: "{{ install_android_sdk_java_home }}/bin/java"
+  register: install_android_sdk_java_check
+  changed_when: false
+
+- name: Install Java JDK
+  when: not install_android_sdk_java_check.stat.exists or install_android_sdk_force | bool
+  block:
+    - name: Download JDK pkg
+      ansible.builtin.get_url:
+        url: "{{ install_android_sdk_java_dist_url }}"
+        dest: "/tmp/jdk.pkg"
+        force: true
+        mode: "0644"
+
+    - name: Install JDK pkg
+      become: true
+      ansible.builtin.command:
+        cmd: installer -pkg /tmp/jdk.pkg -target /
+      changed_when: true
+
+    - name: Clean up JDK pkg
+      ansible.builtin.file:
+        path: "/tmp/jdk.pkg"
+        state: absent
+
+- name: Check if Android SDK is installed
+  ansible.builtin.stat:
+    path: "{{ install_android_sdk_home }}/cmdline-tools/latest/bin/sdkmanager"
+  register: install_android_sdk_check
+  changed_when: false
+
+- name: Install Android SDK
+  when: not install_android_sdk_check.stat.exists or install_android_sdk_force | bool
+  block:
+    - name: Create Android SDK directory
+      become: true
+      ansible.builtin.file:
+        path: "{{ install_android_sdk_home }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        mode: "0755"
+
+    - name: Create Android SDK cmdline-tools directory
+      become: true
+      ansible.builtin.file:
+        path: "{{ install_android_sdk_home }}/cmdline-tools/latest"
+        state: directory
+        owner: "{{ ansible_user }}"
+        mode: "0755"
+
+    - name: Download Android command-line tools
+      ansible.builtin.get_url:
+        url: "{{ install_android_sdk_cmdline_tools_url }}"
+        dest: "{{ install_android_sdk_cmdline_tools_zip }}"
+        force: true
+        mode: "0644"
+
+    - name: Create cmdline-tools directory
+      ansible.builtin.file:
+        path: "{{ install_android_sdk_home }}/cmdline-tools/latest"
+        state: directory
+        mode: "0755"
+
+    - name: Extract command-line tools
+      ansible.builtin.unarchive:
+        src: "{{ install_android_sdk_cmdline_tools_zip }}"
+        dest: "{{ install_android_sdk_cmdline_tools_tmp_dir }}"
+        remote_src: true
+
+    - name: Move cmdline-tools contents to latest directory
+      ansible.builtin.shell: cp -a {{ install_android_sdk_cmdline_tools_tmp_dir }}/cmdline-tools/* {{ install_android_sdk_home }}/cmdline-tools/latest/
+      changed_when: true
+
+    - name: Clean up extracted cmdline-tools tmp directory
+      ansible.builtin.file:
+        path: "{{ install_android_sdk_cmdline_tools_tmp_dir }}/cmdline-tools"
+        state: absent
+
+    - name: Clean up downloaded zip
+      ansible.builtin.file:
+        path: "{{ install_android_sdk_cmdline_tools_zip }}"
+        state: absent
+
+    - name: Accept Android SDK licenses
+      ansible.builtin.shell:
+        cmd: yes | {{ install_android_sdk_home }}/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root={{ install_android_sdk_home }}
+        executable: /bin/bash
+      register: install_android_sdk_license_result
+      changed_when: "'All SDK package licenses accepted' in install_android_sdk_license_result.stdout"
+      # Setting pipefail as suggested causes yes to not work correctly
+      tags:
+        - skip_ansible_lint
+
+    - name: Install SDK packages
+      ansible.builtin.shell: >
+        {{ install_android_sdk_home }}/cmdline-tools/latest/bin/sdkmanager
+        --sdk_root={{ install_android_sdk_home }}
+        "{{ item }}"
+      loop: "{{ install_android_sdk_packages }}"
+      changed_when: true
+
+- name: Set ANDROID_HOME in shell profile
+  ansible.builtin.blockinfile:
+    path: "/Users/{{ ansible_user }}/.zshrc"
+    marker: "# {mark} ANDROID SDK"
+    block: |
+      export JAVA_HOME={{ install_android_sdk_java_home }}
+      export ANDROID_HOME={{ install_android_sdk_home }}
+      export PATH=$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH
+    create: true
+    owner: "{{ ansible_user }}"
+    mode: "0644"

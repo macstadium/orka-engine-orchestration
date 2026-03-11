@@ -1,0 +1,11 @@
+install_android_sdk_home: "/opt/android-sdk"
+install_android_sdk_cmdline_tools_url: "https://dl.google.com/android/repository/commandlinetools-mac-11076708_latest.zip"
+install_android_sdk_cmdline_tools_zip: "/tmp/android-cmdline-tools.zip"
+install_android_sdk_cmdline_tools_tmp_dir: "/tmp"
+install_android_sdk_packages:
+  - "platform-tools"
+  - "emulator"
+install_android_sdk_force: false
+install_android_sdk_java_home: "/Library/Java/JavaVirtualMachines/temurin-21.jre/Contents/Home"
+install_android_sdk_java_dist_url: >
+  https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jre_aarch64_mac_hotspot_21.0.10_7.pkg
