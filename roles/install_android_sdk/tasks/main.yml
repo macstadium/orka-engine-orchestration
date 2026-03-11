@@ -85,10 +85,13 @@
 
     - name: Accept Android SDK licenses
       ansible.builtin.shell:
-        cmd: set -o pipefail && yes | {{ install_android_sdk_home }}/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root={{ install_android_sdk_home }}
+        cmd: yes | {{ install_android_sdk_home }}/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root={{ install_android_sdk_home }}
         executable: /bin/bash
       register: install_android_sdk_license_result
       changed_when: "'All SDK package licenses accepted' in install_android_sdk_license_result.stdout"
+      # Setting pipefail as suggested causes yes to not work correctly
+      tags:
+        - skip_ansible_lint
 
     - name: Install SDK packages
       ansible.builtin.shell: >
@@ -100,7 +103,7 @@
 
 - name: Set ANDROID_HOME in shell profile
   ansible.builtin.blockinfile:
-    path: "{{ lookup('env', 'HOME') }}/.zshrc"
+    path: "/Users/{{ ansible_user }}/.zshrc"
     marker: "# {mark} ANDROID SDK"
     block: |
       export JAVA_HOME={{ install_android_sdk_java_home }}
