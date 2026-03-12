@@ -34,34 +34,7 @@
   gather_facts: false
   roles:
     - role: install_dev_tools
-  tasks:
-    - name: Check if user already exists
-      ansible.builtin.command:
-        argv:
-          - id
-          - "{{ new_username }}"
-      register: user_exists
-      failed_when: false
-      changed_when: false
-
-    - name: Create user account
-      ansible.builtin.command:
-        argv:
-          - sysadminctl
-          - -addUser
-          - "{{ new_username }}"
-          - -password
-          - "{{ new_user_password }}"
-          - -admin
-      become: true
-      when: user_exists.rc != 0
-
-    - name: Create home directory
-      ansible.builtin.command:
-        argv:
-          - createhomedir
-          - -c
-          - -u
-          - "{{ new_username }}"
-      become: true
-      when: user_exists.rc != 0
+    - role: provision_user
+      vars:
+        provision_user_username: "{{ new_username }}"
+        provision_user_password: "{{ new_user_password }}"
