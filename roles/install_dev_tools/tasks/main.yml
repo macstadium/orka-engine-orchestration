@@ -24,8 +24,12 @@
       changed_when: false
 
     - name: Install Command Line Tools
-      ansible.builtin.raw: softwareupdate -i '{{ install_dev_tools_software_update_result.stdout | regex_search('Command Line Tools for Xcode(.)+', ignorecase=True) | trim
-        }}'
+      vars:
+        _pkg: >-
+          {{ install_dev_tools_software_update_result.stdout
+          | regex_search('Command Line Tools for Xcode(.)+', ignorecase=True)
+          | trim }}
+      ansible.builtin.raw: softwareupdate -i '{{ _pkg }}'
       register: install_dev_tools_install_result
       failed_when: '"No such update" in install_dev_tools_install_result.stdout'
       changed_when: true
