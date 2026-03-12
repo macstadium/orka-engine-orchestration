@@ -4,5 +4,6 @@
     name: "{{ provision_user_username }}"
     password: "{{ provision_user_password }}"
     groups: admin
+    shell: /bin/zsh
     state: present
   become: true
