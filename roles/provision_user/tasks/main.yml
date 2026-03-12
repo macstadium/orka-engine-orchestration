@@ -1,0 +1,9 @@
+---
+- name: Create admin user account
+  ansible.builtin.user:
+    name: "{{ provision_user_username }}"
+    password: "{{ provision_user_password }}"
+    groups: admin
+    shell: /bin/zsh
+    state: present
+  become: true

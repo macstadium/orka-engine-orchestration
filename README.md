@@ -25,6 +25,7 @@ A web-based UI for running playbooks is available via [Ansible Semaphore](https:
 ├── list.yml             # Main playbook for listing VMs
 ├── install-engine.yml       # Main playbook for installing Orka Engine
 ├── install_android_sdk.yml  # Main playbook for installing Android SDK
+├── provision_user.yml       # Main playbook for provisioning an admin user on a VM
 ├── dev/                 # Development environment
 │   ├── inventory        # Inventory file for development
 │   └── group_vars/      # Test vars for development
@@ -259,6 +260,35 @@ where `remote_destination` is the OCI image you want to push to. `base_image` is
 - `registry_password` - The password to authenticate to the registry with
 - `insecure_push` - Whether to allow pushing via HTTP
 - `upgrade_os` - Whether you want the OS to be upgraded as part of the image creation process
+
+### Provisioning a user on a VM
+
+To provision an admin user account on a running VM:
+
+```bash
+ansible-playbook provision_user.yml -i dev/inventory \
+  -e "vm_name=<vm_name>" \
+  -e "vm_username=<vm_username>" \
+  -e "vm_password=<vm_password>" \
+  -e "new_username=<new_username>" \
+  -e "new_user_password=<new_user_password>"
+```
+
+where:
+
+- `vm_name` - the exact name of the running VM to provision the user on
+- `vm_username` - the existing admin username on the VM used to connect
+- `vm_password` - the password for the existing admin user
+- `new_username` - the username for the new account
+- `new_user_password` - the password for the new account
+
+The playbook is idempotent — if the user already exists it will skip creation.
+
+**Note** — VMs may not be directly accessible from outside the host they run on,
+depending on networking configuration. The playbook connects to the VM via SSH
+through the Mac host as a jump proxy. `sshpass` must be installed on the Ansible
+runner. Apple Command Line Tools will be installed on the VM automatically if not
+already present.
 
 # Best Practices for VM Management
 
