@@ -57,6 +57,14 @@
       ansible.builtin.set_fact:
         vms_to_deploy: "{{ hostvars['localhost']['deployment_plan'][inventory_hostname] | int }}"
 
+    - name: Pull image using OCI credentials
+      orka_image_pull:
+        remote_name: "{{ vm_image }}"
+        username: "{{ oci_username | default(omit) }}"
+        password: "{{ oci_password | default(omit) }}"
+        binary_path: "{{ engine_binary }}"
+      when: not (public_image | default('true') | bool)
+
     - name: Deploy VMs on this host
       orka_vm_run:
         name: "{{ vm_name }}"

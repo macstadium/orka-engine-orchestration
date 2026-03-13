@@ -6,6 +6,8 @@
         binary_path: "{{ push_image_engine_binary }}"
         vm_name: "{{ push_image_source_vm }}"
         image_name: "{{ push_image_local_name }}"
+      async: "{{ push_image_timeout }}"
+      poll: "{{ push_image_poll_interval }}"
 
     - name: Push image to registry
       orka_image_push:
@@ -14,6 +16,8 @@
         username: "{{ push_image_registry_username }}"
         password: "{{ push_image_registry_password }}"
         insecure: "{{ push_image_insecure_push }}"
+      async: "{{ push_image_timeout }}"
+      poll: "{{ push_image_poll_interval }}"
 
   always:
     - name: Delete image
