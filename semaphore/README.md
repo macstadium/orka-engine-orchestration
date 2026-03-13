@@ -42,7 +42,15 @@ uv run ./semaphore/configure_semaphore.py --ssh-key-file $YOUR_KEY
 
 Please review `configure_semaphore.py` for additional parameters that can be
 passed during setup, including the default username and password for any custom
-base image.
+base image, and OCI registry credentials.
+
+To configure or rotate OCI registry credentials independently (e.g. for ECR short-lived tokens):
+
+```bash
+OCI_USERNAME=$YOUR_USERNAME \
+OCI_PASSWORD=$YOUR_PASSWORD \
+uv run ./semaphore/update_oci_credentials.py
+```
 
 All task templates, the repository, and the inventory are pre-configured automatically on first launch via `semaphore/project-seed.json`.
 
@@ -59,6 +67,7 @@ The following templates are available in the **Orka Engine Orchestration** proje
 | Pull Image     | `pull_image.yml`     | `remote_image_name`                                         |
 | Install Engine | `install_engine.yml` | `orka_license_key`, `engine_url`                            |
 | Create Image   | `create_image.yml`   | `remote_image_name`, `vm_image`                             |
+| Push Image     | `push_image.yml`     | `vm_name`, `oci_url`                                        |
 
 ## Stopping Semaphore
 

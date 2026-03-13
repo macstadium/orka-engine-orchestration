@@ -1,0 +1,27 @@
+---
+- name: Find host running the VM
+  hosts: hosts
+  gather_facts: false
+  tasks:
+    - name: Get list of VMs on this host
+      orka_vm_list:
+        binary_path: "{{ engine_binary }}"
+      register: push_image_vm_list
+
+    - name: Add host to image_hosts if VM is found here
+      ansible.builtin.add_host:
+        name: "{{ inventory_hostname }}"
+        groups: image_hosts
+        vm: "{{ push_image_vm_list.vms | selectattr('name', 'equalto', vm_name) | first }}"
+      when: push_image_vm_list.vms | selectattr('name', 'equalto', vm_name) | list | length > 0
+
+- name: Push image
+  hosts: image_hosts
+  gather_facts: false
+  roles:
+    - role: push_image
+      vars:
+        push_image_source_vm: "{{ vm.name }}"
+        push_image_remote_name: "{{ oci_url }}"
+        push_image_registry_username: "{{ oci_username | default(omit) }}"
+        push_image_registry_password: "{{ oci_password | default(omit) }}"

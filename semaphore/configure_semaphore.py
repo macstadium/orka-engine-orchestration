@@ -25,6 +25,8 @@ Options:
     --base-vm-password  Base VM image password
                         (default: admin, can also be overridden with $BASE_VM_PASSWORD)
     --environment-name  Environment to update with VM credentials (default: "Base VM Credentials")
+    --oci-username      OCI registry username (default: $OCI_USERNAME)
+    --oci-password      OCI registry password (default: $OCI_PASSWORD)
 """
 
 import argparse
@@ -33,6 +35,9 @@ import os
 import sys
 
 import requests
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from update_oci_credentials import upsert_oci_credentials  # noqa: E402
 
 
 def die(msg: str) -> None:
@@ -70,6 +75,16 @@ def main() -> None:
         "--base-vm-password", default=os.environ.get("BASE_VM_PASSWORD", "admin")
     )
     parser.add_argument("--environment-name", default="Base VM Credentials")
+    parser.add_argument(
+        "--oci-username",
+        default=os.environ.get("OCI_USERNAME", ""),
+        help="OCI registry username (default: $OCI_USERNAME)",
+    )
+    parser.add_argument(
+        "--oci-password",
+        default=os.environ.get("OCI_PASSWORD", ""),
+        help="OCI registry password (default: $OCI_PASSWORD)",
+    )
     args = parser.parse_args()
 
     base = args.semaphore_url.rstrip("/")
@@ -212,6 +227,16 @@ def main() -> None:
             die(f"Failed to update environment ({resp.status_code}): {resp.text}")
         print(f"Updated environment '{args.environment_name}' with VM credentials")
 
+    # Update OCI credentials
+    if args.oci_username or args.oci_password:
+        upsert_oci_credentials(
+            session=session,
+            base=base,
+            project_id=project_id,
+            oci_username=args.oci_username,
+            oci_password=args.oci_password,
+        )
+
     # Logout
     session.post(f"{base}/api/auth/logout")
 
@@ -223,6 +248,8 @@ def main() -> None:
     )
     if args.base_vm_username or args.base_vm_password:
         print(f"  Environment '{args.environment_name}' updated with VM credentials")
+    if args.oci_username or args.oci_password:
+        print("  Environment 'OCI Credentials' updated with OCI credentials")
 
 
 if __name__ == "__main__":
