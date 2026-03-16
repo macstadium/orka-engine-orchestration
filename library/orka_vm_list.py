@@ -20,7 +20,7 @@ options:
         type: str
         default: "orka-engine"
 author:
-    - "Ivan Spasov (@ispasov)"
+    - "Robert Elwell (@relwell)"
 """
 
 EXAMPLES = r"""
