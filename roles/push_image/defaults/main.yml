@@ -4,3 +4,5 @@ push_image_local_name: "push-{{ vm.name | lower }}"
 push_image_registry_username: "{{ registry_username }}"
 push_image_registry_password: "{{ registry_password }}"
 push_image_insecure_push: false
+push_image_timeout: 7200
+push_image_poll_interval: 30

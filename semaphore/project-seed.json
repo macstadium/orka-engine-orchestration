@@ -40,6 +40,12 @@
       "json": "{\"vm_username\": \"\", \"vm_password\": \"\"}",
       "env": null,
       "password": null
+    },
+    {
+      "name": "OCI Credentials",
+      "json": "{\"oci_username\": \"\", \"oci_password\": \"\"}",
+      "env": null,
+      "password": null
     }
   ],
   "templates": [
@@ -49,7 +55,7 @@
       "playbook": "deploy.yml",
       "repository": "Local Playbooks",
       "inventory": "Dev Inventory",
-      "environment": "Default",
+      "environment": "OCI Credentials",
       "survey_vars": [
         {
           "name": "vm_name",
@@ -64,6 +70,18 @@
           "type": "string",
           "required": true,
           "description": "An OCI URL for an Orka VM image"
+        },
+        {
+          "name": "public_image",
+          "title": "Public Image",
+          "type": "enum",
+          "required": false,
+          "default_value": "true",
+          "description": "Whether the image URL is publicly accessible. If No, OCI credentials from the environment will be used to pull the image before deploying.",
+          "values": [
+            { "name": "Yes", "value": "true" },
+            { "name": "No", "value": "false" }
+          ]
         },
         {
           "name": "cpu",
@@ -238,6 +256,30 @@
           "required": true,
           "type": "string",
           "description": "Source image to create the VM from"
+        }
+      ]
+    },
+    {
+      "name": "Push Image",
+      "app": "ansible",
+      "playbook": "push_image.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "OCI Credentials",
+      "survey_vars": [
+        {
+          "name": "vm_name",
+          "title": "VM Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the VM to push as an image"
+        },
+        {
+          "name": "oci_url",
+          "title": "OCI URL",
+          "required": true,
+          "type": "string",
+          "description": "OCI URL for the remote image destination"
         }
       ]
     },
