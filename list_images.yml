@@ -1,0 +1,25 @@
+---
+- name: List images on hosts
+  hosts: "{{ node_name | default('hosts') }}"
+  gather_facts: false
+  tasks:
+    - name: Get list of images on this host
+      orka_image_list:
+        binary_path: "{{ engine_binary }}"
+      register: image_list_result
+
+    - name: Format image lines
+      ansible.builtin.set_fact:
+        image_list: >-
+          {{ (image_list | default([])) +
+             [item.image ~ ':' ~ item.tag ~
+              ' | Size: ' ~ item.size ~
+              ' (used: ' ~ item.spaceUsed ~
+              ') | Host: ' ~ inventory_hostname] }}
+      loop: "{{ image_list_result.images }}"
+      loop_control:
+        label: "{{ item.image }}:{{ item.tag }}"
+
+    - name: Display images
+      ansible.builtin.debug:
+        var: image_list

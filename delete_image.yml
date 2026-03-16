@@ -1,0 +1,9 @@
+---
+- name: Delete image on hosts
+  hosts: "{{ node_name | default('hosts') }}"
+  gather_facts: false
+  tasks:
+    - name: Delete image
+      orka_image_delete:
+        image_name: "{{ image_name }}"
+        binary_path: "{{ engine_binary }}"

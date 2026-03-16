@@ -3,6 +3,7 @@ mock_modules:
   - analyze_vm_groups
   - orka_vm_list
   - orka_vm_save
+  - orka_image_list
   - orka_image_push
   - orka_image_delete
 

@@ -284,6 +284,47 @@
       ]
     },
     {
+      "name": "List Images",
+      "app": "ansible",
+      "playbook": "list_images.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "node_name",
+          "title": "Node Name",
+          "required": false,
+          "type": "",
+          "description": "Filter by node name (leave empty to list images on all nodes)"
+        }
+      ]
+    },
+    {
+      "name": "Delete Image",
+      "app": "ansible",
+      "playbook": "delete_image.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "image_name",
+          "title": "Image Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the image to delete (e.g., orkaSequoia or ghcr.io/org/image:tag)"
+        },
+        {
+          "name": "node_name",
+          "title": "Node Name",
+          "required": false,
+          "type": "",
+          "description": "Name of a specific node to delete from (leave empty to delete from all nodes)"
+        }
+      ]
+    },
+    {
       "name": "Provision User to VM",
       "app": "ansible",
       "playbook": "provision_user.yml",
