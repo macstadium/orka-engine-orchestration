@@ -2,6 +2,7 @@
 # /// script
 # requires-python = ">=3.11"
 # dependencies = [
+#   "python-dotenv",
 #   "requests",
 # ]
 # ///
@@ -11,8 +12,11 @@ Configure Semaphore via API: add an SSH key and update project resources to use 
 Usage:
     uv run semaphore/configure_semaphore.py --ssh-key-file /path/to/id_rsa
 
+    Defaults for all options can also be set in semaphore/.env as KEY=VALUE pairs.
+
 Options:
     --ssh-key-file      (required) Path to the SSH private key file to upload
+                        (default: $VDI_SSH_KEY)
     --ssh-key-name      Name for the key in Semaphore (default: "SSH Key")
     --semaphore-url     Semaphore base URL (default: http://localhost:3000)
     --semaphore-admin   Admin username (default: $SEMAPHORE_ADMIN or "admin")
@@ -27,6 +31,10 @@ Options:
     --environment-name  Environment to update with VM credentials (default: "Base VM Credentials")
     --oci-username      OCI registry username (default: $OCI_USERNAME)
     --oci-password      OCI registry password (default: $OCI_PASSWORD)
+    --citrix-installer-url  Citrix VDA installer URL
+                            (default: $CITRIX_INSTALLER_URL)
+    --hostname-suffix   Hostname suffix to append to the VM name when setting
+                        the VM hostname (e.g. .vdi.local) (default: $HOSTNAME_SUFFIX)
 """
 
 import argparse
@@ -35,6 +43,9 @@ import os
 import sys
 
 import requests
+from dotenv import load_dotenv
+
+load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from update_oci_credentials import upsert_oci_credentials  # noqa: E402
@@ -50,7 +61,9 @@ def main() -> None:
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
-        "--ssh-key-file", required=True, help="Path to SSH private key file"
+        "--ssh-key-file",
+        help="Path to SSH private key file",
+        default=os.environ.get("VDI_SSH_KEY"),
     )
     parser.add_argument(
         "--ssh-key-name", default="SSH Key", help="Name for the key in Semaphore"
@@ -85,13 +98,26 @@ def main() -> None:
         default=os.environ.get("OCI_PASSWORD", ""),
         help="OCI registry password (default: $OCI_PASSWORD)",
     )
+    parser.add_argument(
+        "--citrix-installer-url",
+        default=os.environ.get("CITRIX_INSTALLER_URL", ""),
+        help="Citrix VDA installer URL (default: $CITRIX_INSTALLER_URL)",
+    )
+    parser.add_argument(
+        "--hostname-suffix",
+        default=os.environ.get("HOSTNAME_SUFFIX", ""),
+        help="Hostname suffix to append to VM name (default: $HOSTNAME_SUFFIX)",
+    )
     args = parser.parse_args()
 
     base = args.semaphore_url.rstrip("/")
 
+    if not args.ssh_key_file:
+        die("No SSH key file specified.")
+
     # Read SSH key
     try:
-        with open(args.ssh_key_file) as f:
+        with open(args.ssh_key_file, encoding="utf8") as f:
             private_key = f.read()
     except OSError as e:
         die(f"Cannot read SSH key file: {e}")
@@ -197,7 +223,12 @@ def main() -> None:
     )
 
     # Update Base VM Credentials environment
-    if args.base_vm_username or args.base_vm_password:
+    if (
+        args.base_vm_username
+        or args.base_vm_password
+        or args.citrix_installer_url
+        or args.hostname_suffix
+    ):
         resp = session.get(f"{base}/api/project/{project_id}/environment")
         resp.raise_for_status()
         envs = [e for e in resp.json() if e["name"] == args.environment_name]
@@ -211,6 +242,10 @@ def main() -> None:
             current["vm_username"] = args.base_vm_username
         if args.base_vm_password:
             current["vm_password"] = args.base_vm_password
+        if args.citrix_installer_url:
+            current["citrix_installer_url"] = args.citrix_installer_url
+        if args.hostname_suffix:
+            current["hostname_suffix"] = args.hostname_suffix
         env_payload = {
             "id": env["id"],
             "name": env["name"],
@@ -246,7 +281,12 @@ def main() -> None:
     print(
         f"  Inventory '{args.inventory_name}' updated to use SSH key, become key cleared"
     )
-    if args.base_vm_username or args.base_vm_password:
+    if (
+        args.base_vm_username
+        or args.base_vm_password
+        or args.citrix_installer_url
+        or args.hostname_suffix
+    ):
         print(f"  Environment '{args.environment_name}' updated with VM credentials")
     if args.oci_username or args.oci_password:
         print("  Environment 'OCI Credentials' updated with OCI credentials")

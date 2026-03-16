@@ -1,0 +1,96 @@
+---
+- name: Set VM hostname
+  become: true
+  block:
+    - name: Set HostName
+      ansible.builtin.command:
+        cmd: scutil --set HostName {{ install_citrix_vda_hostname }}{{ install_citrix_vda_hostname_suffix }}
+      changed_when: true
+
+    - name: Set LocalHostName
+      ansible.builtin.command:
+        cmd: scutil --set LocalHostName {{ install_citrix_vda_hostname }}{{ install_citrix_vda_hostname_suffix }}
+      changed_when: true
+
+    - name: Set ComputerName
+      ansible.builtin.command:
+        cmd: scutil --set ComputerName {{ install_citrix_vda_hostname }}{{ install_citrix_vda_hostname_suffix }}
+      changed_when: true
+
+- name: Download Citrix VDA disk image
+  ansible.builtin.get_url:
+    url: "{{ install_citrix_vda_pkg_url }}"
+    dest: "{{ install_citrix_vda_dmg_dest }}"
+    mode: "0644"
+
+- name: Mount Citrix VDA disk image
+  become: true
+  ansible.builtin.command:
+    cmd: hdiutil attach {{ install_citrix_vda_dmg_dest }} -nobrowse -quiet
+  changed_when: true
+
+- name: Find pkg inside mounted DMG
+  ansible.builtin.find:
+    paths: /Volumes
+    patterns: "*.pkg"
+    recurse: true
+  register: install_citrix_vda_pkg_find
+
+- name: Install Citrix VDA package
+  become: true
+  ansible.builtin.command:
+    argv:
+      - installer
+      - -pkg
+      - "{{ install_citrix_vda_pkg_find.files[0].path }}"
+      - -target
+      - /
+  changed_when: true
+
+- name: Detach Citrix VDA disk image
+  become: true
+  ansible.builtin.command:
+    argv:
+      - hdiutil
+      - detach
+      - "{{ install_citrix_vda_pkg_find.files[0].path | dirname }}"
+      - -quiet
+  changed_when: true
+
+- name: Remove Citrix VDA disk image
+  ansible.builtin.file:
+    path: "{{ install_citrix_vda_dmg_dest }}"
+    state: absent
+
+- name: Check SIP status
+  ansible.builtin.command:
+    cmd: csrutil status
+  register: install_citrix_vda_sip_status
+  changed_when: false
+
+- name: Ensure TCC database is writable
+  become: true
+  when: "'disabled' in install_citrix_vda_sip_status.stdout"
+  ansible.builtin.file:
+    path: "/Library/Application Support/com.apple.TCC/TCC.db"
+    mode: "0644"
+
+- name: Grant TCC permissions for Citrix
+  become: true
+  when: "'disabled' in install_citrix_vda_sip_status.stdout"
+  ansible.builtin.command:
+    argv:
+      - sqlite3
+      - /Library/Application Support/com.apple.TCC/TCC.db
+      - >-
+        INSERT OR REPLACE INTO access
+        (service, client, client_type, auth_value, auth_reason, auth_version,
+        csreq, policy_id, indirect_object_identifier_type, indirect_object_identifier,
+        indirect_object_code_identity, flags, last_modified)
+        VALUES('{{ item }}', 'com.citrix.receiver.nomas', 0, 2, 4, 1,
+        NULL, NULL, 0, 'UNUSED', NULL, 0, strftime('%s', 'now'));
+  loop:
+    - kTCCServiceScreenCapture
+    - kTCCServiceMicrophone
+    - kTCCServiceCamera
+  changed_when: true
