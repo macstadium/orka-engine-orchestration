@@ -40,4 +40,3 @@
         install_citrix_vda_hostname: "{{ vm_name }}"
         install_citrix_vda_hostname_suffix: "{{ hostname_suffix }}"
         install_citrix_vda_pkg_url: "{{ citrix_installer_url }}"
-        install_citrix_vm_username: "{{ vm_username }}"
