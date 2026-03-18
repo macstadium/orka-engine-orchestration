@@ -1,1 +1,4 @@
 exclude = [".ansible"]
+
+[lint.per-file-ignores]
+"library/*.py" = ["E402"]

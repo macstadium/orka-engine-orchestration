@@ -9,7 +9,7 @@
 
     - name: Set LocalHostName
       ansible.builtin.command:
-        cmd: scutil --set LocalHostName {{ install_citrix_vda_hostname }}{{ install_citrix_vda_hostname_suffix }}
+        cmd: scutil --set LocalHostName {{ install_citrix_vda_hostname }}
       changed_when: true
 
     - name: Set ComputerName
@@ -68,23 +68,47 @@
   register: install_citrix_vda_sip_status
   changed_when: false
 
+- name: Find user home directories in /Users
+  ansible.builtin.find:
+    paths: /Users
+    file_type: directory
+    depth: 1
+  register: install_citrix_vda_user_homes
+
 - name: Set TCC database paths
   ansible.builtin.set_fact:
-    install_citrix_vda_tcc_databases:
-      - "/Library/Application Support/com.apple.TCC/TCC.db"
-      - "/Users/{{ install_citrix_vm_username }}/Library/Application Support/com.apple.TCC/TCC.db"
+    install_citrix_vda_tcc_databases: >-
+      {{
+        ["/Library/Application Support/com.apple.TCC/TCC.db"] +
+        install_citrix_vda_user_homes.files
+          | map(attribute='path')
+          | map('regex_replace', '$', '/Library/Application Support/com.apple.TCC/TCC.db')
+          | list
+      }}
+
+- name: Check TCC database directories exist
+  ansible.builtin.stat:
+    path: "{{ item | dirname }}"
+  loop: "{{ install_citrix_vda_tcc_databases }}"
+  register: install_citrix_vda_tcc_dir_stats
 
 - name: Ensure TCC databases are writable
   become: true
-  when: "'disabled' in install_citrix_vda_sip_status.stdout"
+  when:
+    - "'disabled' in install_citrix_vda_sip_status.stdout"
+    - install_citrix_vda_tcc_dir_stats.results[item_index].stat.exists
   ansible.builtin.file:
     path: "{{ item }}"
     mode: "0644"
   loop: "{{ install_citrix_vda_tcc_databases }}"
+  loop_control:
+    index_var: item_index
 
 - name: Grant screen capture and accessibility permissions for Citrix agent
   become: true
-  when: "'disabled' in install_citrix_vda_sip_status.stdout"
+  when:
+    - "'disabled' in install_citrix_vda_sip_status.stdout"
+    - install_citrix_vda_tcc_dir_stats.results[item_index // (install_citrix_vda_tcc_entries | length)].stat.exists
   ansible.builtin.command:
     argv:
       - sqlite3
@@ -97,6 +121,8 @@
         VALUES('{{ item.1.service }}', '{{ item.1.client }}', 0, 2, 4, 1,
         NULL, NULL, 0, 'UNUSED', NULL, 0, strftime('%s', 'now'));
   loop: "{{ install_citrix_vda_tcc_databases | product(install_citrix_vda_tcc_entries) | list }}"
+  loop_control:
+    index_var: item_index
   vars:
     install_citrix_vda_tcc_entries:
       - service: kTCCServiceAccessibility
