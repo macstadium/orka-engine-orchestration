@@ -33,9 +33,11 @@
   hosts: vms
   gather_facts: false
   roles:
+    - role: install_dev_tools
     - role: install_dotnet
     - role: install_citrix_vda
       vars:
         install_citrix_vda_hostname: "{{ vm_name }}"
         install_citrix_vda_hostname_suffix: "{{ hostname_suffix }}"
         install_citrix_vda_pkg_url: "{{ citrix_installer_url }}"
+        install_citrix_vm_username: "{{ vm_username }}"

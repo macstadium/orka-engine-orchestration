@@ -68,29 +68,54 @@
   register: install_citrix_vda_sip_status
   changed_when: false
 
-- name: Ensure TCC database is writable
+- name: Set TCC database paths
+  ansible.builtin.set_fact:
+    install_citrix_vda_tcc_databases:
+      - "/Library/Application Support/com.apple.TCC/TCC.db"
+      - "/Users/{{ install_citrix_vm_username }}/Library/Application Support/com.apple.TCC/TCC.db"
+
+- name: Ensure TCC databases are writable
   become: true
   when: "'disabled' in install_citrix_vda_sip_status.stdout"
   ansible.builtin.file:
-    path: "/Library/Application Support/com.apple.TCC/TCC.db"
+    path: "{{ item }}"
     mode: "0644"
+  loop: "{{ install_citrix_vda_tcc_databases }}"
 
-- name: Grant TCC permissions for Citrix
+- name: Grant screen capture and accessibility permissions for Citrix agent
   become: true
   when: "'disabled' in install_citrix_vda_sip_status.stdout"
   ansible.builtin.command:
     argv:
       - sqlite3
-      - /Library/Application Support/com.apple.TCC/TCC.db
+      - "{{ item.0 }}"
       - >-
         INSERT OR REPLACE INTO access
         (service, client, client_type, auth_value, auth_reason, auth_version,
         csreq, policy_id, indirect_object_identifier_type, indirect_object_identifier,
         indirect_object_code_identity, flags, last_modified)
-        VALUES('{{ item }}', 'com.citrix.receiver.nomas', 0, 2, 4, 1,
+        VALUES('{{ item.1.service }}', '{{ item.1.client }}', 0, 2, 4, 1,
         NULL, NULL, 0, 'UNUSED', NULL, 0, strftime('%s', 'now'));
-  loop:
-    - kTCCServiceScreenCapture
-    - kTCCServiceMicrophone
-    - kTCCServiceCamera
+  loop: "{{ install_citrix_vda_tcc_databases | product(install_citrix_vda_tcc_entries) | list }}"
+  vars:
+    install_citrix_vda_tcc_entries:
+      - service: kTCCServiceAccessibility
+        client: com.citrix.ctxinput
+      - service: kTCCServiceScreenCapture
+        client: com.citrix.ctxinput
+      - service: kTCCServiceAccessibility
+        client: com.citrix.ctxgfx
+      - service: kTCCServiceScreenCapture
+        client: com.citrix.ctxgfx
+      - service: kTCCServiceAccessibility
+        client: com.citrix.ctxism
   changed_when: true
+
+- name: Reboot the VM
+  ansible.builtin.reboot:
+    msg: "Reboot initiated by Ansible"
+    reboot_timeout: 600
+    pre_reboot_delay: 5
+    post_reboot_delay: 30
+    test_command: whoami
+  become: true
