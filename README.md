@@ -17,15 +17,17 @@ A web-based UI for running playbooks is available via [Ansible Semaphore](https:
 ## Project Structure
 
 ```
-├── deploy.yml           # Main deployment playbook
-├── delete.yml           # Main deletion playbook
-├── vm.yml               # Main playbook for managing (delete, start, stop) a specific VM
-├── pull_image.yml       # Main playbook for pulling an image on all hosts
-├── create_image.yml     # Main playbook for creating an image and pushing it to a remote registry
-├── list.yml             # Main playbook for listing VMs
+├── deploy.yml               # Main deployment playbook
+├── delete.yml               # Main deletion playbook
+├── vm.yml                   # Main playbook for managing (delete, start, stop) a specific VM
+├── pull_image.yml           # Main playbook for pulling an image on all hosts
+├── create_image.yml         # Main playbook for creating an image and pushing it to a remote registry
+├── list.yml                 # Main playbook for listing VMs
 ├── install-engine.yml       # Main playbook for installing Orka Engine
 ├── install_android_sdk.yml  # Main playbook for installing Android SDK
 ├── provision_user.yml       # Main playbook for provisioning an admin user on a VM
+├── install_citrix_vda.yml   # Main playbook for installing Citrix VDA on a VM
+├── register_citrix_vda.yml  # Main playbook for registering a Citrix VDA with a Delivery Controller
 ├── dev/                 # Development environment
 │   ├── inventory        # Inventory file for development
 │   └── group_vars/      # Test vars for development
@@ -86,6 +88,7 @@ ansible-playbook install_android_sdk.yml -i dev/inventory
 ```
 
 This will:
+
 - Install Eclipse Temurin JDK 21 (if not already present)
 - Download and set up Android command-line tools
 - Accept Android SDK licenses
@@ -289,6 +292,57 @@ depending on networking configuration. The playbook connects to the VM via SSH
 through the Mac host as a jump proxy. `sshpass` must be installed on the Ansible
 runner. Apple Command Line Tools will be installed on the VM automatically if not
 already present.
+
+### Installing Citrix VDA
+
+To install Citrix Virtual Delivery Agent (VDA) on a running VM:
+
+```bash
+ansible-playbook install_citrix_vda.yml -i dev/inventory \
+  -e "vm_name=<vm_name>" \
+  -e "vm_username=<vm_username>" \
+  -e "vm_password=<vm_password>" \
+  -e "citrix_installer_url=<citrix_dmg_url>" \
+  -e "hostname_suffix=<domain_suffix>"
+```
+
+where:
+
+- `vm_name` - the exact name of the running VM to install Citrix VDA on (also used as the VM hostname)
+- `vm_username` - the existing admin username on the VM used to connect
+- `vm_password` - the password for the existing admin user
+- `citrix_installer_url` - Download URL for the Citrix VDA `.dmg`. We recommend hosting your installer in an S3 bucket with a [presigned URL](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html).
+- `hostname_suffix` - domain suffix appended to `vm_name` to form the full hostname (e.g. `corp.example.com`). This value can be blank to just use the VM name as the hostname.
+
+This playbook:
+
+1. Locates the VM by name across all hosts and adds it to the inventory via a jump proxy
+2. Installs developer tools and .NET runtime prerequisites
+3. Sets the VM hostname using the provided name and suffix
+4. Downloads, mounts, and installs the Citrix VDA package
+5. Grants required TCC permissions (screen capture and accessibility) for Citrix components when SIP is disabled
+6. Reboots the VM to complete installation
+
+**Note** — `sshpass` must be installed on the Ansible runner. The playbook connects to the VM via the Mac host as a jump proxy.
+
+### Registering Citrix VDA with a Delivery Controller
+
+After installing Citrix VDA, register the VM with a Citrix Delivery Controller using an enrollment token:
+
+```bash
+ansible-playbook register_citrix_vda.yml -i dev/inventory \
+  -e "vm_name=<vm_name>" \
+  -e "vm_username=<vm_username>" \
+  -e "vm_password=<vm_password>" \
+  -e "enrollment_token=<enrollment_token>"
+```
+
+where:
+
+- `vm_name` - the exact name of the running VM to register
+- `vm_username` - the existing admin username on the VM used to connect
+- `vm_password` - the password for the existing admin user
+- `enrollment_token` - Citrix enrollment token for registering the VDA with the Delivery Controller
 
 # Best Practices for VM Management
 
