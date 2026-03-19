@@ -1,0 +1,3 @@
+install_dotnet_channel: "8.0"
+install_dotnet_install_dir: "/usr/local/share/dotnet"
+install_dotnet_script_dest: "/tmp/dotnet-install.sh"

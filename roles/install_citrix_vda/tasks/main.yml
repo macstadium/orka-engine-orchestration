@@ -1,0 +1,147 @@
+---
+- name: Set VM hostname
+  become: true
+  block:
+    - name: Set HostName
+      ansible.builtin.command:
+        cmd: scutil --set HostName {{ install_citrix_vda_hostname }}{{ install_citrix_vda_hostname_suffix }}
+      changed_when: true
+
+    - name: Set LocalHostName
+      ansible.builtin.command:
+        cmd: scutil --set LocalHostName {{ install_citrix_vda_hostname }}
+      changed_when: true
+
+    - name: Set ComputerName
+      ansible.builtin.command:
+        cmd: scutil --set ComputerName {{ install_citrix_vda_hostname }}{{ install_citrix_vda_hostname_suffix }}
+      changed_when: true
+
+- name: Download Citrix VDA disk image
+  ansible.builtin.get_url:
+    url: "{{ install_citrix_vda_pkg_url }}"
+    dest: "{{ install_citrix_vda_dmg_dest }}"
+    mode: "0644"
+
+- name: Mount Citrix VDA disk image
+  become: true
+  ansible.builtin.command:
+    cmd: hdiutil attach {{ install_citrix_vda_dmg_dest }} -nobrowse -quiet
+  changed_when: true
+
+- name: Find pkg inside mounted DMG
+  ansible.builtin.find:
+    paths: /Volumes
+    patterns: "*.pkg"
+    recurse: true
+  register: install_citrix_vda_pkg_find
+
+- name: Install Citrix VDA package
+  become: true
+  ansible.builtin.command:
+    argv:
+      - installer
+      - -pkg
+      - "{{ install_citrix_vda_pkg_find.files[0].path }}"
+      - -target
+      - /
+  changed_when: true
+
+- name: Detach Citrix VDA disk image
+  become: true
+  ansible.builtin.command:
+    argv:
+      - hdiutil
+      - detach
+      - "{{ install_citrix_vda_pkg_find.files[0].path | dirname }}"
+      - -quiet
+  changed_when: true
+
+- name: Remove Citrix VDA disk image
+  ansible.builtin.file:
+    path: "{{ install_citrix_vda_dmg_dest }}"
+    state: absent
+
+- name: Check SIP status
+  ansible.builtin.command:
+    cmd: csrutil status
+  register: install_citrix_vda_sip_status
+  changed_when: false
+
+- name: Find user home directories in /Users
+  ansible.builtin.find:
+    paths: /Users
+    file_type: directory
+    depth: 1
+  register: install_citrix_vda_user_homes
+
+- name: Set TCC database paths
+  ansible.builtin.set_fact:
+    install_citrix_vda_tcc_databases: >-
+      {{
+        ["/Library/Application Support/com.apple.TCC/TCC.db"] +
+        install_citrix_vda_user_homes.files
+          | map(attribute='path')
+          | map('regex_replace', '$', '/Library/Application Support/com.apple.TCC/TCC.db')
+          | list
+      }}
+
+- name: Check TCC database directories exist
+  ansible.builtin.stat:
+    path: "{{ item | dirname }}"
+  loop: "{{ install_citrix_vda_tcc_databases }}"
+  register: install_citrix_vda_tcc_dir_stats
+
+- name: Ensure TCC databases are writable
+  become: true
+  when:
+    - "'disabled' in install_citrix_vda_sip_status.stdout"
+    - install_citrix_vda_tcc_dir_stats.results[item_index].stat.exists
+  ansible.builtin.file:
+    path: "{{ item }}"
+    mode: "0644"
+  loop: "{{ install_citrix_vda_tcc_databases }}"
+  loop_control:
+    index_var: item_index
+
+- name: Grant screen capture and accessibility permissions for Citrix agent
+  become: true
+  when:
+    - "'disabled' in install_citrix_vda_sip_status.stdout"
+    - install_citrix_vda_tcc_dir_stats.results[item_index // (install_citrix_vda_tcc_entries | length)].stat.exists
+  ansible.builtin.command:
+    argv:
+      - sqlite3
+      - "{{ item.0 }}"
+      - >-
+        INSERT OR REPLACE INTO access
+        (service, client, client_type, auth_value, auth_reason, auth_version,
+        csreq, policy_id, indirect_object_identifier_type, indirect_object_identifier,
+        indirect_object_code_identity, flags, last_modified)
+        VALUES('{{ item.1.service }}', '{{ item.1.client }}', 0, 2, 4, 1,
+        NULL, NULL, 0, 'UNUSED', NULL, 0, strftime('%s', 'now'));
+  loop: "{{ install_citrix_vda_tcc_databases | product(install_citrix_vda_tcc_entries) | list }}"
+  loop_control:
+    index_var: item_index
+  vars:
+    install_citrix_vda_tcc_entries:
+      - service: kTCCServiceAccessibility
+        client: com.citrix.ctxinput
+      - service: kTCCServiceScreenCapture
+        client: com.citrix.ctxinput
+      - service: kTCCServiceAccessibility
+        client: com.citrix.ctxgfx
+      - service: kTCCServiceScreenCapture
+        client: com.citrix.ctxgfx
+      - service: kTCCServiceAccessibility
+        client: com.citrix.ctxism
+  changed_when: true
+
+- name: Reboot the VM
+  ansible.builtin.reboot:
+    msg: "Reboot initiated by Ansible"
+    reboot_timeout: 600
+    pre_reboot_delay: 5
+    post_reboot_delay: 30
+    test_command: whoami
+  become: true

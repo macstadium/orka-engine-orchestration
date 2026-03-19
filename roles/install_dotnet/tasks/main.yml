@@ -1,0 +1,29 @@
+---
+- name: Check if .NET is installed
+  ansible.builtin.stat:
+    path: "{{ install_dotnet_install_dir }}/dotnet"
+  register: install_dotnet_check
+  changed_when: false
+
+- name: Install .NET
+  when: not install_dotnet_check.stat.exists
+  block:
+    - name: Download dotnet-install script
+      ansible.builtin.get_url:
+        url: https://dot.net/v1/dotnet-install.sh
+        dest: "{{ install_dotnet_script_dest }}"
+        mode: "0755"
+
+    - name: Run dotnet-install script
+      become: true
+      ansible.builtin.command:
+        cmd: >
+          {{ install_dotnet_script_dest }}
+          --channel {{ install_dotnet_channel }}
+          --install-dir {{ install_dotnet_install_dir }}
+      changed_when: true
+
+    - name: Remove dotnet-install script
+      ansible.builtin.file:
+        path: "{{ install_dotnet_script_dest }}"
+        state: absent

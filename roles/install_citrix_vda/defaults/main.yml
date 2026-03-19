@@ -1,0 +1,4 @@
+install_citrix_vda_hostname: ""
+install_citrix_vda_hostname_suffix: ""
+install_citrix_vda_pkg_url: ""
+install_citrix_vda_dmg_dest: "/tmp/citrix-vda.dmg"

@@ -37,7 +37,7 @@
     },
     {
       "name": "Base VM Credentials",
-      "json": "{\"vm_username\": \"\", \"vm_password\": \"\"}",
+      "json": "{\"vm_username\": \"\", \"vm_password\": \"\", \"citrix_installer_url\": \"\", \"hostname_suffix\": \"\"}",
       "env": null,
       "password": null
     },
@@ -352,6 +352,47 @@
           "required": true,
           "type": "",
           "description": "Password for the new user account"
+        }
+      ]
+    },
+    {
+      "name": "Install Citrix VDA",
+      "app": "ansible",
+      "playbook": "install_citrix_vda.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Base VM Credentials",
+      "survey_vars": [
+        {
+          "name": "vm_name",
+          "title": "VM Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the VM to install Citrix VDA on (also used as the VM hostname)"
+        }
+      ]
+    },
+    {
+      "name": "Register Citrix VDA",
+      "app": "ansible",
+      "playbook": "register_citrix_vda.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Base VM Credentials",
+      "survey_vars": [
+        {
+          "name": "vm_name",
+          "title": "VM Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the VM to register with the Delivery Controller"
+        },
+        {
+          "name": "enrollment_token",
+          "title": "Enrollment Token",
+          "required": true,
+          "type": "",
+          "description": "Citrix enrollment token for registering the VDA with the Delivery Controller"
         }
       ]
     }
