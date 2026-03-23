@@ -325,6 +325,50 @@
       ]
     },
     {
+      "name": "Install SDK Components",
+      "app": "ansible",
+      "playbook": "sdkmanager_install.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "platform",
+          "title": "Android Platform",
+          "required": true,
+          "type": "string",
+          "default_value": "android-35",
+          "description": "Android platform to install (e.g., android-34, android-35)"
+        },
+        {
+          "name": "image_types",
+          "title": "System Image Types",
+          "required": false,
+          "type": "string",
+          "default_value": "default,google_apis",
+          "description": "Comma-separated list of system image types (e.g., default,google_apis,google_apis_playstore)"
+        }
+      ]
+    },
+    {
+      "name": "Uninstall SDK Components",
+      "app": "ansible",
+      "playbook": "sdkmanager_uninstall.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "platform",
+          "title": "Android Platform",
+          "required": true,
+          "type": "string",
+          "default_value": "android-35",
+          "description": "Android platform to uninstall (e.g., android-34, android-35). All system images for this platform will be removed."
+        }
+      ]
+    },
+    {
       "name": "Provision User to VM",
       "app": "ansible",
       "playbook": "provision_user.yml",

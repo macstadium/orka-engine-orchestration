@@ -1,0 +1,2 @@
+android_sdk_common_home: "/opt/android-sdk"
+android_sdk_common_image_arch: "arm64-v8a"

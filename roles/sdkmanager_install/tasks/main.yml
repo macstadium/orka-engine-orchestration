@@ -1,0 +1,52 @@
+- name: Verify sdkmanager is installed
+  ansible.builtin.stat:
+    path: "{{ android_sdk_common_home }}/cmdline-tools/latest/bin/sdkmanager"
+  register: sdkmanager_install_check
+  changed_when: false
+
+- name: Fail if sdkmanager is not installed
+  ansible.builtin.fail:
+    msg: >-
+      sdkmanager not found at
+      {{ android_sdk_common_home }}/cmdline-tools/latest/bin/sdkmanager.
+      Run install_android_sdk first.
+  when: not sdkmanager_install_check.stat.exists
+
+- name: Parse system image types list
+  ansible.builtin.set_fact:
+    sdkmanager_install_parsed_image_types: >-
+      {{ sdkmanager_install_image_types.split(',') | map('trim') | list }}
+
+- name: Check if platform is already installed
+  ansible.builtin.stat:
+    path: "{{ android_sdk_common_home }}/platforms/{{ sdkmanager_install_platform }}"
+  register: sdkmanager_install_platform_check
+  changed_when: false
+
+- name: Install platform
+  ansible.builtin.shell: >
+    {{ android_sdk_common_home }}/cmdline-tools/latest/bin/sdkmanager
+    --sdk_root={{ android_sdk_common_home }}
+    "platforms;{{ sdkmanager_install_platform }}"
+  when: not sdkmanager_install_platform_check.stat.exists
+  changed_when: true
+
+- name: Check if system images are already installed
+  ansible.builtin.stat:
+    path: >-
+      {{ android_sdk_common_home }}/system-images/{{ sdkmanager_install_platform
+      }}/{{ item }}/{{ android_sdk_common_image_arch }}
+  loop: "{{ sdkmanager_install_parsed_image_types }}"
+  register: sdkmanager_install_image_checks
+  changed_when: false
+
+- name: Install system images
+  ansible.builtin.shell: >
+    {{ android_sdk_common_home }}/cmdline-tools/latest/bin/sdkmanager
+    --sdk_root={{ android_sdk_common_home }}
+    "system-images;{{ sdkmanager_install_platform }};{{ item.item }};{{ android_sdk_common_image_arch }}"
+  loop: "{{ sdkmanager_install_image_checks.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  when: not item.stat.exists
+  changed_when: true
