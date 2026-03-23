@@ -325,7 +325,7 @@
       ]
     },
     {
-      "name": "Install SDK Components",
+      "name": "Install Android SDK Components",
       "app": "ansible",
       "playbook": "sdkmanager_install.yml",
       "repository": "Local Playbooks",
@@ -351,7 +351,7 @@
       ]
     },
     {
-      "name": "Uninstall SDK Components",
+      "name": "Uninstall Androd SDK Components",
       "app": "ansible",
       "playbook": "sdkmanager_uninstall.yml",
       "repository": "Local Playbooks",
