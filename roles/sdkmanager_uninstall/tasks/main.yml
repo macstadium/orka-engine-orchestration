@@ -1,0 +1,58 @@
+- name: Verify sdkmanager is installed
+  ansible.builtin.stat:
+    path: "{{ android_sdk_common_home }}/cmdline-tools/latest/bin/sdkmanager"
+  register: sdkmanager_uninstall_check
+  changed_when: false
+
+- name: Fail if sdkmanager is not installed
+  ansible.builtin.fail:
+    msg: >-
+      sdkmanager not found at
+      {{ android_sdk_common_home }}/cmdline-tools/latest/bin/sdkmanager.
+      Run install_android_sdk first.
+  when: not sdkmanager_uninstall_check.stat.exists
+
+- name: Find installed system images for platform
+  ansible.builtin.find:
+    paths: >-
+      {{ android_sdk_common_home }}/system-images/{{ sdkmanager_uninstall_platform }}
+    file_type: directory
+    recurse: true
+    depth: 2
+  register: sdkmanager_uninstall_images
+
+- name: Build system image package names
+  ansible.builtin.set_fact:
+    sdkmanager_uninstall_image_packages: >-
+      {{ sdkmanager_uninstall_images.files
+        | map(attribute='path')
+        | map('regex_replace',
+              '^.*/system-images/([^/]+)/([^/]+)/([^/]+)$',
+              'system-images;\1;\2;\3')
+        | select('match', '^system-images;')
+        | list }}
+
+- name: Uninstall system images
+  ansible.builtin.shell: >
+    {{ android_sdk_common_home }}/cmdline-tools/latest/bin/sdkmanager
+    --sdk_root={{ android_sdk_common_home }}
+    --uninstall
+    "{{ item }}"
+  loop: "{{ sdkmanager_uninstall_image_packages }}"
+  when: sdkmanager_uninstall_image_packages | length > 0
+  changed_when: true
+
+- name: Check if platform is installed
+  ansible.builtin.stat:
+    path: "{{ android_sdk_common_home }}/platforms/{{ sdkmanager_uninstall_platform }}"
+  register: sdkmanager_uninstall_platform_check
+  changed_when: false
+
+- name: Uninstall platform
+  ansible.builtin.shell: >
+    {{ android_sdk_common_home }}/cmdline-tools/latest/bin/sdkmanager
+    --sdk_root={{ android_sdk_common_home }}
+    --uninstall
+    "platforms;{{ sdkmanager_uninstall_platform }}"
+  when: sdkmanager_uninstall_platform_check.stat.exists
+  changed_when: true

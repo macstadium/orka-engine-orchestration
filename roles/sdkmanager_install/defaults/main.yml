@@ -1,0 +1,2 @@
+sdkmanager_install_platform: "android-35"
+sdkmanager_install_image_types: "default,google_apis"

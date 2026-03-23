@@ -27,7 +27,7 @@
 
 - name: Check if Android SDK is installed
   ansible.builtin.stat:
-    path: "{{ install_android_sdk_home }}/cmdline-tools/latest/bin/sdkmanager"
+    path: "{{ android_sdk_common_home }}/cmdline-tools/latest/bin/sdkmanager"
   register: install_android_sdk_check
   changed_when: false
 
@@ -37,7 +37,7 @@
     - name: Create Android SDK directory
       become: true
       ansible.builtin.file:
-        path: "{{ install_android_sdk_home }}"
+        path: "{{ android_sdk_common_home }}"
         state: directory
         owner: "{{ ansible_user }}"
         mode: "0755"
@@ -45,7 +45,7 @@
     - name: Create Android SDK cmdline-tools directory
       become: true
       ansible.builtin.file:
-        path: "{{ install_android_sdk_home }}/cmdline-tools/latest"
+        path: "{{ android_sdk_common_home }}/cmdline-tools/latest"
         state: directory
         owner: "{{ ansible_user }}"
         mode: "0755"
@@ -59,7 +59,7 @@
 
     - name: Create cmdline-tools directory
       ansible.builtin.file:
-        path: "{{ install_android_sdk_home }}/cmdline-tools/latest"
+        path: "{{ android_sdk_common_home }}/cmdline-tools/latest"
         state: directory
         mode: "0755"
 
@@ -70,7 +70,9 @@
         remote_src: true
 
     - name: Move cmdline-tools contents to latest directory
-      ansible.builtin.shell: cp -a {{ install_android_sdk_cmdline_tools_tmp_dir }}/cmdline-tools/* {{ install_android_sdk_home }}/cmdline-tools/latest/
+      ansible.builtin.shell: >
+        cp -a {{ install_android_sdk_cmdline_tools_tmp_dir }}/cmdline-tools/*
+        {{ android_sdk_common_home }}/cmdline-tools/latest/
       changed_when: true
 
     - name: Clean up extracted cmdline-tools tmp directory
@@ -85,7 +87,9 @@
 
     - name: Accept Android SDK licenses
       ansible.builtin.shell:
-        cmd: yes | {{ install_android_sdk_home }}/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root={{ install_android_sdk_home }}
+        cmd: >
+          yes | {{ android_sdk_common_home }}/cmdline-tools/latest/bin/sdkmanager
+          --licenses --sdk_root={{ android_sdk_common_home }}
         executable: /bin/bash
       register: install_android_sdk_license_result
       changed_when: "'All SDK package licenses accepted' in install_android_sdk_license_result.stdout"
@@ -95,8 +99,8 @@
 
     - name: Install SDK packages
       ansible.builtin.shell: >
-        {{ install_android_sdk_home }}/cmdline-tools/latest/bin/sdkmanager
-        --sdk_root={{ install_android_sdk_home }}
+        {{ android_sdk_common_home }}/cmdline-tools/latest/bin/sdkmanager
+        --sdk_root={{ android_sdk_common_home }}
         "{{ item }}"
       loop: "{{ install_android_sdk_packages }}"
       changed_when: true
@@ -107,7 +111,7 @@
     marker: "# {mark} ANDROID SDK"
     block: |
       export JAVA_HOME={{ install_android_sdk_java_home }}
-      export ANDROID_HOME={{ install_android_sdk_home }}
+      export ANDROID_HOME={{ android_sdk_common_home }}
       export PATH=$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH
     create: true
     owner: "{{ ansible_user }}"
