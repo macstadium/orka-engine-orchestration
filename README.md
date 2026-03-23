@@ -25,6 +25,8 @@ A web-based UI for running playbooks is available via [Ansible Semaphore](https:
 ├── list.yml             # Main playbook for listing VMs
 ├── install-engine.yml       # Main playbook for installing Orka Engine
 ├── install_android_sdk.yml  # Main playbook for installing Android SDK
+├── sdkmanager_install.yml   # Main playbook for installing Android SDK platforms and system images
+├── sdkmanager_uninstall.yml # Main playbook for uninstalling Android SDK platforms and system images
 ├── provision_user.yml       # Main playbook for provisioning an admin user on a VM
 ├── dev/                 # Development environment
 │   ├── inventory        # Inventory file for development
@@ -93,6 +95,53 @@ This will:
 - Configure `JAVA_HOME`, `ANDROID_HOME`, and `PATH` in the user's `.zshrc`
 
 **Note** - To force reinstallation pass `-e "install_android_sdk_force=true"`.
+
+### Installing Android SDK Platforms and System Images
+
+To install an Android SDK platform and its system images on target hosts:
+
+```bash
+ansible-playbook sdkmanager_install.yml -i dev/inventory
+```
+
+This will:
+- Verify that `sdkmanager` is available (requires the Android SDK to be installed first)
+- Install the specified platform (default: `android-35`)
+- Install system images for the specified image types (default: `default,google_apis`)
+
+Optional variables:
+
+- `platform` - The Android platform to install (default: `android-35`)
+- `image_types` - Comma-separated list of system image types to install (default: `default,google_apis`)
+
+Example with custom platform and image types:
+
+```bash
+ansible-playbook sdkmanager_install.yml -i dev/inventory -e "platform=android-34" -e "image_types=default,google_apis,google_apis_playstore"
+```
+
+### Uninstalling Android SDK Platforms and System Images
+
+To uninstall an Android SDK platform and all of its system images from target hosts:
+
+```bash
+ansible-playbook sdkmanager_uninstall.yml -i dev/inventory
+```
+
+This will:
+- Verify that `sdkmanager` is available
+- Find and uninstall all system images for the specified platform
+- Uninstall the platform itself
+
+Optional variables:
+
+- `platform` - The Android platform to uninstall (default: `android-35`)
+
+Example:
+
+```bash
+ansible-playbook sdkmanager_uninstall.yml -i dev/inventory -e "platform=android-34"
+```
 
 ### Planning Deployment
 
