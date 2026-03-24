@@ -27,6 +27,7 @@ A web-based UI for running playbooks is available via [Ansible Semaphore](https:
 ├── install_android_sdk.yml  # Main playbook for installing Android SDK
 ├── sdkmanager_install.yml   # Main playbook for installing Android SDK platforms and system images
 ├── sdkmanager_uninstall.yml # Main playbook for uninstalling Android SDK platforms and system images
+├── create_avd.yml           # Main playbook for creating Android Virtual Devices
 ├── provision_user.yml       # Main playbook for provisioning an admin user on a VM
 ├── install_citrix_vda.yml   # Main playbook for installing Citrix VDA on a VM
 ├── register_citrix_vda.yml  # Main playbook for registering a Citrix VDA with a Delivery Controller
@@ -144,6 +145,35 @@ Example:
 
 ```bash
 ansible-playbook sdkmanager_uninstall.yml -i dev/inventory -e "platform=android-34"
+```
+
+### Creating an Android Virtual Device
+
+To create an Android Virtual Device (AVD) on target hosts:
+
+```bash
+ansible-playbook create_avd.yml -i dev/inventory -e "avd_name=my-avd"
+```
+
+This will:
+- Verify that `avdmanager` is available (requires the Android SDK to be installed first)
+- Create an AVD with the specified name, platform, image type, and SD card size
+- Skip creation if an AVD with the same name already exists
+
+Required variables:
+
+- `avd_name` - The name of the AVD to create
+
+Optional variables:
+
+- `platform` - The Android platform to use (default: `android-35`)
+- `image_type` - The system image type to use (default: `default`)
+- `sdcard_size` - The SD card size for the AVD (default: `4096M`)
+
+Example with custom settings:
+
+```bash
+ansible-playbook create_avd.yml -i dev/inventory -e "avd_name=my-avd" -e "platform=android-34" -e "image_type=google_apis" -e "sdcard_size=8192M"
 ```
 
 ### Planning Deployment

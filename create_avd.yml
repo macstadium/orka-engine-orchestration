@@ -1,0 +1,12 @@
+---
+- name: Create Android Virtual Device
+  hosts: hosts
+  gather_facts: false
+  roles:
+    - role: create_avd
+      create_avd_name: "{{ avd_name }}"
+      create_avd_platform: "{{ platform | default('android-35') }}"
+      create_avd_image_type: "{{ image_type | default('default') }}"
+      create_avd_sdcard_size: "{{ sdcard_size | default('4096M') }}"
+  tags:
+    - avdmanager
