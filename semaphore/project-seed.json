@@ -377,6 +377,13 @@
       "environment": "Default",
       "survey_vars": [
         {
+          "name": "vm_name",
+          "title": "VM Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the VM where the AVD should be created"
+        },
+        {
           "name": "avd_name",
           "title": "AVD Name",
           "required": true,

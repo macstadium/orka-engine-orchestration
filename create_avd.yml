@@ -1,12 +1,47 @@
 ---
-- name: Create Android Virtual Device
+- name: Gather VM data from all hosts
   hosts: hosts
   gather_facts: false
+  tags: plan
   roles:
-    - role: create_avd
-      create_avd_name: "{{ avd_name }}"
-      create_avd_platform: "{{ platform | default('android-35') }}"
-      create_avd_image_type: "{{ image_type | default('default') }}"
-      create_avd_sdcard_size: "{{ sdcard_size | default('4096M') }}"
+    - gather_host_facts
+
+- name: Plan AVD creation
+  hosts: localhost
+  gather_facts: false
+  tags: plan
+  tasks:
+    - name: Find target host for VM
+      plan_avd_create:
+        hosts_data: "{{ gather_host_facts_all_hosts_data }}"
+        vm_name: "{{ vm_name }}"
+      register: avd_create_result
+
+    - name: Display AVD creation plan
+      ansible.builtin.debug:
+        msg: >
+          AVD will be created on host '{{ avd_create_result.target_host }}'
+          where VM '{{ avd_create_result.vm_name }}' is running.
+
+    - name: Share target host with other hosts
+      ansible.builtin.set_fact:
+        avd_target_host: "{{ avd_create_result.target_host }}"
+
+- name: Create AVD on target host
+  hosts: hosts
+  gather_facts: false
+  tasks:
+    - name: Skip hosts that are not the target
+      ansible.builtin.meta: end_host
+      when: inventory_hostname != hostvars['localhost'].avd_target_host
+
+    - name: Create AVD
+      ansible.builtin.include_role:
+        name: create_avd
+      vars:
+        create_avd_name: "{{ avd_name }}"
+        create_avd_platform: "{{ platform | default('android-35') }}"
+        create_avd_image_type: "{{ image_type | default('default') }}"
+        create_avd_sdcard_size: "{{ sdcard_size | default('4096M') }}"
   tags:
     - avdmanager

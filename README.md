@@ -149,19 +149,28 @@ ansible-playbook sdkmanager_uninstall.yml -i dev/inventory -e "platform=android-
 
 ### Creating an Android Virtual Device
 
-To create an Android Virtual Device (AVD) on target hosts:
+Run the `create_avd.yml` playbook with `--tags plan` to see a plan for which hosts the AVD will be created on
 
 ```bash
-ansible-playbook create_avd.yml -i dev/inventory -e "avd_name=my-avd"
+ansible-playbook create_avd.yml -i dev/inventory -e "vm_name=my-vm" -e "avd_name=my-avd" --tags plan
+```
+
+Then, to actually create an Android Virtual Device (AVD) on the host where a specific VM is running:
+
+```bash
+ansible-playbook create_avd.yml -i dev/inventory -e "vm_name=my-vm" -e "avd_name=my-avd"
 ```
 
 This will:
+- Gather VM data from all hosts
+- Find the host where the specified VM is running
+- Create an AVD on that host only
 - Verify that `avdmanager` is available (requires the Android SDK to be installed first)
-- Create an AVD with the specified name, platform, image type, and SD card size
 - Skip creation if an AVD with the same name already exists
 
 Required variables:
 
+- `vm_name` - The name of the VM where the AVD should be created (must be running on one of the hosts)
 - `avd_name` - The name of the AVD to create
 
 Optional variables:
@@ -173,7 +182,7 @@ Optional variables:
 Example with custom settings:
 
 ```bash
-ansible-playbook create_avd.yml -i dev/inventory -e "avd_name=my-avd" -e "platform=android-34" -e "image_type=google_apis" -e "sdcard_size=8192M"
+ansible-playbook create_avd.yml -i dev/inventory -e "vm_name=my-vm" -e "avd_name=my-avd" -e "platform=android-34" -e "image_type=google_apis" -e "sdcard_size=8192M"
 ```
 
 ### Planning Deployment
