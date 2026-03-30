@@ -27,6 +27,7 @@ A web-based UI for running playbooks is available via [Ansible Semaphore](https:
 ├── install_android_sdk.yml  # Main playbook for installing Android SDK
 ├── sdkmanager_install.yml   # Main playbook for installing Android SDK platforms and system images
 ├── sdkmanager_uninstall.yml # Main playbook for uninstalling Android SDK platforms and system images
+├── create_avd.yml           # Main playbook for creating Android Virtual Devices
 ├── provision_user.yml       # Main playbook for provisioning an admin user on a VM
 ├── install_citrix_vda.yml   # Main playbook for installing Citrix VDA on a VM
 ├── register_citrix_vda.yml  # Main playbook for registering a Citrix VDA with a Delivery Controller
@@ -144,6 +145,44 @@ Example:
 
 ```bash
 ansible-playbook sdkmanager_uninstall.yml -i dev/inventory -e "platform=android-34"
+```
+
+### Creating an Android Virtual Device
+
+Run the `create_avd.yml` playbook with `--tags plan` to see a plan for which host the AVD will be created on:
+
+```bash
+ansible-playbook create_avd.yml -i dev/inventory -e "vm_name=my-vm" --tags plan
+```
+
+Then, to create an Android Virtual Device (AVD) on the host where a specific VM is running:
+
+```bash
+ansible-playbook create_avd.yml -i dev/inventory -e "vm_name=my-vm"
+```
+
+The AVD name is derived automatically from the VM name using the pattern `{vm_name}-avd-{index}`, where the index increments for each new AVD associated with the VM (e.g. `my-vm-avd-0`, `my-vm-avd-1`).
+
+This will:
+- Gather VM data from all hosts
+- Find the host where the specified VM is running
+- Determine the next available AVD index for the VM
+- Create an AVD on that host only
+- Verify that `avdmanager` is available (requires the Android SDK to be installed first)
+
+Required variables:
+
+- `vm_name` - The name of the VM where the AVD should be created (must be running on one of the hosts)
+
+Optional variables:
+
+- `platform` - The Android platform to use (default: `android-35`)
+- `image_type` - The system image type to use (default: `default`)
+
+Example with custom settings:
+
+```bash
+ansible-playbook create_avd.yml -i dev/inventory -e "vm_name=my-vm" -e "platform=android-34" -e "image_type=google_apis"
 ```
 
 ### Planning Deployment

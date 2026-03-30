@@ -1,0 +1,43 @@
+- name: Verify avdmanager is installed
+  ansible.builtin.stat:
+    path: "{{ android_sdk_common_home }}/cmdline-tools/latest/bin/avdmanager"
+  register: create_avd_check
+  changed_when: false
+
+- name: Fail if avdmanager is not installed
+  ansible.builtin.fail:
+    msg: >-
+      avdmanager not found at
+      {{ android_sdk_common_home }}/cmdline-tools/latest/bin/avdmanager.
+      Run install_android_sdk first.
+  when: not create_avd_check.stat.exists
+
+- name: Verify platform is installed
+  ansible.builtin.stat:
+    path: "{{ android_sdk_common_home }}/system-images/{{ create_avd_platform }}/{{ create_avd_image_type }}/{{ android_sdk_common_image_arch }}"
+  register: create_avd_platform_check
+  changed_when: false
+
+- name: Fail if platform system image is not installed
+  ansible.builtin.fail:
+    msg: >-
+      System image not found at
+      {{ android_sdk_common_home }}/system-images/{{ create_avd_platform }}/{{ create_avd_image_type }}/{{ android_sdk_common_image_arch }}.
+      Run sdkmanager_install first to install the platform and system images.
+  when: not create_avd_platform_check.stat.exists
+
+- name: Check if AVD already exists
+  ansible.builtin.stat:
+    path: "~/.android/avd/{{ create_avd_name }}.avd"
+  register: create_avd_avd_check
+  changed_when: false
+
+- name: Create AVD
+  ansible.builtin.command:
+    cmd: >
+      {{ android_sdk_common_home }}/cmdline-tools/latest/bin/avdmanager -s
+      create avd
+      --name "{{ create_avd_name }}"
+      --package "system-images;{{ create_avd_platform }};{{ create_avd_image_type }};{{ android_sdk_common_image_arch }}"
+  when: not create_avd_avd_check.stat.exists
+  changed_when: true

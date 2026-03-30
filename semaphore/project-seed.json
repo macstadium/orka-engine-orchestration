@@ -351,7 +351,7 @@
       ]
     },
     {
-      "name": "Uninstall Androd SDK Components",
+      "name": "Uninstall Android SDK Components",
       "app": "ansible",
       "playbook": "sdkmanager_uninstall.yml",
       "repository": "Local Playbooks",
@@ -365,6 +365,47 @@
           "type": "string",
           "default_value": "android-35",
           "description": "Android platform to uninstall (e.g., android-34, android-35). All system images for this platform will be removed."
+        }
+      ]
+    },
+    {
+      "name": "Create Android Virtual Device",
+      "app": "ansible",
+      "playbook": "create_avd.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "vm_name",
+          "title": "VM Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the VM where the AVD should be created"
+        },
+        {
+          "name": "platform",
+          "title": "Android Platform",
+          "required": false,
+          "type": "string",
+          "default_value": "android-35",
+          "description": "Android platform to use (e.g., android-34, android-35)"
+        },
+        {
+          "name": "image_type",
+          "title": "System Image Type",
+          "required": false,
+          "type": "string",
+          "default_value": "default",
+          "description": "System image type to use (e.g., default, google_apis)"
+        },
+        {
+          "name": "sdcard_size",
+          "title": "SD Card Size",
+          "required": false,
+          "type": "string",
+          "default_value": "4096M",
+          "description": "SD card size for the AVD (e.g., 4096M, 8192M)"
         }
       ]
     },
