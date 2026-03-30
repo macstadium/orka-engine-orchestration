@@ -384,13 +384,6 @@
           "description": "Name of the VM where the AVD should be created"
         },
         {
-          "name": "avd_name",
-          "title": "AVD Name",
-          "required": true,
-          "type": "string",
-          "description": "Name of the Android Virtual Device to create"
-        },
-        {
           "name": "platform",
           "title": "Android Platform",
           "required": false,

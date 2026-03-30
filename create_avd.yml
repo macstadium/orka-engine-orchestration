@@ -17,19 +17,28 @@
         vm_name: "{{ vm_name }}"
       register: avd_create_result
 
+    - name: Determine next AVD name
+      next_avd_name:
+        vm_name: "{{ vm_name }}"
+      delegate_to: "{{ avd_create_result.target_host }}"
+      register: avd_name_result
+
     - name: Display AVD creation plan
       ansible.builtin.debug:
         msg: >
-          AVD will be created on host '{{ avd_create_result.target_host }}'
-          where VM '{{ avd_create_result.vm_name }}' is running.
+          AVD '{{ avd_name_result.avd_name }}' will be created on host
+          '{{ avd_create_result.target_host }}' where VM '{{ avd_create_result.vm_name }}' is running.
 
-    - name: Share target host with other hosts
+    - name: Share plan with other hosts
       ansible.builtin.set_fact:
         avd_target_host: "{{ avd_create_result.target_host }}"
+        avd_name: "{{ avd_name_result.avd_name }}"
 
 - name: Create AVD on target host
   hosts: hosts
   gather_facts: false
+  roles:
+    - android_sdk_common
   tasks:
     - name: Skip hosts that are not the target
       ansible.builtin.meta: end_host
@@ -39,9 +48,17 @@
       ansible.builtin.include_role:
         name: create_avd
       vars:
-        create_avd_name: "{{ avd_name }}"
+        create_avd_name: "{{ hostvars['localhost'].avd_name }}"
         create_avd_platform: "{{ platform | default('android-35') }}"
         create_avd_image_type: "{{ image_type | default('default') }}"
-        create_avd_sdcard_size: "{{ sdcard_size | default('4096M') }}"
+
+    - name: Display AVD creation summary
+      ansible.builtin.debug:
+        msg: >-
+          {{ hostvars['localhost'].avd_name }} |
+          VM: {{ vm_name }} |
+          Host: {{ inventory_hostname }} |
+          Platform: {{ platform | default('android-35') }} |
+          Image Type: {{ image_type | default('default') }}
   tags:
     - avdmanager

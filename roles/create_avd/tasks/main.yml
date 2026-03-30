@@ -1,8 +1,3 @@
-- name: Fail if AVD name is not provided
-  ansible.builtin.fail:
-    msg: "create_avd_name is required. Pass -e 'avd_name=<name>' when running the playbook."
-  when: create_avd_name is not defined or create_avd_name | length == 0
-
 - name: Verify avdmanager is installed
   ansible.builtin.stat:
     path: "{{ android_sdk_common_home }}/cmdline-tools/latest/bin/avdmanager"
@@ -44,6 +39,5 @@
       create avd
       --name "{{ create_avd_name }}"
       --package "system-images;{{ create_avd_platform }};{{ create_avd_image_type }};{{ android_sdk_common_image_arch }}"
-      --sdcard {{ create_avd_sdcard_size }}
   when: not create_avd_avd_check.stat.exists
   changed_when: true

@@ -1,3 +1,2 @@
 create_avd_platform: "android-35"
 create_avd_image_type: "default"
-create_avd_sdcard_size: "4096M"
