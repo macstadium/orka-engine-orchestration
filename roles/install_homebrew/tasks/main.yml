@@ -1,0 +1,18 @@
+---
+- name: Install Homebrew
+  ansible.builtin.shell:
+    cmd: |
+      NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    creates: "{{ install_homebrew_brew_executable }}"
+
+- name: Ensure brew shellenv
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_env.HOME }}/.zprofile"
+    line: 'eval "$({{ install_homebrew_brew_executable }} shellenv)"'
+    create: true
+    mode: "0644"
+
+- name: Update homebrew
+  community.general.homebrew:
+    path: "{{ install_homebrew_brew_path }}"
+    update_homebrew: true

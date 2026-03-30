@@ -2,7 +2,16 @@
 - name: Install Android SDK on target hosts
   hosts: hosts
   gather_facts: false
+  module_defaults:
+    ansible.builtin.setup:
+      gather_timeout: 20
+  pre_tasks:
+    - name: Gather minimal facts
+      ansible.builtin.setup:
+        filter:
+          - "ansible_env"
   roles:
+    - role: install_homebrew
     - role: install_android_sdk
   tags:
     - android-sdk
