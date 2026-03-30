@@ -1,3 +1,9 @@
+---
+- name: Install socat
+  community.general.homebrew:
+    path: "{{ install_android_sdk_brew_path }}"
+    name: socat
+
 - name: Check if Java is installed
   ansible.builtin.stat:
     path: "{{ install_android_sdk_java_home }}/bin/java"
