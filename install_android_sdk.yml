@@ -4,7 +4,7 @@
   gather_facts: false
   module_defaults:
     ansible.builtin.setup:
-        gather_timeout: 20
+      gather_timeout: 20
   pre_tasks:
     - name: Gather minimal facts
       ansible.builtin.setup:
