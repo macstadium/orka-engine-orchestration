@@ -10,8 +10,15 @@
       ansible.builtin.setup:
         filter:
           - "ansible_env"
+      tags:
+        - always
   roles:
     - role: install_homebrew
+      tags:
+        - orka-tools
     - role: install_android_sdk
-  tags:
-    - android-sdk
+      tags:
+        - android-sdk
+    - role: install_orka_android_tools
+      tags:
+        - orka-tools
