@@ -10,6 +10,7 @@
       ansible.builtin.setup:
         filter:
           - "ansible_env"
+          - "ansible_user_gid"
       tags:
         - always
   roles:
