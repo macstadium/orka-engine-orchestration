@@ -18,6 +18,7 @@ def main():
             bridge_ip=dict(type="str", required=False, default="192.168.64.1"),
             android_home_path=dict(type="str", required=False, default="/opt/android-sdk"),
             run_avd_path=dict(type="str", required=False, default="/opt/orka/bin/run-avd"),
+            log_path=dict(type="str", required=False, default="/opt/orka/logs/avd"),
         ),
         supports_check_mode=False,
     )
@@ -29,6 +30,7 @@ def main():
     bridge_ip = module.params["bridge_ip"]
     android_home_path = module.params["android_home_path"]
     run_avd_path = module.params["run_avd_path"]
+    log_path = module.params["log_path"]
 
     env = os.environ.copy()
     env["PATH"] = f"{android_home_path}/emulator:/opt/homebrew/bin:/opt/homebrew/sbin:" + env.get("PATH", "")
@@ -60,7 +62,7 @@ def main():
 
         cmd.extend(["-p", str(console_port), "-b", bridge_ip, "-r", str(relay_port)])
 
-        with open(f"/opt/orka/logs/avd/{name}.log", "w") as log_file:
+        with open(f"{log_path}/{name}.log", "a") as log_file:
             proc = subprocess.Popen(
                 cmd,
                 stdout=log_file,
