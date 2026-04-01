@@ -12,6 +12,9 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             name=dict(type="str", required=True),
+            cpu=dict(type="int", required=False),
+            memory=dict(type="int", required=False),
+            audio=dict(type="bool", required=False, default=False),
             android_home_path=dict(type="str", required=False, default="/opt/android-sdk"),
             run_avd_path=dict(type="str", required=False, default="/opt/orka/bin/run-avd"),
         ),
@@ -19,6 +22,9 @@ def main():
     )
 
     name = module.params["name"]
+    cpu = module.params["cpu"]
+    memory = module.params["memory"]
+    audio = module.params["audio"]
     android_home_path = module.params["android_home_path"]
     run_avd_path = module.params["run_avd_path"]
 
@@ -36,6 +42,13 @@ def main():
             result["message"] = f"AVD {name} already running"
             result["avd_list"] = avd_list
             module.exit_json(**result)
+
+        if cpu is not None:
+            cmd.extend(["-c", str(cpu)])
+        if memory is not None:
+            cmd.extend(["-m", str(memory)])
+        if audio:
+            cmd.append("-a")
 
         console_port = CONSOLE_PORT_START
         for _ in avd_list:
