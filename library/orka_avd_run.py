@@ -15,6 +15,7 @@ def main():
             cpu=dict(type="int", required=False),
             memory=dict(type="int", required=False),
             audio=dict(type="bool", required=False, default=False),
+            bridge_ip=dict(type="str", required=False, default="192.168.64.1"),
             android_home_path=dict(type="str", required=False, default="/opt/android-sdk"),
             run_avd_path=dict(type="str", required=False, default="/opt/orka/bin/run-avd"),
         ),
@@ -25,6 +26,7 @@ def main():
     cpu = module.params["cpu"]
     memory = module.params["memory"]
     audio = module.params["audio"]
+    bridge_ip = module.params["bridge_ip"]
     android_home_path = module.params["android_home_path"]
     run_avd_path = module.params["run_avd_path"]
 
@@ -56,7 +58,7 @@ def main():
 
         relay_port = (console_port + 1) + 10_000
 
-        cmd.extend(["-p", str(console_port), "-r", str(relay_port)])
+        cmd.extend(["-p", str(console_port), "-b", bridge_ip, "-r", str(relay_port)])
 
         with open(f"/opt/orka/logs/avd/{name}.log", "w") as log_file:
             proc = subprocess.Popen(
@@ -70,7 +72,8 @@ def main():
             )
 
         result["changed"] = True
-        result["pid"] = proc.pid
+        result["process_id"] = proc.pid
+        result["relay_ip"] = bridge_ip
         result["relay_port"] = relay_port
         module.exit_json(**result)
     except Exception as e:
