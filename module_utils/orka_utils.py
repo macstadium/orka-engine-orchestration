@@ -35,6 +35,7 @@ def get_vm_info(module, name, binary_path, result):
     except Exception as e:
         module.fail_json(msg=f"Error checking existing VMs: {str(e)}", **result)
 
+
 def get_running_avd_list(run_avd_path="/opt/orka/bin/run-avd"):
     """
     Get list of running AVDs from the process table
@@ -50,7 +51,11 @@ def get_running_avd_list(run_avd_path="/opt/orka/bin/run-avd"):
     proc = subprocess.run(cmd, capture_output=True, text=True)
 
     if proc.returncode == 0:
-        return [{"name": p_info[3], "pid": p_info[0]} for line in proc.stdout.splitlines() for p_info in [line.split()]]
+        return [
+            {"name": p_info[3], "pid": p_info[0]}
+            for line in proc.stdout.splitlines()
+            for p_info in [line.split()]
+        ]
     elif proc.returncode == 1:
         return []
     else:
