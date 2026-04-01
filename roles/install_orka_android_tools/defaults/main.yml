@@ -1,0 +1,3 @@
+install_orka_android_tools_brew_path: "/opt/homebrew/bin"
+install_orka_android_tools_bin_path: "/opt/orka/bin"
+install_orka_android_tools_log_path: "/opt/orka/logs/avd"

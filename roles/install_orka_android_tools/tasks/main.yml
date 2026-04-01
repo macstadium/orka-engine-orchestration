@@ -1,0 +1,30 @@
+---
+- name: Install socat
+  community.general.homebrew:
+    path: "{{ install_orka_android_tools_brew_path }}"
+    name: socat
+
+- name: Create bin directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ install_orka_android_tools_bin_path }}"
+    state: directory
+    owner: root
+    group: wheel
+    mode: "0755"
+
+- name: Create log directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ install_orka_android_tools_log_path }}"
+    state: directory
+    owner: root
+    group: "{{ ansible_user_gid }}"
+    mode: "0770"
+
+- name: Install run-avd script
+  become: true
+  ansible.builtin.copy:
+    src: "files/run-avd.sh"
+    dest: "{{ install_orka_android_tools_bin_path }}/run-avd"
+    mode: "0755"
