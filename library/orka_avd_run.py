@@ -4,17 +4,9 @@
 import os
 import subprocess
 from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.orka_utils import get_running_avd_list
 
-def get_running_avd_list(run_avd_path):
-    cmd = ["/usr/bin/pgrep", "-fl", run_avd_path]
-    proc = subprocess.run(cmd, capture_output=True, text=True)
-
-    if proc.returncode == 0:
-        return [line.split()[3] for line in proc.stdout.splitlines()]
-    elif proc.returncode == 1:
-        return []
-    else:
-        raise RuntimeError(f"Failed to get running AVD list: {proc.stderr.strip()}")
+CONSOLE_PORT_START = 5554
 
 def main():
     module = AnsibleModule(
@@ -38,11 +30,20 @@ def main():
 
     try:
         avd_list = get_running_avd_list(run_avd_path=run_avd_path)
+        running_avd = next((avd for avd in avd_list if avd["name"] == name), None)
 
-        if name in avd_list:
+        if running_avd is not None:
             result["message"] = f"AVD {name} already running"
             result["avd_list"] = avd_list
             module.exit_json(**result)
+
+        console_port = CONSOLE_PORT_START
+        for _ in avd_list:
+            console_port += 2
+
+        relay_port = (console_port + 1) + 10_000
+
+        cmd.extend(["-p", str(console_port), "-r", str(relay_port)])
 
         with open(f"/opt/orka/logs/avd/{name}.log", "w") as log_file:
             proc = subprocess.Popen(
@@ -55,9 +56,12 @@ def main():
                 env=env,
             )
 
-        module.exit_json(changed=True, pid=proc.pid)
+        result["changed"] = True
+        result["pid"] = proc.pid
+        result["relay_port"] = relay_port
+        module.exit_json(**result)
     except Exception as e:
-        module.fail_json(msg=f"Failed to run AVD {name}: {e}")
+        module.fail_json(msg=f"Failed to run AVD {name}: {e}", **result)
 
 if __name__ == "__main__":
     main()
