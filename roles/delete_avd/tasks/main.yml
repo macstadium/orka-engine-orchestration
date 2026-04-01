@@ -1,0 +1,43 @@
+- name: Verify avdmanager is installed
+  ansible.builtin.stat:
+    path: "{{ android_sdk_common_home }}/cmdline-tools/latest/bin/avdmanager"
+  register: delete_avd_check
+  changed_when: false
+
+- name: Fail if avdmanager is not installed
+  ansible.builtin.fail:
+    msg: >-
+      avdmanager not found at
+      {{ android_sdk_common_home }}/cmdline-tools/latest/bin/avdmanager.
+      Run install_android_sdk first.
+  when: not delete_avd_check.stat.exists
+
+- name: Gather AVD facts
+  avd_facts:
+    avdmanager_path: "{{ android_sdk_common_home }}/cmdline-tools/latest/bin/avdmanager"
+
+- name: Show all AVDs
+  ansible.builtin.debug:
+    var: avd_facts_all
+
+- name: Show running AVDs
+  ansible.builtin.debug:
+    var: avd_facts_running
+
+- name: Fail if AVD does not exist
+  ansible.builtin.fail:
+    msg: "AVD '{{ delete_avd_name }}' does not exist on this host."
+  when: delete_avd_name not in avd_facts_all
+
+- name: Fail if AVD is currently running
+  ansible.builtin.fail:
+    msg: "AVD '{{ delete_avd_name }}' is currently running. Stop it before deleting."
+  when: delete_avd_name in (avd_facts_running | map(attribute='name'))
+
+- name: Delete AVD
+  ansible.builtin.command:
+    cmd: >
+      {{ android_sdk_common_home }}/cmdline-tools/latest/bin/avdmanager -s
+      delete avd
+      --name "{{ delete_avd_name }}"
+  changed_when: true

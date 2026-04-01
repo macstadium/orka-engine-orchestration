@@ -1,6 +1,7 @@
 ---
 mock_modules:
   - analyze_vm_groups
+  - avd_facts
   - orka_vm_list
   - orka_vm_save
   - orka_image_list

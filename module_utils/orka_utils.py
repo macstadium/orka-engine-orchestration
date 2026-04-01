@@ -60,3 +60,21 @@ def get_running_avd_list(run_avd_path="/opt/orka/bin/run-avd"):
         return []
     else:
         raise RuntimeError(f"Failed to get running AVD list: {proc.stderr.strip()}")
+
+
+def get_avd_list(avdmanager_path="avdmanager"):
+    """
+    Get list of all AVDs from the avdmanager
+
+    Args:
+        avdmanager_path: The path to the avdmanager binary
+    Returns:
+        list: The list of all AVDs on the host
+    """
+    cmd = [avdmanager_path, "list", "avd", "-c"]
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+
+    if proc.returncode == 0:
+        return [avd.strip() for avd in proc.stdout.splitlines() if avd.strip()]
+    else:
+        raise RuntimeError(f"Failed to get AVD list: {proc.stderr.strip()}")

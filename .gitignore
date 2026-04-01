@@ -3,3 +3,5 @@
 dev/*
 
 semaphore/.env
+
+**/*.pyc
