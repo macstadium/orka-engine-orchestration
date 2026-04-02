@@ -94,6 +94,7 @@ from ansible.module_utils.orka_utils import get_running_avd_list
 
 CONSOLE_PORT_START = 5554
 
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -102,8 +103,12 @@ def main():
             memory=dict(type="int", required=False),
             audio=dict(type="bool", required=False, default=False),
             bridge_ip=dict(type="str", required=False, default="192.168.64.1"),
-            android_home_path=dict(type="str", required=False, default="/opt/android-sdk"),
-            run_avd_path=dict(type="str", required=False, default="/opt/orka/bin/run-avd"),
+            android_home_path=dict(
+                type="str", required=False, default="/opt/android-sdk"
+            ),
+            run_avd_path=dict(
+                type="str", required=False, default="/opt/orka/bin/run-avd"
+            ),
             log_path=dict(type="str", required=False, default="/opt/orka/logs/avd"),
         ),
         supports_check_mode=True,
@@ -119,10 +124,13 @@ def main():
     log_path = module.params["log_path"]
 
     env = os.environ.copy()
-    env["PATH"] = f"{android_home_path}/emulator:/opt/homebrew/bin:/opt/homebrew/sbin:" + env.get("PATH", "")
+    env["PATH"] = (
+        f"{android_home_path}/emulator:/opt/homebrew/bin:/opt/homebrew/sbin:"
+        + env.get("PATH", "")
+    )
     cmd = [run_avd_path, name]
 
-    result=dict(changed=False)
+    result = dict(changed=False)
 
     try:
         avd_list = get_running_avd_list(run_avd_path=run_avd_path)
@@ -171,6 +179,7 @@ def main():
         module.exit_json(**result)
     except Exception as e:
         module.fail_json(msg=f"Failed to run AVD {name}: {e}", **result)
+
 
 if __name__ == "__main__":
     main()
