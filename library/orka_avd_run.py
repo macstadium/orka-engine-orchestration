@@ -20,7 +20,7 @@ def main():
             run_avd_path=dict(type="str", required=False, default="/opt/orka/bin/run-avd"),
             log_path=dict(type="str", required=False, default="/opt/orka/logs/avd"),
         ),
-        supports_check_mode=False,
+        supports_check_mode=True,
     )
 
     name = module.params["name"]
@@ -61,6 +61,11 @@ def main():
         relay_port = (console_port + 1) + 10_000
 
         cmd.extend(["-p", str(console_port), "-b", bridge_ip, "-r", str(relay_port)])
+
+        if module.check_mode:
+            result["changed"] = True
+            result["message"] = f"Would run AVD {name} with command: {cmd}"
+            module.exit_json(**result)
 
         with open(f"{log_path}/{name}.log", "a") as log_file:
             proc = subprocess.Popen(
