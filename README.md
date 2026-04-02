@@ -180,7 +180,6 @@ Optional variables:
 - `platform` - The Android platform to use (default: `android-35`)
 - `image_type` - The system image type to use (default: `default`)
 - `run_avd` - Whether to run the AVD after creation (default: `true`)
-- `audio` - Whether to enable audio for the AVD (default: `false`)
 - `cpu`: The number of vCPUs to allocate when running the AVD (default: let host decide)
 - `memory`: The amount of memory in MB to allocate when running the AVD (default: let host decide)
 

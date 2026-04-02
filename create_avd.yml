@@ -55,7 +55,6 @@
     - name: Run AVD
       orka_avd_run:
         name: "{{ hostvars['localhost'].avd_name }}"
-        audio: "{{ audio | default(false) | bool }}"
         cpu: "{{ cpu | default(omit) }}"
         memory: "{{ memory | default(omit) }}"
       register: orka_avd_run_result
@@ -71,7 +70,6 @@
               'Host: ' ~ inventory_hostname,
               'Platform: ' ~ (platform | default('android-35')),
               'Image Type: ' ~ (image_type | default('default')),
-              ('Audio: ' ~ audio) if (run_avd | default(true) | bool and audio is defined) else '',
               ('CPU: ' ~ cpu) if (run_avd | default(true) | bool and cpu is defined) else '',
               ('Memory: ' ~ memory) if (run_avd | default(true) | bool and memory is defined) else '',
               ('Relay IP: ' ~ orka_avd_run_result['relay_ip']) if (run_avd | default(true) | bool) else '',

@@ -21,11 +21,6 @@ options:
         description: Amount of memory (in MB) to allocate
         required: false
         type: int
-    audio:
-        description: Enable audio for the Android virtual device
-        required: false
-        type: bool
-        default: false
     bridge_ip: The IP address of the vmnet bridge interface for the Orka VM network
         description:
         required: false
@@ -51,16 +46,15 @@ author:
 """
 
 EXAMPLES = r"""
+- name: Run AVD
+  orka_avd_run:
+    name: "foo-avd-0"
+
 - name: Run AVD with specific CPU and memory requests
   orka_avd_run:
     name: "foo-avd-0"
     cpu: 4
     memory: 2048
-
-- name: Run AVD with audio enabled
-  orka_avd_run:
-    name: "foo-avd-0"
-    audio: true
 
 - name: Run AVD with specific vmnet bridge interface IP
   orka_avd_run:
@@ -101,7 +95,6 @@ def main():
             name=dict(type="str", required=True),
             cpu=dict(type="int", required=False),
             memory=dict(type="int", required=False),
-            audio=dict(type="bool", required=False, default=False),
             bridge_ip=dict(type="str", required=False, default="192.168.64.1"),
             android_home_path=dict(
                 type="str", required=False, default="/opt/android-sdk"
@@ -117,7 +110,6 @@ def main():
     name = module.params["name"]
     cpu = module.params["cpu"]
     memory = module.params["memory"]
-    audio = module.params["audio"]
     bridge_ip = module.params["bridge_ip"]
     android_home_path = module.params["android_home_path"]
     run_avd_path = module.params["run_avd_path"]
@@ -145,8 +137,6 @@ def main():
             cmd.extend(["-c", str(cpu)])
         if memory is not None:
             cmd.extend(["-m", str(memory)])
-        if audio:
-            cmd.append("-a")
 
         console_port = CONSOLE_PORT_START
         for _ in avd_list:
