@@ -147,7 +147,7 @@ Example:
 ansible-playbook sdkmanager_uninstall.yml -i dev/inventory -e "platform=android-34"
 ```
 
-### Creating an Android Virtual Device
+### Creating and Running an Android Virtual Device
 
 Run the `create_avd.yml` playbook with `--tags plan` to see a plan for which host the AVD will be created on:
 
@@ -169,6 +169,7 @@ This will:
 - Determine the next available AVD index for the VM
 - Create an AVD on that host only
 - Verify that `avdmanager` is available (requires the Android SDK to be installed first)
+- Run the AVD and setup network connectivity between the specified VM and the AVD
 
 Required variables:
 
@@ -178,11 +179,15 @@ Optional variables:
 
 - `platform` - The Android platform to use (default: `android-35`)
 - `image_type` - The system image type to use (default: `default`)
+- `run_avd` - Whether to run the AVD after creation (default: `true`)
+- `audio` - Whether to enable audio for the AVD (default: `false`)
+- `cpu`: The number of vCPUs to allocate when running the AVD (default: let host decide)
+- `memory`: The amount of memory in MB to allocate when running the AVD (default: let host decide)
 
 Example with custom settings:
 
 ```bash
-ansible-playbook create_avd.yml -i dev/inventory -e "vm_name=my-vm" -e "platform=android-34" -e "image_type=google_apis"
+ansible-playbook create_avd.yml -i dev/inventory -e "vm_name=my-vm" -e "platform=android-34" -e "image_type=google_apis" -e "cpu=4" -e "memory=2048"
 ```
 
 ### Planning Deployment
