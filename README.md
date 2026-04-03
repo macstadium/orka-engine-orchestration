@@ -28,6 +28,7 @@ A web-based UI for running playbooks is available via [Ansible Semaphore](https:
 ├── sdkmanager_install.yml   # Main playbook for installing Android SDK platforms and system images
 ├── sdkmanager_uninstall.yml # Main playbook for uninstalling Android SDK platforms and system images
 ├── create_avd.yml           # Main playbook for creating Android Virtual Devices
+├── delete_avd.yml           # Main playbook for deleting Android Virtual Devices
 ├── provision_user.yml       # Main playbook for provisioning an admin user on a VM
 ├── install_citrix_vda.yml   # Main playbook for installing Citrix VDA on a VM
 ├── register_citrix_vda.yml  # Main playbook for registering a Citrix VDA with a Delivery Controller
@@ -188,6 +189,28 @@ Example with custom settings:
 ```bash
 ansible-playbook create_avd.yml -i dev/inventory -e "vm_name=my-vm" -e "platform=android-34" -e "image_type=google_apis" -e "cpu=4" -e "memory=2048"
 ```
+
+### Deleting an Android Virtual Device
+
+To delete an AVD from the host where a specific VM is running:
+
+```bash
+ansible-playbook delete_avd.yml -i dev/inventory -e "vm_name=my-vm" -e "avd_index=0"
+```
+
+The AVD name is derived from the VM name and index (e.g. `avd_index=0` deletes `my-vm-avd-0`).
+
+This will:
+- Gather VM data from all hosts
+- Find the host where the specified VM is running
+- Verify the AVD exists
+- Check that no emulator is currently running for the AVD
+- Delete the AVD
+
+Required variables:
+
+- `vm_name` - The name of the VM where the AVD is located
+- `avd_index` - The index of the AVD to delete (e.g. `0` for `my-vm-avd-0`)
 
 ### Planning Deployment
 

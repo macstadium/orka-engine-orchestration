@@ -1,0 +1,54 @@
+---
+- name: Gather VM data from all hosts
+  hosts: hosts
+  gather_facts: false
+  tags: plan
+  roles:
+    - gather_host_facts
+
+- name: Plan AVD deletion
+  hosts: localhost
+  gather_facts: false
+  tags: plan
+  tasks:
+    - name: Plan AVD deletion
+      plan_avd_deletion:
+        hosts_data: "{{ gather_host_facts_all_hosts_data }}"
+        vm_name: "{{ vm_name }}"
+        avd_index: "{{ avd_index }}"
+      register: avd_delete_result
+
+    - name: Display AVD deletion plan
+      ansible.builtin.debug:
+        msg: >
+          AVD '{{ avd_delete_result.avd_name }}' will be deleted from host
+          '{{ avd_delete_result.target_host }}' where VM '{{ avd_delete_result.vm_name }}' is running.
+
+    - name: Share plan with other hosts
+      ansible.builtin.set_fact:
+        avd_target_host: "{{ avd_delete_result.target_host }}"
+        avd_name: "{{ avd_delete_result.avd_name }}"
+
+- name: Delete AVD on target host
+  hosts: hosts
+  gather_facts: false
+  tasks:
+    - name: Skip hosts that are not the target
+      ansible.builtin.meta: end_host
+      when: inventory_hostname != hostvars['localhost'].avd_target_host
+
+    - name: Delete AVD
+      ansible.builtin.include_role:
+        name: delete_avd
+      vars:
+        delete_avd_name: "{{ hostvars['localhost'].avd_name }}"
+
+    - name: Display AVD deletion summary
+      ansible.builtin.debug:
+        msg: >-
+          {{ hostvars['localhost'].avd_name }} |
+          VM: {{ vm_name }} |
+          Host: {{ inventory_hostname }} |
+          Status: deleted
+  tags:
+    - avdmanager

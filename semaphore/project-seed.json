@@ -400,14 +400,6 @@
           "description": "System image type to use (e.g., default, google_apis)"
         },
         {
-          "name": "sdcard_size",
-          "title": "SD Card Size",
-          "required": false,
-          "type": "string",
-          "default_value": "4096M",
-          "description": "SD card size for the AVD (e.g., 4096M, 8192M)"
-        },
-        {
           "name": "run_avd",
           "title": "Run AVD",
           "type": "enum",
@@ -432,6 +424,30 @@
           "type": "integer",
           "required": false,
           "description": "Amount of memory in MB to allocate"
+        }
+      ]
+    },
+    {
+      "name": "Delete Android Virtual Device",
+      "app": "ansible",
+      "playbook": "delete_avd.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "vm_name",
+          "title": "VM Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the VM where the AVD is located"
+        },
+        {
+          "name": "avd_index",
+          "title": "AVD Index",
+          "required": true,
+          "type": "integer",
+          "description": "Index of the AVD to delete (e.g., 0 for my-vm-avd-0)"
         }
       ]
     },
