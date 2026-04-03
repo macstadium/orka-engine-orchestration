@@ -63,22 +63,21 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
-changed:
-    description: Whether the task resulted in a change
-    type: bool
-    returned: always
 process_id:
     description: Process ID of the run-avd script
     type: int
-    returned: on success
+    returned: changed
+    sample: 13444
 relay_ip:
     description: The IP address that the AVD is accessible from within the Orka VM guest
     type: str
-    returned: on success
+    returned: changed
+    sample: 192.168.64.1
 relay_port:
     description: The port that the AVD is accessible from within the Orka VM guest
     type: int
-    returned: on success
+    returned: changed
+    sample: 15555
 """
 
 import os
