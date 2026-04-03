@@ -369,9 +369,9 @@
       ]
     },
     {
-      "name": "Create Android Virtual Device",
+      "name": "Create and Run Android Virtual Device",
       "app": "ansible",
-      "playbook": "create_avd.yml",
+      "playbook": "deploy_avd.yml",
       "repository": "Local Playbooks",
       "inventory": "Dev Inventory",
       "environment": "Default",

@@ -27,7 +27,7 @@ A web-based UI for running playbooks is available via [Ansible Semaphore](https:
 ├── install_android_sdk.yml  # Main playbook for installing Android SDK
 ├── sdkmanager_install.yml   # Main playbook for installing Android SDK platforms and system images
 ├── sdkmanager_uninstall.yml # Main playbook for uninstalling Android SDK platforms and system images
-├── create_avd.yml           # Main playbook for creating Android Virtual Devices
+├── deploy_avd.yml           # Main playbook for creating and running Android Virtual Devices
 ├── delete_avd.yml           # Main playbook for deleting Android Virtual Devices
 ├── provision_user.yml       # Main playbook for provisioning an admin user on a VM
 ├── install_citrix_vda.yml   # Main playbook for installing Citrix VDA on a VM
@@ -150,16 +150,16 @@ ansible-playbook sdkmanager_uninstall.yml -i dev/inventory -e "platform=android-
 
 ### Creating and Running an Android Virtual Device
 
-Run the `create_avd.yml` playbook with `--tags plan` to see a plan for which host the AVD will be created on:
+Run the `deploy_avd.yml` playbook with `--tags plan` to see a plan for which host the AVD will be created on:
 
 ```bash
-ansible-playbook create_avd.yml -i dev/inventory -e "vm_name=my-vm" --tags plan
+ansible-playbook deploy_avd.yml -i dev/inventory -e "vm_name=my-vm" --tags plan
 ```
 
 Then, to create an Android Virtual Device (AVD) on the host where a specific VM is running:
 
 ```bash
-ansible-playbook create_avd.yml -i dev/inventory -e "vm_name=my-vm"
+ansible-playbook deploy_avd.yml -i dev/inventory -e "vm_name=my-vm"
 ```
 
 The AVD name is derived automatically from the VM name using the pattern `{vm_name}-avd-{index}`, where the index increments for each new AVD associated with the VM (e.g. `my-vm-avd-0`, `my-vm-avd-1`).
@@ -187,7 +187,7 @@ Optional variables:
 Example with custom settings:
 
 ```bash
-ansible-playbook create_avd.yml -i dev/inventory -e "vm_name=my-vm" -e "platform=android-34" -e "image_type=google_apis" -e "cpu=4" -e "memory=2048"
+ansible-playbook deploy_avd.yml -i dev/inventory -e "vm_name=my-vm" -e "platform=android-34" -e "image_type=google_apis" -e "cpu=4" -e "memory=2048"
 ```
 
 ### Deleting an Android Virtual Device
