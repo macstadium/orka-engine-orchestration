@@ -406,6 +406,32 @@
           "type": "string",
           "default_value": "4096M",
           "description": "SD card size for the AVD (e.g., 4096M, 8192M)"
+        },
+        {
+          "name": "run_avd",
+          "title": "Run AVD",
+          "type": "enum",
+          "required": false,
+          "default_value": "true",
+          "description": "Run AVD after creation",
+          "values": [
+            { "name": "Yes", "value": "true" },
+            { "name": "No", "value": "false" }
+          ]
+        },
+        {
+          "name": "cpu",
+          "title": "CPU Cores",
+          "type": "integer",
+          "required": false,
+          "description": "Number of CPU cores to allocate"
+        },
+        {
+          "name": "memory",
+          "title": "Memory (MB)",
+          "type": "integer",
+          "required": false,
+          "description": "Amount of memory in MB to allocate"
         }
       ]
     },
