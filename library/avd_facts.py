@@ -53,10 +53,10 @@ ansible_facts:
             elements: str
             sample: ["my-vm-avd-0", "my-vm-avd-1"]
         avd_facts_running:
-            description: List of dicts with name and pid for each running AVD
+            description: List of running AVDs with name, pid, gateway_ip, and relay_port for each
             type: list
             elements: dict
-            sample: [{"name": "my-vm-avd-0", "pid": "12345"}]
+            sample: [{"name": "my-vm-avd-0", "pid": "12345", "gateway_ip": "192.168.64.1", "relay_port": "15555"}]
 """
 
 from ansible.module_utils.basic import AnsibleModule

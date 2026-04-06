@@ -1,0 +1,57 @@
+---
+- name: Gather VM data from all hosts
+  hosts: hosts
+  gather_facts: false
+  tags: plan
+  roles:
+    - gather_host_facts
+
+- name: Gather AVD facts from all hosts
+  hosts: hosts
+  gather_facts: false
+  roles:
+    - gather_avd_facts
+
+- name: List AVDs
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Display AVDs matching VM name
+      ansible.builtin.debug:
+        msg: "{{ msg_parts | select | join(' | ') }}"
+      vars:
+        avd_name: "{{ item.1 }}"
+        running_info: "{{ item.0.running_avds | selectattr('name', 'equalto', item.1) | list }}"
+        is_running: "{{ running_info | length > 0 }}"
+        msg_parts:
+          - "{{ avd_name }}"
+          - "Host: {{ item.0.hostname }}"
+          - "Status: {{ 'running' if is_running else 'stopped' }}"
+          - "{{ 'PID: ' ~ running_info[0].pid if is_running else '' }}"
+          - "{{ 'Gateway IP: ' ~ running_info[0].gateway_ip if is_running and running_info[0].gateway_ip is defined else '' }}"
+          - "{{ 'ADB Relay Port: ' ~ running_info[0].relay_port if is_running and running_info[0].relay_port is defined else '' }}"
+      loop: "{{ gather_avd_facts_all_hosts_data | subelements('all_avds') }}"
+      loop_control:
+        label: "{{ item.1 }}"
+      when:
+        - vm_name is defined
+        - item.1 is match('^' ~ vm_name ~ '-avd-')
+
+    - name: Display all AVDs
+      ansible.builtin.debug:
+        msg: "{{ msg_parts | select | join(' | ') }}"
+      vars:
+        avd_name: "{{ item.1 }}"
+        running_info: "{{ item.0.running_avds | selectattr('name', 'equalto', item.1) | list }}"
+        is_running: "{{ running_info | length > 0 }}"
+        msg_parts:
+          - "{{ avd_name }}"
+          - "Host: {{ item.0.hostname }}"
+          - "Status: {{ 'running' if is_running else 'stopped' }}"
+          - "{{ 'PID: ' ~ running_info[0].pid if is_running else '' }}"
+          - "{{ 'Gateway IP: ' ~ running_info[0].gateway_ip if is_running and running_info[0].gateway_ip is defined else '' }}"
+          - "{{ 'ADB Relay Port: ' ~ running_info[0].relay_port if is_running and running_info[0].relay_port is defined else '' }}"
+      loop: "{{ gather_avd_facts_all_hosts_data | subelements('all_avds') }}"
+      loop_control:
+        label: "{{ item.1 }}"
+      when: vm_name is not defined

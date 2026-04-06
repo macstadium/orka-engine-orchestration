@@ -428,6 +428,23 @@
       ]
     },
     {
+      "name": "List Android Virtual Devices",
+      "app": "ansible",
+      "playbook": "list_avds.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "vm_name",
+          "title": "VM Name",
+          "required": false,
+          "type": "",
+          "description": "Filter by VM name (leave empty to list all AVDs)"
+        }
+      ]
+    },
+    {
       "name": "Delete Android Virtual Device",
       "app": "ansible",
       "playbook": "delete_avd.yml",
