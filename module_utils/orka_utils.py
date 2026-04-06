@@ -37,6 +37,17 @@ def get_vm_info(module, name, binary_path, result):
 
 
 def _extract_flag_value(flag, args):
+    """
+    Extract the value following a flag in a list of command-line arguments.
+
+    Args:
+        flag: The flag to search for (e.g. "-b", "-r")
+        args: List of command-line arguments to search
+
+    Returns:
+        str: The value immediately following the flag, or None if the flag
+            is not present or has no subsequent value
+    """
     if flag in args:
         flag_index = args.index(flag)
         if flag_index + 1 < len(args):
@@ -45,6 +56,15 @@ def _extract_flag_value(flag, args):
 
 
 def _parse_running_avd_process(line):
+    """
+    Parse a line of pgrep output into a running AVD info dict.
+
+    Args:
+        line: A single line of output from pgrep -fl
+
+    Returns:
+        dict: AVD info with keys: name, pid, gateway_ip, relay_port
+    """
     parts = line.split()
     process_args = parts[3:]
     return {
