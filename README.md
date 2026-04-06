@@ -28,6 +28,7 @@ A web-based UI for running playbooks is available via [Ansible Semaphore](https:
 ├── sdkmanager_install.yml   # Main playbook for installing Android SDK platforms and system images
 ├── sdkmanager_uninstall.yml # Main playbook for uninstalling Android SDK platforms and system images
 ├── deploy_avd.yml           # Main playbook for creating and running Android Virtual Devices
+├── list_avds.yml            # Main playbook for listing Android Virtual Devices
 ├── delete_avd.yml           # Main playbook for deleting Android Virtual Devices
 ├── provision_user.yml       # Main playbook for provisioning an admin user on a VM
 ├── install_citrix_vda.yml   # Main playbook for installing Citrix VDA on a VM
@@ -189,6 +190,26 @@ Example with custom settings:
 ```bash
 ansible-playbook deploy_avd.yml -i dev/inventory -e "vm_name=my-vm" -e "platform=android-34" -e "image_type=google_apis" -e "cpu=4" -e "memory=2048"
 ```
+
+### Listing Android Virtual Devices
+
+To list all AVDs across all hosts:
+
+```bash
+ansible-playbook list_avds.yml -i dev/inventory
+```
+
+To list only AVDs belonging to a specific VM:
+
+```bash
+ansible-playbook list_avds.yml -i dev/inventory -e "vm_name=my-vm"
+```
+
+Each AVD is displayed with its host and status. Running AVDs include additional details: PID, gateway IP, and ADB relay port.
+
+Optional variables:
+
+- `vm_name` - Filter by VM name (only shows AVDs matching `{vm_name}-avd-*`)
 
 ### Deleting an Android Virtual Device
 

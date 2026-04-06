@@ -1,0 +1,22 @@
+---
+- name: Gather AVD facts on each host
+  avd_facts:
+    avdmanager_path: "{{ gather_avd_facts_avdmanager_path }}"
+    run_avd_path: "{{ gather_avd_facts_run_avd_path }}"
+  tags:
+    - avdmanager
+
+- name: Add AVD host data
+  ansible.builtin.set_fact:
+    gather_avd_facts_host_data:
+      hostname: "{{ inventory_hostname }}"
+      all_avds: "{{ avd_facts_all }}"
+      running_avds: "{{ avd_facts_running }}"
+
+- name: Collect AVD data from all hosts
+  ansible.builtin.set_fact:
+    gather_avd_facts_all_hosts_data: "{{ gather_avd_facts_all_hosts_data | default([]) + [hostvars[item].gather_avd_facts_host_data] }}"
+  loop: "{{ ansible_play_hosts }}"
+  run_once: true
+  delegate_to: localhost
+  delegate_facts: true
