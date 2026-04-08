@@ -53,11 +53,11 @@
         create_avd_image_type: "{{ image_type | default('default') }}"
 
     - name: Run AVD
-      orka_avd_run:
+      avd:
         name: "{{ hostvars['localhost'].avd_name }}"
         cpu: "{{ cpu | default(omit) }}"
         memory: "{{ memory | default(omit) }}"
-      register: orka_avd_run_result
+      register: avd_result
       when: run_avd | default(true) | bool
 
     - name: Display AVD creation summary
@@ -72,8 +72,8 @@
               'Image Type: ' ~ (image_type | default('default')),
               ('CPU: ' ~ cpu) if (run_avd | default(true) | bool and cpu is defined) else '',
               ('Memory: ' ~ memory) if (run_avd | default(true) | bool and memory is defined) else '',
-              ('Relay IP: ' ~ orka_avd_run_result['relay_ip']) if (run_avd | default(true) | bool) else '',
-              ('Relay Port: ' ~ orka_avd_run_result['relay_port']) if (run_avd | default(true) | bool) else '',
+              ('Relay IP: ' ~ avd_result['relay_ip']) if (run_avd | default(true) | bool) else '',
+              ('Relay Port: ' ~ avd_result['relay_port']) if (run_avd | default(true) | bool) else '',
             ] | select | join(' | ')
           }}
   tags:

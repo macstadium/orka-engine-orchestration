@@ -1,0 +1,80 @@
+---
+- name: Gather VM data from all hosts
+  hosts: hosts
+  gather_facts: false
+  tags: plan
+  roles:
+    - gather_host_facts
+
+- name: Gather AVD facts from all hosts
+  hosts: hosts
+  gather_facts: false
+  tags: plan
+  roles:
+    - gather_avd_facts
+
+- name: Plan AVD management
+  hosts: localhost
+  gather_facts: false
+  tags: plan
+  tasks:
+    - name: Find target host and resolve AVD
+      plan_avd_management:
+        hosts_data: "{{ gather_host_facts_all_hosts_data }}"
+        avd_hosts_data: "{{ gather_avd_facts_all_hosts_data }}"
+        vm_name: "{{ vm_name }}"
+        avd_index: "{{ avd_index | default(omit) }}"
+        desired_state: "{{ desired_state }}"
+      register: avd_plan_result
+
+    - name: Display AVD management plan
+      ansible.builtin.debug:
+        msg: >
+          AVD '{{ avd_plan_result.avd_name }}' on host '{{ avd_plan_result.target_host }}'
+          is currently {{ avd_plan_result.avd_state }}, desired state is {{ desired_state }}.
+
+    - name: Share plan with other hosts
+      ansible.builtin.set_fact:
+        avd_target_host: "{{ avd_plan_result.target_host }}"
+        avd_name: "{{ avd_plan_result.avd_name }}"
+        avd_state: "{{ avd_plan_result.avd_state }}"
+
+- name: Manage AVD on target host
+  hosts: hosts
+  gather_facts: false
+  tasks:
+    - name: Skip hosts that are not the target
+      ansible.builtin.meta: end_host
+      when: inventory_hostname != hostvars['localhost'].avd_target_host
+
+    - name: AVD already in desired state
+      ansible.builtin.debug:
+        msg: "AVD '{{ hostvars['localhost'].avd_name }}' is already {{ desired_state }}"
+      when: hostvars['localhost'].avd_state == desired_state
+
+    - name: Manage AVD state
+      avd:
+        name: "{{ hostvars['localhost'].avd_name }}"
+        state: "{{ desired_state }}"
+        cpu: "{{ cpu | default(omit) }}"
+        memory: "{{ memory | default(omit) }}"
+      register: avd_result
+      when: hostvars['localhost'].avd_state != desired_state
+
+    - name: Display AVD management summary
+      ansible.builtin.debug:
+        msg: >-
+          {{
+            [
+              hostvars['localhost'].avd_name,
+              'VM: ' ~ vm_name,
+              'Host: ' ~ inventory_hostname,
+              'State: ' ~ desired_state,
+              ('CPU: ' ~ cpu) if (desired_state == 'running' and cpu is defined) else '',
+              ('Memory: ' ~ memory) if (desired_state == 'running' and memory is defined) else '',
+              ('Relay IP: ' ~ avd_result['relay_ip']) if (desired_state == 'running' and hostvars['localhost'].avd_state != 'running') else '',
+              ('Relay Port: ' ~ avd_result['relay_port']) if (desired_state == 'running' and hostvars['localhost'].avd_state != 'running') else '',
+            ] | select | join(' | ')
+          }}
+  tags:
+    - avdmanager
