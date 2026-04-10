@@ -469,6 +469,56 @@
       ]
     },
     {
+      "name": "Manage Android Virtual Device",
+      "app": "ansible",
+      "playbook": "avd.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "vm_name",
+          "title": "VM Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the VM where the AVD is located"
+        },
+        {
+          "name": "desired_state",
+          "title": "Desired State",
+          "required": true,
+          "type": "enum",
+          "description": "Target AVD state",
+          "values": [
+            { "name": "running", "value": "running" },
+            { "name": "stopped", "value": "stopped" },
+            { "name": "absent", "value": "absent" }
+          ]
+        },
+        {
+          "name": "avd_index",
+          "title": "AVD Index",
+          "required": false,
+          "type": "integer",
+          "description": "Index of the AVD to manage (e.g., 0 for my-vm-avd-0). Required when multiple AVDs exist for the VM."
+        },
+        {
+          "name": "cpu",
+          "title": "CPU Cores",
+          "type": "integer",
+          "required": false,
+          "description": "Number of CPU cores to allocate (only used when starting)"
+        },
+        {
+          "name": "memory",
+          "title": "Memory (MB)",
+          "type": "integer",
+          "required": false,
+          "description": "Amount of memory in MB to allocate (only used when starting)"
+        }
+      ]
+    },
+    {
       "name": "Provision User to VM",
       "app": "ansible",
       "playbook": "provision_user.yml",

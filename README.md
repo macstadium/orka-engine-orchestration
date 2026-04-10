@@ -30,6 +30,7 @@ A web-based UI for running playbooks is available via [Ansible Semaphore](https:
 ├── deploy_avd.yml           # Main playbook for creating and running Android Virtual Devices
 ├── list_avds.yml            # Main playbook for listing Android Virtual Devices
 ├── delete_avd.yml           # Main playbook for deleting Android Virtual Devices
+├── avd.yml                  # Main playbook for managing (start, stop, delete) Android Virtual Devices
 ├── provision_user.yml       # Main playbook for provisioning an admin user on a VM
 ├── install_citrix_vda.yml   # Main playbook for installing Citrix VDA on a VM
 ├── register_citrix_vda.yml  # Main playbook for registering a Citrix VDA with a Delivery Controller
@@ -232,6 +233,52 @@ Required variables:
 
 - `vm_name` - The name of the VM where the AVD is located
 - `avd_index` - The index of the AVD to delete (e.g. `0` for `my-vm-avd-0`)
+
+### Managing an Android Virtual Device
+
+To start, stop, or delete an AVD associated with a VM:
+
+```bash
+ansible-playbook avd.yml -i dev/inventory -e "vm_name=my-vm" -e "desired_state=running"
+```
+
+This will:
+- Gather VM and AVD data from all hosts
+- Find the host where the specified VM is running
+- Resolve the target AVD (auto-detected when only one exists for the VM)
+- Start, stop, or delete the AVD based on the desired state
+
+The playbook is idempotent — it will not attempt to start an already running AVD, stop an already stopped one, or delete one that does not exist.
+
+Required variables:
+
+- `vm_name` - The name of the VM where the AVD is located
+- `desired_state` - Target state: `running`, `stopped`, or `absent`
+
+Optional variables:
+
+- `avd_index` - The index of the AVD to manage (e.g. `0` for `my-vm-avd-0`). Required when multiple AVDs exist for the VM; defaults to the only AVD when there is just one.
+- `cpu` - The number of vCPUs to allocate when starting the AVD
+- `memory` - The amount of memory in MB to allocate when starting the AVD
+
+Examples:
+
+```bash
+# Start the AVD for my-vm with custom resources
+ansible-playbook avd.yml -i dev/inventory -e "vm_name=my-vm" -e "desired_state=running" -e "cpu=4" -e "memory=2048"
+
+# Stop the AVD
+ansible-playbook avd.yml -i dev/inventory -e "vm_name=my-vm" -e "desired_state=stopped"
+
+# Delete a specific AVD by index
+ansible-playbook avd.yml -i dev/inventory -e "vm_name=my-vm" -e "desired_state=absent" -e "avd_index=1"
+```
+
+To preview the plan without making changes:
+
+```bash
+ansible-playbook avd.yml -i dev/inventory -e "vm_name=my-vm" -e "desired_state=running" --tags plan
+```
 
 ### Planning Deployment
 

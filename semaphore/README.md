@@ -76,9 +76,10 @@ The following templates are available in the **Orka Engine Orchestration** proje
 | Install Android SDK              | `install_android_sdk.yml`    | `install_android_sdk_force` (optional)                      |
 | Install Android SDK Components   | `sdkmanager_install.yml`     | `platform`, `image_types` (optional)                        |
 | Uninstall Android SDK Components | `sdkmanager_uninstall.yml`   | `platform`                                                  |
-| Create Android Virtual Device    | `create_avd.yml`             | `vm_name`, `platform` (optional), `image_type` (optional)   |
+| Create Android Virtual Device    | `deploy_avd.yml`             | `vm_name`, `platform` (optional), `image_type` (optional)   |
 | List Android Virtual Devices     | `list_avds.yml`              | `vm_name` (optional)                                        |
 | Delete Android Virtual Device    | `delete_avd.yml`             | `vm_name`, `avd_index`                                      |
+| Manage Android Virtual Device    | `avd.yml`                    | `vm_name`, `desired_state` (`running`, `stopped`, `absent`), `avd_index` (optional), `cpu` (optional), `memory` (optional) |
 | Install Citrix VDA               | `install_citrix_vda.yml`     | `vm_name`                                                   |
 | Register Citrix VDA              | `register_citrix_vda.yml`    | `vm_name`, `enrollment_token`                               |
 
