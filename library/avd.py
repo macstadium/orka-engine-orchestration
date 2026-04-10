@@ -52,6 +52,7 @@ options:
         default: "/opt/orka/logs/avd"
 author:
     - "Spike Burton (@spikeburton)"
+    - "Cameron Roe (@cameronbroe)"
 """
 
 EXAMPLES = r"""
@@ -109,138 +110,157 @@ from ansible.module_utils.orka_utils import get_avd_list, get_running_avd_list
 CONSOLE_PORT_START = 5554
 
 
-def avd_exists(name, android_home_path):
-    """Check if an AVD exists by name using avdmanager."""
-    avdmanager_path = f"{android_home_path}/cmdline-tools/latest/bin/avdmanager"
-    return name in get_avd_list(avdmanager_path=avdmanager_path)
+class AVDManager:
+    def __init__(self, module):
+        self.module = module
+        self.name = module.params["name"]
+        self.cpu = module.params["cpu"]
+        self.memory = module.params["memory"]
+        self.bridge_ip = module.params["bridge_ip"]
+        self.android_home_path = module.params["android_home_path"]
+        self.run_avd_path = module.params["run_avd_path"]
+        self.log_path = module.params["log_path"]
+        self.avdmanager_path = (
+            f"{self.android_home_path}/cmdline-tools/latest/bin/avdmanager"
+        )
+        self.result = dict(changed=False)
 
+    def avd_exists(self):
+        """Check if an AVD exists by name using avdmanager."""
+        return self.name in get_avd_list(avdmanager_path=self.avdmanager_path)
 
-def find_running_avd(name, run_avd_path):
-    """Find a running AVD by name. Returns (avd_info, all_running_avds)."""
-    avd_list = get_running_avd_list(run_avd_path=run_avd_path)
-    running_avd = next((avd for avd in avd_list if avd["name"] == name), None)
-    return running_avd, avd_list
+    def find_running_avd(self):
+        """Find a running AVD by name. Returns (avd_info, all_running_avds)."""
+        avd_list = get_running_avd_list(run_avd_path=self.run_avd_path)
+        running_avd = next((avd for avd in avd_list if avd["name"] == self.name), None)
+        return running_avd, avd_list
 
+    def start(self):
+        """Start an AVD. Returns the result dict."""
+        if not self.avd_exists():
+            self.module.fail_json(
+                msg=f"AVD '{self.name}' does not exist", **self.result
+            )
 
-def start_avd(
-    module, name, cpu, memory, bridge_ip, android_home_path, run_avd_path, log_path
-):
-    """Start an AVD. Returns the result dict."""
-    result = dict(changed=False)
+        env = os.environ.copy()
+        env["PATH"] = (
+            f"{self.android_home_path}/emulator:/opt/homebrew/bin:/opt/homebrew/sbin:"
+            + env.get("PATH", "")
+        )
+        cmd = [self.run_avd_path, self.name]
 
-    if not avd_exists(name, android_home_path):
-        module.fail_json(msg=f"AVD '{name}' does not exist", **result)
+        running_avd, avd_list = self.find_running_avd()
 
-    env = os.environ.copy()
-    env["PATH"] = (
-        f"{android_home_path}/emulator:/opt/homebrew/bin:/opt/homebrew/sbin:"
-        + env.get("PATH", "")
-    )
-    cmd = [run_avd_path, name]
+        if running_avd is not None:
+            self.result["message"] = f"AVD {self.name} already running"
+            self.result["avd_list"] = avd_list
+            return self.result
 
-    running_avd, avd_list = find_running_avd(name, run_avd_path)
+        if self.cpu is not None:
+            cmd.extend(["-c", str(self.cpu)])
+        if self.memory is not None:
+            cmd.extend(["-m", str(self.memory)])
 
-    if running_avd is not None:
-        result["message"] = f"AVD {name} already running"
-        result["avd_list"] = avd_list
-        return result
+        used_console_ports = {avd["relay_port"] - 10_001 for avd in avd_list}
+        console_port = CONSOLE_PORT_START
+        while console_port in used_console_ports:
+            console_port += 2
 
-    if cpu is not None:
-        cmd.extend(["-c", str(cpu)])
-    if memory is not None:
-        cmd.extend(["-m", str(memory)])
+        relay_port = (console_port + 1) + 10_000
 
-    used_console_ports = {avd["relay_port"] - 10_001 for avd in avd_list}
-    console_port = CONSOLE_PORT_START
-    while console_port in used_console_ports:
-        console_port += 2
-
-    relay_port = (console_port + 1) + 10_000
-
-    cmd.extend(["-p", str(console_port), "-b", bridge_ip, "-r", str(relay_port)])
-
-    if module.check_mode:
-        result["changed"] = True
-        result["message"] = f"Would run AVD {name} with command: {cmd}"
-        return result
-
-    with open(f"{log_path}/{name}.log", "a") as log_file:
-        proc = subprocess.Popen(
-            cmd,
-            stdout=log_file,
-            stderr=log_file,
-            stdin=subprocess.DEVNULL,
-            start_new_session=True,
-            close_fds=True,
-            env=env,
+        cmd.extend(
+            ["-p", str(console_port), "-b", self.bridge_ip, "-r", str(relay_port)]
         )
 
-    result["changed"] = True
-    result["process_id"] = proc.pid
-    result["relay_ip"] = bridge_ip
-    result["relay_port"] = relay_port
-    return result
+        if self.module.check_mode:
+            self.result["changed"] = True
+            self.result["message"] = f"Would run AVD {self.name} with command: {cmd}"
+            return self.result
 
+        with open(f"{self.log_path}/{self.name}.log", "a") as log_file:
+            proc = subprocess.Popen(
+                cmd,
+                stdout=log_file,
+                stderr=log_file,
+                stdin=subprocess.DEVNULL,
+                start_new_session=True,
+                close_fds=True,
+                env=env,
+            )
 
-def stop_avd(module, name, run_avd_path, android_home_path):
-    """Stop a running AVD. Returns the result dict."""
-    result = dict(changed=False)
+        self.result["changed"] = True
+        self.result["process_id"] = proc.pid
+        self.result["relay_ip"] = self.bridge_ip
+        self.result["relay_port"] = relay_port
+        return self.result
 
-    if not avd_exists(name, android_home_path):
-        module.fail_json(msg=f"AVD '{name}' does not exist", **result)
+    def stop(self):
+        """Stop a running AVD. Returns the result dict."""
+        if not self.avd_exists():
+            self.module.fail_json(
+                msg=f"AVD '{self.name}' does not exist", **self.result
+            )
 
-    running_avd, _ = find_running_avd(name, run_avd_path)
+        running_avd, _ = self.find_running_avd()
 
-    if running_avd is None:
-        result["message"] = f"AVD {name} is not running"
-        return result
+        if running_avd is None:
+            self.result["message"] = f"AVD {self.name} is not running"
+            return self.result
 
-    if module.check_mode:
-        result["changed"] = True
-        result["message"] = f"Would stop AVD {name} (PID {running_avd['pid']})"
-        return result
+        if self.module.check_mode:
+            self.result["changed"] = True
+            self.result["message"] = (
+                f"Would stop AVD {self.name} (PID {running_avd['pid']})"
+            )
+            return self.result
 
-    os.kill(running_avd["pid"], signal.SIGTERM)
+        os.kill(running_avd["pid"], signal.SIGTERM)
 
-    result["changed"] = True
-    result["process_id"] = running_avd["pid"]
-    result["message"] = f"Stopped AVD {name} (PID {running_avd['pid']})"
-    return result
+        self.result["changed"] = True
+        self.result["process_id"] = running_avd["pid"]
+        self.result["message"] = f"Stopped AVD {self.name} (PID {running_avd['pid']})"
+        return self.result
 
+    def delete(self):
+        """Stop (if running) and delete an AVD. Returns the result dict."""
+        if not self.avd_exists():
+            self.result["message"] = f"AVD {self.name} does not exist"
+            return self.result
 
-def delete_avd(module, name, run_avd_path, android_home_path):
-    """Stop (if running) and delete an AVD. Returns the result dict."""
-    result = dict(changed=False)
+        running_avd, _ = self.find_running_avd()
+        stop_result = dict(changed=False)
+        if running_avd is not None:
+            stop_result = self.stop()
 
-    if not avd_exists(name, android_home_path):
-        result["message"] = f"AVD {name} does not exist"
-        return result
+        if self.module.check_mode:
+            self.result["changed"] = True
+            self.result["message"] = f"Would delete AVD {self.name}"
+            return self.result
 
-    running_avd, _ = find_running_avd(name, run_avd_path)
-    stop_result = dict(changed=False)
-    if running_avd is not None:
-        stop_result = stop_avd(module, name, run_avd_path, android_home_path)
+        cmd = [self.avdmanager_path, "-s", "delete", "avd", "--name", self.name]
+        proc = subprocess.run(cmd, capture_output=True, text=True)
 
-    if module.check_mode:
-        result["changed"] = True
-        result["message"] = f"Would delete AVD {name}"
-        return result
+        if proc.returncode != 0:
+            self.module.fail_json(
+                msg=f"Failed to delete AVD {self.name}: {proc.stderr}",
+                **self.result,
+            )
 
-    avdmanager_path = f"{android_home_path}/cmdline-tools/latest/bin/avdmanager"
-    cmd = [avdmanager_path, "-s", "delete", "avd", "--name", name]
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+        self.result["changed"] = True
+        self.result["message"] = f"Deleted AVD {self.name}"
+        if stop_result.get("changed"):
+            self.result["message"] = f"Stopped and deleted AVD {self.name}"
+        return self.result
 
-    if proc.returncode != 0:
-        module.fail_json(
-            msg=f"Failed to delete AVD {name}: {proc.stderr}",
-            **result,
-        )
-
-    result["changed"] = True
-    result["message"] = f"Deleted AVD {name}"
-    if stop_result.get("changed"):
-        result["message"] = f"Stopped and deleted AVD {name}"
-    return result
+    def manage(self):
+        """Manage the AVD based on the desired state."""
+        state = self.module.params["state"]
+        if state == "running":
+            return self.start()
+        elif state == "stopped":
+            return self.stop()
+        else:
+            return self.delete()
 
 
 def main():
@@ -267,39 +287,12 @@ def main():
         supports_check_mode=True,
     )
 
-    name = module.params["name"]
-    state = module.params["state"]
-
     try:
-        if state == "running":
-            result = start_avd(
-                module,
-                name,
-                cpu=module.params["cpu"],
-                memory=module.params["memory"],
-                bridge_ip=module.params["bridge_ip"],
-                android_home_path=module.params["android_home_path"],
-                run_avd_path=module.params["run_avd_path"],
-                log_path=module.params["log_path"],
-            )
-        elif state == "stopped":
-            result = stop_avd(
-                module,
-                name,
-                run_avd_path=module.params["run_avd_path"],
-                android_home_path=module.params["android_home_path"],
-            )
-        else:
-            result = delete_avd(
-                module,
-                name,
-                run_avd_path=module.params["run_avd_path"],
-                android_home_path=module.params["android_home_path"],
-            )
-
+        manager = AVDManager(module)
+        result = manager.manage()
         module.exit_json(**result)
     except Exception as e:
-        module.fail_json(msg=f"Failed to manage AVD {name}: {e}")
+        module.fail_json(msg=f"Failed to manage AVD {module.params['name']}: {e}")
 
 
 if __name__ == "__main__":
