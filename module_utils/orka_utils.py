@@ -63,7 +63,7 @@ def _parse_running_avd_process(line):
         line: A single line of output from pgrep -fl
 
     Returns:
-        dict: AVD info with keys: name, pid, gateway_ip, relay_port
+        dict: AVD info with keys: name, pid, gateway_ip, relay_port, console_port
     """
     parts = line.split()
     process_args = parts[3:]
@@ -72,6 +72,7 @@ def _parse_running_avd_process(line):
         "pid": int(parts[0]),
         "gateway_ip": _extract_flag_value("-b", process_args),
         "relay_port": int(_extract_flag_value("-r", process_args)),
+        "console_port": int(_extract_flag_value("-p", process_args)),
     }
 
 

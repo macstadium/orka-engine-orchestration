@@ -161,7 +161,7 @@ class AVDManager:
         if self.memory is not None:
             cmd.extend(["-m", str(self.memory)])
 
-        used_console_ports = {avd["relay_port"] - 10_001 for avd in avd_list}
+        used_console_ports = {avd["console_port"] for avd in avd_list}
         console_port = CONSOLE_PORT_START
         while console_port in used_console_ports:
             console_port += 2
