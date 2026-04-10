@@ -47,10 +47,15 @@
       ansible.builtin.meta: end_host
       when: inventory_hostname != hostvars['localhost'].avd_target_host
 
-    - name: AVD already in desired state
-      ansible.builtin.debug:
-        msg: "AVD '{{ hostvars['localhost'].avd_name }}' is already {{ desired_state }}"
+
+    - name: Check AVD already in desired state
       when: hostvars['localhost'].avd_state == desired_state
+      block:
+        - name: Display AVD already in desired state message
+          ansible.builtin.debug:
+            msg: "AVD '{{ hostvars['localhost'].avd_name }}' is already {{ desired_state }}"
+        - name: Skip AVD management tasks
+          ansible.builtin.meta: end_play
 
     - name: Manage AVD state
       avd:
