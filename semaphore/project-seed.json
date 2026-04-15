@@ -48,9 +48,10 @@
       "password": null
     }
   ],
+  "views": [],
   "templates": [
     {
-      "name": "Deploy VM",
+      "name": "VM: Deploy VM",
       "app": "ansible",
       "playbook": "deploy.yml",
       "repository": "Local Playbooks",
@@ -109,7 +110,7 @@
       ]
     },
     {
-      "name": "Delete VM",
+      "name": "VM: Delete VM",
       "app": "ansible",
       "playbook": "delete.yml",
       "repository": "Local Playbooks",
@@ -126,7 +127,7 @@
       ]
     },
     {
-      "name": "Manage VM",
+      "name": "VM: Manage VM",
       "app": "ansible",
       "playbook": "vm.yml",
       "repository": "Local Playbooks",
@@ -155,7 +156,7 @@
       ]
     },
     {
-      "name": "List VMs",
+      "name": "VM: List VMs",
       "app": "ansible",
       "playbook": "list.yml",
       "repository": "Local Playbooks",
@@ -172,7 +173,38 @@
       ]
     },
     {
-      "name": "Pull Image",
+      "name": "VM: Provision User to VM",
+      "app": "ansible",
+      "playbook": "provision_user.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Base VM Credentials",
+      "survey_vars": [
+        {
+          "name": "vm_name",
+          "title": "VM Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the VM to provision the user on"
+        },
+        {
+          "name": "new_username",
+          "title": "New Username",
+          "required": true,
+          "type": "",
+          "description": "Username for the new user account"
+        },
+        {
+          "name": "new_user_password",
+          "title": "New User Password",
+          "required": true,
+          "type": "",
+          "description": "Password for the new user account"
+        }
+      ]
+    },
+    {
+      "name": "Images: Pull Image",
       "app": "ansible",
       "playbook": "pull_image.yml",
       "repository": "Local Playbooks",
@@ -189,7 +221,96 @@
       ]
     },
     {
-      "name": "Install Engine",
+      "name": "Images: Create Image",
+      "app": "ansible",
+      "playbook": "create_image.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "remote_image_name",
+          "title": "Remote Image Name",
+          "required": true,
+          "type": "string",
+          "description": "OCI URL for the remote image"
+        },
+        {
+          "name": "vm_image",
+          "title": "VM Image",
+          "required": true,
+          "type": "string",
+          "description": "Source image to create the VM from"
+        }
+      ]
+    },
+    {
+      "name": "Images: Push Image",
+      "app": "ansible",
+      "playbook": "push_image.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "OCI Credentials",
+      "survey_vars": [
+        {
+          "name": "vm_name",
+          "title": "VM Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the VM to push as an image"
+        },
+        {
+          "name": "oci_url",
+          "title": "OCI URL",
+          "required": true,
+          "type": "string",
+          "description": "OCI URL for the remote image destination"
+        }
+      ]
+    },
+    {
+      "name": "Images: List Images",
+      "app": "ansible",
+      "playbook": "list_images.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "node_name",
+          "title": "Node Name",
+          "required": false,
+          "type": "",
+          "description": "Filter by node name (leave empty to list images on all nodes)"
+        }
+      ]
+    },
+    {
+      "name": "Images: Delete Image",
+      "app": "ansible",
+      "playbook": "delete_image.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "image_name",
+          "title": "Image Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the image to delete (e.g., orkaSequoia or ghcr.io/org/image:tag)"
+        },
+        {
+          "name": "node_name",
+          "title": "Node Name",
+          "required": false,
+          "type": "",
+          "description": "Name of a specific node to delete from (leave empty to delete from all nodes)"
+        }
+      ]
+    },
+    {
+      "name": "Engine: Install Engine",
       "app": "ansible",
       "playbook": "install_engine.yml",
       "repository": "Local Playbooks",
@@ -214,7 +335,7 @@
       ]
     },
     {
-      "name": "Install Android SDK",
+      "name": "Android: Install Android SDK",
       "app": "ansible",
       "playbook": "install_android_sdk.yml",
       "repository": "Local Playbooks",
@@ -236,96 +357,7 @@
       ]
     },
     {
-      "name": "Create Image",
-      "app": "ansible",
-      "playbook": "create_image.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "Default",
-      "survey_vars": [
-        {
-          "name": "remote_image_name",
-          "title": "Remote Image Name",
-          "required": true,
-          "type": "string",
-          "description": "OCI URL for the remote image"
-        },
-        {
-          "name": "vm_image",
-          "title": "VM Image",
-          "required": true,
-          "type": "string",
-          "description": "Source image to create the VM from"
-        }
-      ]
-    },
-    {
-      "name": "Push Image",
-      "app": "ansible",
-      "playbook": "push_image.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "OCI Credentials",
-      "survey_vars": [
-        {
-          "name": "vm_name",
-          "title": "VM Name",
-          "required": true,
-          "type": "",
-          "description": "Name of the VM to push as an image"
-        },
-        {
-          "name": "oci_url",
-          "title": "OCI URL",
-          "required": true,
-          "type": "string",
-          "description": "OCI URL for the remote image destination"
-        }
-      ]
-    },
-    {
-      "name": "List Images",
-      "app": "ansible",
-      "playbook": "list_images.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "Default",
-      "survey_vars": [
-        {
-          "name": "node_name",
-          "title": "Node Name",
-          "required": false,
-          "type": "",
-          "description": "Filter by node name (leave empty to list images on all nodes)"
-        }
-      ]
-    },
-    {
-      "name": "Delete Image",
-      "app": "ansible",
-      "playbook": "delete_image.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "Default",
-      "survey_vars": [
-        {
-          "name": "image_name",
-          "title": "Image Name",
-          "required": true,
-          "type": "",
-          "description": "Name of the image to delete (e.g., orkaSequoia or ghcr.io/org/image:tag)"
-        },
-        {
-          "name": "node_name",
-          "title": "Node Name",
-          "required": false,
-          "type": "",
-          "description": "Name of a specific node to delete from (leave empty to delete from all nodes)"
-        }
-      ]
-    },
-    {
-      "name": "Install Android SDK Components",
+      "name": "Android: Install SDK Components",
       "app": "ansible",
       "playbook": "sdkmanager_install.yml",
       "repository": "Local Playbooks",
@@ -351,7 +383,7 @@
       ]
     },
     {
-      "name": "Uninstall Android SDK Components",
+      "name": "Android: Uninstall SDK Components",
       "app": "ansible",
       "playbook": "sdkmanager_uninstall.yml",
       "repository": "Local Playbooks",
@@ -369,7 +401,7 @@
       ]
     },
     {
-      "name": "Create and Run Android Virtual Device",
+      "name": "Android: Deploy AVD",
       "app": "ansible",
       "playbook": "deploy_avd.yml",
       "repository": "Local Playbooks",
@@ -428,7 +460,7 @@
       ]
     },
     {
-      "name": "List Android Virtual Devices",
+      "name": "Android: List AVDs",
       "app": "ansible",
       "playbook": "list_avds.yml",
       "repository": "Local Playbooks",
@@ -445,7 +477,7 @@
       ]
     },
     {
-      "name": "Delete Android Virtual Device",
+      "name": "Android: Delete AVD",
       "app": "ansible",
       "playbook": "delete_avd.yml",
       "repository": "Local Playbooks",
@@ -469,7 +501,7 @@
       ]
     },
     {
-      "name": "Manage Android Virtual Device",
+      "name": "Android: Manage AVD",
       "app": "ansible",
       "playbook": "avd.yml",
       "repository": "Local Playbooks",
@@ -519,38 +551,7 @@
       ]
     },
     {
-      "name": "Provision User to VM",
-      "app": "ansible",
-      "playbook": "provision_user.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "Base VM Credentials",
-      "survey_vars": [
-        {
-          "name": "vm_name",
-          "title": "VM Name",
-          "required": true,
-          "type": "",
-          "description": "Name of the VM to provision the user on"
-        },
-        {
-          "name": "new_username",
-          "title": "New Username",
-          "required": true,
-          "type": "",
-          "description": "Username for the new user account"
-        },
-        {
-          "name": "new_user_password",
-          "title": "New User Password",
-          "required": true,
-          "type": "",
-          "description": "Password for the new user account"
-        }
-      ]
-    },
-    {
-      "name": "Install Citrix VDA",
+      "name": "Citrix: Install Citrix VDA",
       "app": "ansible",
       "playbook": "install_citrix_vda.yml",
       "repository": "Local Playbooks",
@@ -567,7 +568,7 @@
       ]
     },
     {
-      "name": "Register Citrix VDA",
+      "name": "Citrix: Register Citrix VDA",
       "app": "ansible",
       "playbook": "register_citrix_vda.yml",
       "repository": "Local Playbooks",
@@ -591,7 +592,6 @@
       ]
     }
   ],
-  "views": [],
   "integrations": [],
   "integration_aliases": [],
   "schedules": [],
