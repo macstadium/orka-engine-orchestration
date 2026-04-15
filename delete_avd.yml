@@ -6,16 +6,25 @@
   roles:
     - gather_host_facts
 
+- name: Gather AVD facts from all hosts
+  hosts: hosts
+  gather_facts: false
+  tags: plan
+  roles:
+    - gather_avd_facts
+
 - name: Plan AVD deletion
   hosts: localhost
   gather_facts: false
   tags: plan
   tasks:
-    - name: Plan AVD deletion
-      plan_avd_deletion:
+    - name: Find target host and resolve AVD
+      plan_avd_management:
         hosts_data: "{{ gather_host_facts_all_hosts_data }}"
+        avd_hosts_data: "{{ gather_avd_facts_all_hosts_data }}"
         vm_name: "{{ vm_name }}"
-        avd_index: "{{ avd_index }}"
+        avd_index: "{{ avd_index | default(omit) }}"
+        desired_state: absent
       register: avd_delete_result
 
     - name: Display AVD deletion plan
@@ -38,10 +47,9 @@
       when: inventory_hostname != hostvars['localhost'].avd_target_host
 
     - name: Delete AVD
-      ansible.builtin.include_role:
-        name: delete_avd
-      vars:
-        delete_avd_name: "{{ hostvars['localhost'].avd_name }}"
+      avd:
+        name: "{{ hostvars['localhost'].avd_name }}"
+        state: absent
 
     - name: Display AVD deletion summary
       ansible.builtin.debug:
