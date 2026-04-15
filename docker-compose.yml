@@ -9,6 +9,7 @@ services:
     environment:
       SEMAPHORE_DB_DIALECT: bolt
       SEMAPHORE_DB: /var/lib/semaphore/database.boltdb
+      SEMAPHORE_APP_NAME: Orka for VDI
       ANSIBLE_CONFIG: /opt/orka/semaphore/ansible.cfg
       SEMAPHORE_IMPORT_PROJECT_FILE: /opt/orka/semaphore/project-seed.json
     volumes:
