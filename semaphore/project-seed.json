@@ -400,6 +400,13 @@
           "description": "System image type to use (e.g., default, google_apis)"
         },
         {
+          "name": "device_profile",
+          "title": "Device Profile",
+          "required": false,
+          "type": "string",
+          "description": "Hardware device profile to emulate (e.g., pixel_6, pixel_7). Leave empty for default."
+        },
+        {
           "name": "run_avd",
           "title": "Run AVD",
           "type": "enum",
@@ -426,6 +433,15 @@
           "description": "Amount of memory in MB to allocate"
         }
       ]
+    },
+    {
+      "name": "List AVD Device Profiles",
+      "app": "ansible",
+      "playbook": "list_device_profiles.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": []
     },
     {
       "name": "List Android Virtual Devices",

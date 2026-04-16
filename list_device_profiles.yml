@@ -1,0 +1,18 @@
+---
+- name: List available AVD device profiles
+  hosts: hosts[0]
+  gather_facts: false
+  roles:
+    - android_sdk_common
+  tasks:
+    - name: List device profiles
+      ansible.builtin.command:
+        cmd: >
+          {{ android_sdk_common_home }}/cmdline-tools/latest/bin/avdmanager
+          list device -c
+      register: device_list
+      changed_when: false
+
+    - name: Display available device profiles
+      ansible.builtin.debug:
+        msg: "{{ device_list.stdout_lines }}"
