@@ -28,6 +28,7 @@ A web-based UI for running playbooks is available via [Ansible Semaphore](https:
 ├── sdkmanager_install.yml   # Main playbook for installing Android SDK platforms and system images
 ├── sdkmanager_uninstall.yml # Main playbook for uninstalling Android SDK platforms and system images
 ├── deploy_avd.yml           # Main playbook for creating and running Android Virtual Devices
+├── list_device_profiles.yml # Main playbook for listing available AVD device profiles
 ├── list_avds.yml            # Main playbook for listing Android Virtual Devices
 ├── delete_avd.yml           # Main playbook for deleting Android Virtual Devices
 ├── avd.yml                  # Main playbook for managing (start, stop, delete) Android Virtual Devices
@@ -182,6 +183,7 @@ Optional variables:
 
 - `platform` - The Android platform to use (default: `android-35`)
 - `image_type` - The system image type to use (default: `default`)
+- `device_profile` - Hardware device profile to emulate, e.g. `pixel_7` (default: none).
 - `run_avd` - Whether to run the AVD after creation (default: `true`)
 - `cpu`: The number of vCPUs to allocate when running the AVD (default: let host decide)
 - `memory`: The amount of memory in MB to allocate when running the AVD (default: let host decide)
@@ -189,8 +191,18 @@ Optional variables:
 Example with custom settings:
 
 ```bash
-ansible-playbook deploy_avd.yml -i dev/inventory -e "vm_name=my-vm" -e "platform=android-34" -e "image_type=google_apis" -e "cpu=4" -e "memory=2048"
+ansible-playbook deploy_avd.yml -i dev/inventory -e "vm_name=my-vm" -e "platform=android-34" -e "image_type=google_apis" -e "device_profile=pixel_7" -e "cpu=4" -e "memory=2048"
 ```
+
+### Listing Available Device Profiles
+
+To list all hardware device profiles available for AVD creation:
+
+```bash
+ansible-playbook list_device_profiles.yml -i dev/inventory
+```
+
+This runs `avdmanager list device` on the first available host and displays all device IDs that can be passed as `device_profile` when creating an AVD.
 
 ### Listing Android Virtual Devices
 
