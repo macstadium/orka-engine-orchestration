@@ -63,7 +63,7 @@
     # ── Images ──
     - name: "Validate: OCI image pulled"
       ansible.builtin.command:
-        cmd: "orka-engine image list -o json"
+        cmd: "/usr/local/bin/orka-engine image list -o json"
       register: image_list
       changed_when: false
       failed_when: "'sequoia' not in image_list.stdout"
