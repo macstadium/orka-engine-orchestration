@@ -437,7 +437,7 @@
     {
       "name": "List AVD Device Profiles",
       "app": "ansible",
-      "playbook": "list_device_profiles.yml",
+      "playbook": "list_avd_profiles.yml",
       "repository": "Local Playbooks",
       "inventory": "Dev Inventory",
       "environment": "Default",

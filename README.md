@@ -28,7 +28,7 @@ A web-based UI for running playbooks is available via [Ansible Semaphore](https:
 ├── sdkmanager_install.yml   # Main playbook for installing Android SDK platforms and system images
 ├── sdkmanager_uninstall.yml # Main playbook for uninstalling Android SDK platforms and system images
 ├── deploy_avd.yml           # Main playbook for creating and running Android Virtual Devices
-├── list_device_profiles.yml # Main playbook for listing available AVD device profiles
+├── list_avd_profiles.yml # Main playbook for listing available AVD device profiles
 ├── list_avds.yml            # Main playbook for listing Android Virtual Devices
 ├── delete_avd.yml           # Main playbook for deleting Android Virtual Devices
 ├── avd.yml                  # Main playbook for managing (start, stop, delete) Android Virtual Devices
@@ -199,7 +199,7 @@ ansible-playbook deploy_avd.yml -i dev/inventory -e "vm_name=my-vm" -e "platform
 To list all hardware device profiles available for AVD creation:
 
 ```bash
-ansible-playbook list_device_profiles.yml -i dev/inventory
+ansible-playbook list_avd_profiles.yml -i dev/inventory
 ```
 
 This runs `avdmanager list device` on the first available host and displays all device IDs that can be passed as `device_profile` when creating an AVD.
