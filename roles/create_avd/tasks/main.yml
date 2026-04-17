@@ -39,5 +39,6 @@
       create avd
       --name "{{ create_avd_name }}"
       --package "system-images;{{ create_avd_platform }};{{ create_avd_image_type }};{{ android_sdk_common_image_arch }}"
+      {{ ('--device "' ~ create_avd_device_profile ~ '"') if create_avd_device_profile | default('') | length > 0 else '' }}
   when: not create_avd_avd_check.stat.exists
   changed_when: true
