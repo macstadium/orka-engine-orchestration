@@ -114,12 +114,12 @@ ansible-playbook sdkmanager_install.yml -i dev/inventory
 
 This will:
 - Verify that `sdkmanager` is available (requires the Android SDK to be installed first)
-- Install the specified platform (default: `android-35`)
+- Install the specified platform (default: `android-36`)
 - Install system images for the specified image types (default: `default,google_apis`)
 
 Optional variables:
 
-- `platform` - The Android platform to install (default: `android-35`)
+- `platform` - The Android platform to install (default: `android-36`)
 - `image_types` - Comma-separated list of system image types to install (default: `default,google_apis`)
 
 Example with custom platform and image types:
@@ -143,7 +143,7 @@ This will:
 
 Optional variables:
 
-- `platform` - The Android platform to uninstall (default: `android-35`)
+- `platform` - The Android platform to uninstall (default: `android-36`)
 
 Example:
 
@@ -181,9 +181,9 @@ Required variables:
 
 Optional variables:
 
-- `platform` - The Android platform to use (default: `android-35`)
-- `image_type` - The system image type to use (default: `default`)
-- `device_profile` - Hardware device profile to emulate, e.g. `pixel_7` (default: none).
+- `platform` - The Android platform to use (default: `android-36`)
+- `image_type` - The system image type to use (default: `google_apis`)
+- `device_profile` - Hardware device profile to emulate, e.g. `pixel_9` (default: `pixel_9`).
 - `run_avd` - Whether to run the AVD after creation (default: `true`)
 - `cpu`: The number of vCPUs to allocate when running the AVD (default: let host decide)
 - `memory`: The amount of memory in MB to allocate when running the AVD (default: let host decide)
@@ -191,7 +191,7 @@ Optional variables:
 Example with custom settings:
 
 ```bash
-ansible-playbook deploy_avd.yml -i dev/inventory -e "vm_name=my-vm" -e "platform=android-34" -e "image_type=google_apis" -e "device_profile=pixel_7" -e "cpu=4" -e "memory=2048"
+ansible-playbook deploy_avd.yml -i dev/inventory -e "vm_name=my-vm" -e "platform=android-34" -e "image_type=google_apis" -e "device_profile=pixel_9" -e "cpu=4" -e "memory=2048"
 ```
 
 ### Listing Available Device Profiles

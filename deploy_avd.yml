@@ -49,9 +49,9 @@
         name: create_avd
       vars:
         create_avd_name: "{{ hostvars['localhost'].avd_name }}"
-        create_avd_platform: "{{ platform | default('android-35') }}"
-        create_avd_image_type: "{{ image_type | default('default') }}"
-        create_avd_device_profile: "{{ device_profile | default('') }}"
+        create_avd_platform: "{{ platform | default('android-36') }}"
+        create_avd_image_type: "{{ image_type | default('google_apis') }}"
+        create_avd_device_profile: "{{ device_profile | default('pixel_9') }}"
 
     - name: Run AVD
       avd:
@@ -69,9 +69,9 @@
               hostvars['localhost'].avd_name,
               'VM: ' ~ vm_name,
               'Host: ' ~ inventory_hostname,
-              'Platform: ' ~ (platform | default('android-35')),
-              'Image Type: ' ~ (image_type | default('default')),
-              ('Device Profile: ' ~ device_profile) if (device_profile | default('') | length > 0) else '',
+              'Platform: ' ~ (platform | default('android-36')),
+              'Image Type: ' ~ (image_type | default('google_apis')),
+              ('Device Profile: ' ~ device_profile) if (device_profile | default('pixel_9') | length > 0) else '',
               ('CPU: ' ~ cpu) if (run_avd | default(true) | bool and cpu is defined) else '',
               ('Memory: ' ~ memory) if (run_avd | default(true) | bool and memory is defined) else '',
               ('Relay IP: ' ~ avd_result['relay_ip']) if (run_avd | default(true) | bool) else '',

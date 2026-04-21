@@ -4,7 +4,7 @@
   gather_facts: false
   roles:
     - role: sdkmanager_install
-      sdkmanager_install_platform: "{{ platform | default('android-35') }}"
+      sdkmanager_install_platform: "{{ platform | default('android-36') }}"
       sdkmanager_install_image_types: "{{ image_types | default('default,google_apis') }}"
   tags:
     - sdkmanager
