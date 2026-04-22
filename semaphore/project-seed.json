@@ -50,326 +50,7 @@
   ],
   "templates": [
     {
-      "name": "Deploy VM",
-      "app": "ansible",
-      "playbook": "deploy.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "OCI Credentials",
-      "survey_vars": [
-        {
-          "name": "vm_name",
-          "title": "VM Name",
-          "required": true,
-          "type": "",
-          "description": "Name of the VM to deploy"
-        },
-        {
-          "name": "vm_image",
-          "title": "VM Image",
-          "type": "string",
-          "required": true,
-          "description": "An OCI URL for an Orka VM image"
-        },
-        {
-          "name": "public_image",
-          "title": "Public Image",
-          "type": "enum",
-          "required": false,
-          "default_value": "true",
-          "description": "Whether the image URL is publicly accessible. If No, OCI credentials from the environment will be used to pull the image before deploying.",
-          "values": [
-            { "name": "Yes", "value": "true" },
-            { "name": "No", "value": "false" }
-          ]
-        },
-        {
-          "name": "cpu",
-          "title": "CPU Cores",
-          "type": "integer",
-          "required": false,
-          "default_value": "2",
-          "description": "Number of CPU cores to allocate"
-        },
-        {
-          "name": "memory",
-          "title": "Memory (MB)",
-          "type": "integer",
-          "required": false,
-          "default_value": "4096",
-          "description": "Amount of memory in MB to allocate"
-        },
-        {
-          "name": "network_interface",
-          "title": "Network Interface",
-          "type": "string",
-          "required": false,
-          "description": "Network interface to use for the VM"
-        }
-      ]
-    },
-    {
-      "name": "Delete VM",
-      "app": "ansible",
-      "playbook": "delete.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "Default",
-      "survey_vars": [
-        {
-          "name": "vm_name",
-          "title": "VM Name",
-          "required": true,
-          "type": "",
-          "description": "Name of the VM to delete"
-        }
-      ]
-    },
-    {
-      "name": "Manage VM",
-      "app": "ansible",
-      "playbook": "vm.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "Default",
-      "survey_vars": [
-        {
-          "name": "vm_name",
-          "title": "VM Name",
-          "required": true,
-          "type": "",
-          "description": "Name of the VM to manage (supports partial matches)"
-        },
-        {
-          "name": "desired_state",
-          "title": "Desired State",
-          "required": true,
-          "type": "enum",
-          "description": "Target VM state",
-          "values": [
-            { "name": "running", "value": "running" },
-            { "name": "stopped", "value": "stopped" },
-            { "name": "absent", "value": "absent" }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "List VMs",
-      "app": "ansible",
-      "playbook": "list.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "Default",
-      "survey_vars": [
-        {
-          "name": "vm_name",
-          "title": "VM Name",
-          "required": false,
-          "type": "",
-          "description": "Filter by VM name (supports partial matches; leave empty to list all)"
-        }
-      ]
-    },
-    {
-      "name": "Pull Image",
-      "app": "ansible",
-      "playbook": "pull_image.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "Default",
-      "survey_vars": [
-        {
-          "name": "remote_image_name",
-          "title": "Remote Image Name",
-          "required": true,
-          "type": "",
-          "description": "Name of the image to pull from the registry"
-        }
-      ]
-    },
-    {
-      "name": "Install Engine",
-      "app": "ansible",
-      "playbook": "install_engine.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "Default",
-      "survey_vars": [
-        {
-          "name": "orka_license_key",
-          "title": "Orka License Key",
-          "required": true,
-          "type": "",
-          "description": "License key for Orka Engine"
-        },
-        {
-          "name": "engine_url",
-          "title": "Engine URL",
-          "default_value": "https://distribution.macstadium.com/orka-engine/official/3.5.2/orka-engine.pkg",
-          "required": true,
-          "type": "",
-          "description": "URL to download the engine package"
-        }
-      ]
-    },
-    {
-      "name": "Install Android SDK",
-      "app": "ansible",
-      "playbook": "install_android_sdk.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "Default",
-      "survey_vars": [
-        {
-          "name": "install_android_sdk_force",
-          "title": "Force Reinstall",
-          "required": false,
-          "type": "enum",
-          "default_value": "false",
-          "description": "Force reinstallation of the Android SDK even if already present",
-          "values": [
-            { "name": "No", "value": "false" },
-            { "name": "Yes", "value": "true" }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Create Image",
-      "app": "ansible",
-      "playbook": "create_image.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "Default",
-      "survey_vars": [
-        {
-          "name": "remote_image_name",
-          "title": "Remote Image Name",
-          "required": true,
-          "type": "string",
-          "description": "OCI URL for the remote image"
-        },
-        {
-          "name": "vm_image",
-          "title": "VM Image",
-          "required": true,
-          "type": "string",
-          "description": "Source image to create the VM from"
-        }
-      ]
-    },
-    {
-      "name": "Push Image",
-      "app": "ansible",
-      "playbook": "push_image.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "OCI Credentials",
-      "survey_vars": [
-        {
-          "name": "vm_name",
-          "title": "VM Name",
-          "required": true,
-          "type": "",
-          "description": "Name of the VM to push as an image"
-        },
-        {
-          "name": "oci_url",
-          "title": "OCI URL",
-          "required": true,
-          "type": "string",
-          "description": "OCI URL for the remote image destination"
-        }
-      ]
-    },
-    {
-      "name": "List Images",
-      "app": "ansible",
-      "playbook": "list_images.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "Default",
-      "survey_vars": [
-        {
-          "name": "node_name",
-          "title": "Node Name",
-          "required": false,
-          "type": "",
-          "description": "Filter by node name (leave empty to list images on all nodes)"
-        }
-      ]
-    },
-    {
-      "name": "Delete Image",
-      "app": "ansible",
-      "playbook": "delete_image.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "Default",
-      "survey_vars": [
-        {
-          "name": "image_name",
-          "title": "Image Name",
-          "required": true,
-          "type": "",
-          "description": "Name of the image to delete (e.g., orkaSequoia or ghcr.io/org/image:tag)"
-        },
-        {
-          "name": "node_name",
-          "title": "Node Name",
-          "required": false,
-          "type": "",
-          "description": "Name of a specific node to delete from (leave empty to delete from all nodes)"
-        }
-      ]
-    },
-    {
-      "name": "Install Android SDK Components",
-      "app": "ansible",
-      "playbook": "sdkmanager_install.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "Default",
-      "survey_vars": [
-        {
-          "name": "platform",
-          "title": "Android Platform",
-          "required": true,
-          "type": "string",
-          "default_value": "android-36",
-          "description": "Android platform to install (e.g., android-34, android-36)"
-        },
-        {
-          "name": "image_types",
-          "title": "System Image Types",
-          "required": false,
-          "type": "string",
-          "default_value": "default,google_apis",
-          "description": "Comma-separated list of system image types (e.g., default,google_apis,google_apis_playstore)"
-        }
-      ]
-    },
-    {
-      "name": "Uninstall Android SDK Components",
-      "app": "ansible",
-      "playbook": "sdkmanager_uninstall.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "Default",
-      "survey_vars": [
-        {
-          "name": "platform",
-          "title": "Android Platform",
-          "required": true,
-          "type": "string",
-          "default_value": "android-36",
-          "description": "Android platform to uninstall (e.g., android-34, android-36). All system images for this platform will be removed."
-        }
-      ]
-    },
-    {
-      "name": "Create and Run Android Virtual Device",
+      "name": "Android | Create and Run Android Virtual Device",
       "app": "ansible",
       "playbook": "deploy_avd.yml",
       "repository": "Local Playbooks",
@@ -415,8 +96,14 @@
           "default_value": "true",
           "description": "Run AVD after creation",
           "values": [
-            { "name": "Yes", "value": "true" },
-            { "name": "No", "value": "false" }
+            {
+              "name": "Yes",
+              "value": "true"
+            },
+            {
+              "name": "No",
+              "value": "false"
+            }
           ]
         },
         {
@@ -436,33 +123,7 @@
       ]
     },
     {
-      "name": "List AVD Device Profiles",
-      "app": "ansible",
-      "playbook": "list_avd_profiles.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "Default",
-      "survey_vars": []
-    },
-    {
-      "name": "List Android Virtual Devices",
-      "app": "ansible",
-      "playbook": "list_avds.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "Default",
-      "survey_vars": [
-        {
-          "name": "vm_name",
-          "title": "VM Name",
-          "required": false,
-          "type": "",
-          "description": "Filter by VM name (leave empty to list all AVDs)"
-        }
-      ]
-    },
-    {
-      "name": "Delete Android Virtual Device",
+      "name": "Android | Delete Android Virtual Device",
       "app": "ansible",
       "playbook": "delete_avd.yml",
       "repository": "Local Playbooks",
@@ -486,7 +147,33 @@
       ]
     },
     {
-      "name": "Manage Android Virtual Device",
+      "name": "Android | List AVD Device Profiles",
+      "app": "ansible",
+      "playbook": "list_avd_profiles.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": []
+    },
+    {
+      "name": "Android | List Android Virtual Devices",
+      "app": "ansible",
+      "playbook": "list_avds.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "vm_name",
+          "title": "VM Name",
+          "required": false,
+          "type": "",
+          "description": "Filter by VM name (leave empty to list all AVDs)"
+        }
+      ]
+    },
+    {
+      "name": "Android | Manage Android Virtual Device",
       "app": "ansible",
       "playbook": "avd.yml",
       "repository": "Local Playbooks",
@@ -507,9 +194,18 @@
           "type": "enum",
           "description": "Target AVD state",
           "values": [
-            { "name": "running", "value": "running" },
-            { "name": "stopped", "value": "stopped" },
-            { "name": "absent", "value": "absent" }
+            {
+              "name": "running",
+              "value": "running"
+            },
+            {
+              "name": "stopped",
+              "value": "stopped"
+            },
+            {
+              "name": "absent",
+              "value": "absent"
+            }
           ]
         },
         {
@@ -536,7 +232,388 @@
       ]
     },
     {
-      "name": "Provision User to VM",
+      "name": "Hosts | Install Android SDK",
+      "app": "ansible",
+      "playbook": "install_android_sdk.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "install_android_sdk_force",
+          "title": "Force Reinstall",
+          "required": false,
+          "type": "enum",
+          "default_value": "false",
+          "description": "Force reinstallation of the Android SDK even if already present",
+          "values": [
+            {
+              "name": "No",
+              "value": "false"
+            },
+            {
+              "name": "Yes",
+              "value": "true"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hosts | Install Android SDK Components",
+      "app": "ansible",
+      "playbook": "sdkmanager_install.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "platform",
+          "title": "Android Platform",
+          "required": true,
+          "type": "string",
+          "default_value": "android-36",
+          "description": "Android platform to install (e.g., android-34, android-36)"
+        },
+        {
+          "name": "image_types",
+          "title": "System Image Types",
+          "required": false,
+          "type": "string",
+          "default_value": "default,google_apis",
+          "description": "Comma-separated list of system image types (e.g., default,google_apis,google_apis_playstore)"
+        }
+      ]
+    },
+    {
+      "name": "Hosts | Install Engine",
+      "app": "ansible",
+      "playbook": "install_engine.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "orka_license_key",
+          "title": "Orka License Key",
+          "required": true,
+          "type": "",
+          "description": "License key for Orka Engine"
+        },
+        {
+          "name": "engine_url",
+          "title": "Engine URL",
+          "default_value": "https://distribution.macstadium.com/orka-engine/official/3.5.2/orka-engine.pkg",
+          "required": true,
+          "type": "",
+          "description": "URL to download the engine package"
+        }
+      ]
+    },
+    {
+      "name": "Hosts | Uninstall Android SDK Components",
+      "app": "ansible",
+      "playbook": "sdkmanager_uninstall.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "platform",
+          "title": "Android Platform",
+          "required": true,
+          "type": "string",
+          "default_value": "android-36",
+          "description": "Android platform to uninstall (e.g., android-34, android-36). All system images for this platform will be removed."
+        }
+      ]
+    },
+    {
+      "name": "Images | Create Image",
+      "app": "ansible",
+      "playbook": "create_image.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "remote_image_name",
+          "title": "Remote Image Name",
+          "required": true,
+          "type": "string",
+          "description": "OCI URL for the remote image"
+        },
+        {
+          "name": "vm_image",
+          "title": "VM Image",
+          "required": true,
+          "type": "string",
+          "description": "Source image to create the VM from"
+        }
+      ]
+    },
+    {
+      "name": "Images | Delete Image",
+      "app": "ansible",
+      "playbook": "delete_image.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "image_name",
+          "title": "Image Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the image to delete (e.g., orkaSequoia or ghcr.io/org/image:tag)"
+        },
+        {
+          "name": "node_name",
+          "title": "Node Name",
+          "required": false,
+          "type": "",
+          "description": "Name of a specific node to delete from (leave empty to delete from all nodes)"
+        }
+      ]
+    },
+    {
+      "name": "Images | List Images",
+      "app": "ansible",
+      "playbook": "list_images.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "node_name",
+          "title": "Node Name",
+          "required": false,
+          "type": "",
+          "description": "Filter by node name (leave empty to list images on all nodes)"
+        }
+      ]
+    },
+    {
+      "name": "Images | Pull Image",
+      "app": "ansible",
+      "playbook": "pull_image.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "remote_image_name",
+          "title": "Remote Image Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the image to pull from the registry"
+        }
+      ]
+    },
+    {
+      "name": "Images | Push Image",
+      "app": "ansible",
+      "playbook": "push_image.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "OCI Credentials",
+      "survey_vars": [
+        {
+          "name": "vm_name",
+          "title": "VM Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the VM to push as an image"
+        },
+        {
+          "name": "oci_url",
+          "title": "OCI URL",
+          "required": true,
+          "type": "string",
+          "description": "OCI URL for the remote image destination"
+        }
+      ]
+    },
+    {
+      "name": "VDI | Install Citrix VDA",
+      "app": "ansible",
+      "playbook": "install_citrix_vda.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Base VM Credentials",
+      "survey_vars": [
+        {
+          "name": "vm_name",
+          "title": "VM Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the VM to install Citrix VDA on (also used as the VM hostname)"
+        }
+      ]
+    },
+    {
+      "name": "VDI | Register Citrix VDA",
+      "app": "ansible",
+      "playbook": "register_citrix_vda.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Base VM Credentials",
+      "survey_vars": [
+        {
+          "name": "vm_name",
+          "title": "VM Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the VM to register with the Delivery Controller"
+        },
+        {
+          "name": "enrollment_token",
+          "title": "Enrollment Token",
+          "required": true,
+          "type": "",
+          "description": "Citrix enrollment token for registering the VDA with the Delivery Controller"
+        }
+      ]
+    },
+    {
+      "name": "Virtual Machines | Delete VM",
+      "app": "ansible",
+      "playbook": "delete.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "vm_name",
+          "title": "VM Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the VM to delete"
+        }
+      ]
+    },
+    {
+      "name": "Virtual Machines | Deploy VM",
+      "app": "ansible",
+      "playbook": "deploy.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "OCI Credentials",
+      "survey_vars": [
+        {
+          "name": "vm_name",
+          "title": "VM Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the VM to deploy"
+        },
+        {
+          "name": "vm_image",
+          "title": "VM Image",
+          "type": "string",
+          "required": true,
+          "description": "An OCI URL for an Orka VM image"
+        },
+        {
+          "name": "public_image",
+          "title": "Public Image",
+          "type": "enum",
+          "required": false,
+          "default_value": "true",
+          "description": "Whether the image URL is publicly accessible. If No, OCI credentials from the environment will be used to pull the image before deploying.",
+          "values": [
+            {
+              "name": "Yes",
+              "value": "true"
+            },
+            {
+              "name": "No",
+              "value": "false"
+            }
+          ]
+        },
+        {
+          "name": "cpu",
+          "title": "CPU Cores",
+          "type": "integer",
+          "required": false,
+          "default_value": "2",
+          "description": "Number of CPU cores to allocate"
+        },
+        {
+          "name": "memory",
+          "title": "Memory (MB)",
+          "type": "integer",
+          "required": false,
+          "default_value": "4096",
+          "description": "Amount of memory in MB to allocate"
+        },
+        {
+          "name": "network_interface",
+          "title": "Network Interface",
+          "type": "string",
+          "required": false,
+          "description": "Network interface to use for the VM"
+        }
+      ]
+    },
+    {
+      "name": "Virtual Machines | List VMs",
+      "app": "ansible",
+      "playbook": "list.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "vm_name",
+          "title": "VM Name",
+          "required": false,
+          "type": "",
+          "description": "Filter by VM name (supports partial matches; leave empty to list all)"
+        }
+      ]
+    },
+    {
+      "name": "Virtual Machines | Manage VM",
+      "app": "ansible",
+      "playbook": "vm.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default",
+      "survey_vars": [
+        {
+          "name": "vm_name",
+          "title": "VM Name",
+          "required": true,
+          "type": "",
+          "description": "Name of the VM to manage (supports partial matches)"
+        },
+        {
+          "name": "desired_state",
+          "title": "Desired State",
+          "required": true,
+          "type": "enum",
+          "description": "Target VM state",
+          "values": [
+            {
+              "name": "running",
+              "value": "running"
+            },
+            {
+              "name": "stopped",
+              "value": "stopped"
+            },
+            {
+              "name": "absent",
+              "value": "absent"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Virtual Machines | Provision User to VM",
       "app": "ansible",
       "playbook": "provision_user.yml",
       "repository": "Local Playbooks",
@@ -563,47 +640,6 @@
           "required": true,
           "type": "",
           "description": "Password for the new user account"
-        }
-      ]
-    },
-    {
-      "name": "Install Citrix VDA",
-      "app": "ansible",
-      "playbook": "install_citrix_vda.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "Base VM Credentials",
-      "survey_vars": [
-        {
-          "name": "vm_name",
-          "title": "VM Name",
-          "required": true,
-          "type": "",
-          "description": "Name of the VM to install Citrix VDA on (also used as the VM hostname)"
-        }
-      ]
-    },
-    {
-      "name": "Register Citrix VDA",
-      "app": "ansible",
-      "playbook": "register_citrix_vda.yml",
-      "repository": "Local Playbooks",
-      "inventory": "Dev Inventory",
-      "environment": "Base VM Credentials",
-      "survey_vars": [
-        {
-          "name": "vm_name",
-          "title": "VM Name",
-          "required": true,
-          "type": "",
-          "description": "Name of the VM to register with the Delivery Controller"
-        },
-        {
-          "name": "enrollment_token",
-          "title": "Enrollment Token",
-          "required": true,
-          "type": "",
-          "description": "Citrix enrollment token for registering the VDA with the Delivery Controller"
         }
       ]
     }
