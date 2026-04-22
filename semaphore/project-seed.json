@@ -337,8 +337,8 @@
           "title": "Android Platform",
           "required": true,
           "type": "string",
-          "default_value": "android-35",
-          "description": "Android platform to install (e.g., android-34, android-35)"
+          "default_value": "android-36",
+          "description": "Android platform to install (e.g., android-34, android-36)"
         },
         {
           "name": "image_types",
@@ -363,8 +363,8 @@
           "title": "Android Platform",
           "required": true,
           "type": "string",
-          "default_value": "android-35",
-          "description": "Android platform to uninstall (e.g., android-34, android-35). All system images for this platform will be removed."
+          "default_value": "android-36",
+          "description": "Android platform to uninstall (e.g., android-34, android-36). All system images for this platform will be removed."
         }
       ]
     },
@@ -388,15 +388,15 @@
           "title": "Android Platform",
           "required": false,
           "type": "string",
-          "default_value": "android-35",
-          "description": "Android platform to use (e.g., android-34, android-35)"
+          "default_value": "android-36",
+          "description": "Android platform to use (e.g., android-34, android-36)"
         },
         {
           "name": "image_type",
           "title": "System Image Type",
           "required": false,
           "type": "string",
-          "default_value": "default",
+          "default_value": "google_apis",
           "description": "System image type to use (e.g., default, google_apis)"
         },
         {
@@ -404,7 +404,8 @@
           "title": "Device Profile",
           "required": false,
           "type": "string",
-          "description": "Hardware device profile to emulate (e.g., pixel_6, pixel_7). Leave empty for default."
+          "default_value": "pixel_9",
+          "description": "Hardware device profile to emulate (e.g., pixel_6, pixel_7, pixel_9)."
         },
         {
           "name": "run_avd",

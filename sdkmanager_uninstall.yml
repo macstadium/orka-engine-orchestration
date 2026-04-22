@@ -4,6 +4,6 @@
   gather_facts: false
   roles:
     - role: sdkmanager_uninstall
-      sdkmanager_uninstall_platform: "{{ platform | default('android-35') }}"
+      sdkmanager_uninstall_platform: "{{ platform | default('android-36') }}"
   tags:
     - sdkmanager
