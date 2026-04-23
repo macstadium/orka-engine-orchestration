@@ -71,7 +71,9 @@ A web-based UI for running playbooks is available via [Ansible Semaphore](https:
 
 ## Usage
 
-### Installing Engine
+### Hosts
+
+#### Install Engine
 
 To install Orka Engine run
 
@@ -86,7 +88,7 @@ where:
 
 **Note** - To force redeployment or upgrade pass `-e "install_engine_force=true"`.
 
-### Installing Android SDK
+#### Install Android SDK
 
 To install the Android SDK (including Java JDK, command-line tools, and platform-tools) on target hosts:
 
@@ -104,7 +106,7 @@ This will:
 
 **Note** - To force reinstallation pass `-e "install_android_sdk_force=true"`.
 
-### Installing Android SDK Platforms and System Images
+#### Install Android SDK Platforms and System Images
 
 To install an Android SDK platform and its system images on target hosts:
 
@@ -128,7 +130,7 @@ Example with custom platform and image types:
 ansible-playbook sdkmanager_install.yml -i dev/inventory -e "platform=android-34" -e "image_types=default,google_apis,google_apis_playstore"
 ```
 
-### Uninstalling Android SDK Platforms and System Images
+#### Uninstall Android SDK Platforms and System Images
 
 To uninstall an Android SDK platform and all of its system images from target hosts:
 
@@ -151,7 +153,174 @@ Example:
 ansible-playbook sdkmanager_uninstall.yml -i dev/inventory -e "platform=android-34"
 ```
 
-### Creating and Running an Android Virtual Device
+### Virtual Machines
+
+#### Deploy VM
+
+To plan a deployment without actually creating VMs:
+
+```bash
+ansible-playbook deploy.yml -i dev/inventory -e "vm_name=my-vm" --tags plan
+```
+
+This will:
+
+- Check capacity on all hosts
+- Check if a VM with the given name already exists
+- Create a deployment plan
+- Display the plan without executing it
+
+To actually deploy the VM:
+
+```bash
+ansible-playbook deploy.yml -i dev/inventory -e "vm_name=my-vm" -e "vm_image=<image>"
+```
+
+**How It Works**
+
+1. **Capacity Check**: The system first checks the current capacity and running VMs on each host.
+2. **Planning**: Creates a deployment plan. If a VM with the given name already exists, no new VM is deployed.
+3. **Deployment**: Executes the deployment plan, creating the VM on the selected host.
+
+#### Delete VM
+
+To plan a deletion without actually deleting a VM:
+
+```bash
+ansible-playbook delete.yml -i dev/inventory -e "vm_name=my-vm" --tags plan
+```
+
+This will:
+
+- Check capacity on all hosts
+- Find the VM with the given name
+- Create a deletion plan
+- Display the plan without executing it
+
+To actually delete the VM:
+
+```bash
+ansible-playbook delete.yml -i dev/inventory -e "vm_name=my-vm"
+```
+
+**How It Works**
+
+1. **Capacity Check**: The system first checks the current capacity and running VMs on each host.
+2. **Planning**: Finds the VM by name and creates a deletion plan. The playbook fails if no VM with the given name is found.
+3. **Deletion**: Executes the deletion plan, removing the VM from its host.
+
+#### Manage VM
+
+To manage (start, stop, or delete) a VM:
+
+```bash
+# Delete a VM
+ansible-playbook vm.yml -i dev/inventory -e "vm_name=<vm_name>" -e "desired_state=absent"
+
+# Stop a VM
+ansible-playbook vm.yml -i dev/inventory -e "vm_name=<vm_name>" -e "desired_state=stopped"
+
+# Start a VM
+ansible-playbook vm.yml -i dev/inventory -e "vm_name=<vm_name>" -e "desired_state=running"
+```
+
+where `vm_name` is the full name or partial match of the VM(s) you want to manage.
+
+**NOTE** - This playbook acts on all VMs matching the provided name. If you want to target a VM on a specific host, use `--limit`:
+
+```bash
+ansible-playbook vm.yml -i dev/inventory -e "vm_name=<vm_name>" -e "desired_state=absent" --limit <host>
+```
+
+#### List VMs
+
+To find a specific VM matching a given name:
+
+```bash
+ansible-playbook list.yml -i dev/inventory -e "vm_name=my-vm"
+```
+
+You can also list all VMs across all hosts:
+
+```bash
+ansible-playbook list.yml -i dev/inventory
+```
+
+#### Provision User
+
+To provision an admin user account on a running VM:
+
+```bash
+ansible-playbook provision_user.yml -i dev/inventory \
+  -e "vm_name=<vm_name>" \
+  -e "vm_username=<vm_username>" \
+  -e "vm_password=<vm_password>" \
+  -e "new_username=<new_username>" \
+  -e "new_user_password=<new_user_password>"
+```
+
+where:
+
+- `vm_name` - the exact name of the running VM to provision the user on
+- `vm_username` - the existing admin username on the VM used to connect
+- `vm_password` - the password for the existing admin user
+- `new_username` - the username for the new account
+- `new_user_password` - the password for the new account
+
+The playbook is idempotent — if the user already exists it will skip creation.
+
+**Note** — VMs may not be directly accessible from outside the host they run on,
+depending on networking configuration. The playbook connects to the VM via SSH
+through the Mac host as a jump proxy. `sshpass` must be installed on the Ansible
+runner. Apple Command Line Tools will be installed on the VM automatically if not
+already present.
+
+### Images
+
+#### Pull Image
+
+To pull an OCI image to the hosts run:
+
+```bash
+ansible-playbook pull_image.yml -i dev/inventory -e "remote_image_name=<image_to_pull>"
+```
+
+where `image_to_pull` is the OCI image you want to pull. Optionally you could also specify the following variables:
+
+- `registry_username` - The username to authenticate to the registry with
+- `registry_password` - The password to authenticate to the registry with
+- `insecure_pull` - Whether to allow pulling via HTTP
+
+#### Create Image
+
+This workflow:
+
+1. Deploys a VM from a specified base image
+2. Configures the VM by running all bash scripts inside the [scripts](/scripts) folder
+3. Pushes an image from the VM to a specified remote OCI registry
+4. Deletes the VM
+
+**Note** By default, VMs are not accessible from outside of the host they are deployed on. To connect to the VMs and to configure them we use port forwarding. SSHPass is required on the Ansible runner in order to be able to connect to the VM.
+
+To configure and image and push it to a remote registry:
+
+1. Ensure you have added your bash scripts to the [scripts](/scripts) folder
+2. Run
+
+```bash
+ansible-playbook create_image.yml -i dev/inventory -e "remote_image_name=<remote_destination>" -e "vm_image=<base_image>"
+```
+
+where `remote_destination` is the OCI image you want to push to. `base_image` is the image you want to deploy from. Optionally you could also specify the following variables:
+
+- `registry_username` - The username to authenticate to the registry with
+- `registry_password` - The password to authenticate to the registry with
+- `insecure_push` - Whether to allow pushing via HTTP
+- `upgrade_os` - Whether you want the OS to be upgraded as part of the image creation process
+
+### Android
+
+#### Create and Run AVD
 
 Run the `deploy_avd.yml` playbook with `--tags plan` to see a plan for which host the AVD will be created on:
 
@@ -194,37 +363,7 @@ Example with custom settings:
 ansible-playbook deploy_avd.yml -i dev/inventory -e "vm_name=my-vm" -e "platform=android-34" -e "image_type=google_apis" -e "device_profile=pixel_9" -e "cpu=4" -e "memory=2048"
 ```
 
-### Listing Available Device Profiles
-
-To list all hardware device profiles available for AVD creation:
-
-```bash
-ansible-playbook list_avd_profiles.yml -i dev/inventory
-```
-
-This runs `avdmanager list device` on the first available host and displays all device IDs that can be passed as `device_profile` when creating an AVD.
-
-### Listing Android Virtual Devices
-
-To list all AVDs across all hosts:
-
-```bash
-ansible-playbook list_avds.yml -i dev/inventory
-```
-
-To list only AVDs belonging to a specific VM:
-
-```bash
-ansible-playbook list_avds.yml -i dev/inventory -e "vm_name=my-vm"
-```
-
-Each AVD is displayed with its host and status. Running AVDs include additional details: PID, gateway IP, and ADB relay port.
-
-Optional variables:
-
-- `vm_name` - Filter by VM name (only shows AVDs matching `{vm_name}-avd-*`)
-
-### Deleting an Android Virtual Device
+#### Delete AVD
 
 To delete an AVD from the host where a specific VM is running:
 
@@ -246,7 +385,7 @@ Required variables:
 - `vm_name` - The name of the VM where the AVD is located
 - `avd_index` - The index of the AVD to delete (e.g. `0` for `my-vm-avd-0`)
 
-### Managing an Android Virtual Device
+#### Manage AVD
 
 To start, stop, or delete an AVD associated with a VM:
 
@@ -292,203 +431,39 @@ To preview the plan without making changes:
 ansible-playbook avd.yml -i dev/inventory -e "vm_name=my-vm" -e "desired_state=running" --tags plan
 ```
 
-### Planning Deployment
+#### List AVDs
 
-To plan a deployment without actually creating VMs:
-
-```bash
-ansible-playbook deploy.yml -i dev/inventory -e "vm_name=my-vm" --tags plan
-```
-
-This will:
-
-- Check capacity on all hosts
-- Check if a VM with the given name already exists
-- Create a deployment plan
-- Display the plan without executing it
-
-### Executing Deployment
-
-To actually deploy the VM:
+To list all AVDs across all hosts:
 
 ```bash
-ansible-playbook deploy.yml -i dev/inventory -e "vm_name=my-vm" -e "vm_image=<image>"
+ansible-playbook list_avds.yml -i dev/inventory
 ```
 
-### How It Works
-
-1. **Capacity Check**: The system first checks the current capacity and running VMs on each host.
-2. **Planning**: Creates a deployment plan. If a VM with the given name already exists, no new VM is deployed.
-3. **Deployment**: Executes the deployment plan, creating the VM on the selected host.
-
-### Planning Deletion
-
-To plan a deletion without actually deleting a VM:
+To list only AVDs belonging to a specific VM:
 
 ```bash
-ansible-playbook delete.yml -i dev/inventory -e "vm_name=my-vm" --tags plan
+ansible-playbook list_avds.yml -i dev/inventory -e "vm_name=my-vm"
 ```
 
-This will:
+Each AVD is displayed with its host and status. Running AVDs include additional details: PID, gateway IP, and ADB relay port.
 
-- Check capacity on all hosts
-- Find the VM with the given name
-- Create a deletion plan
-- Display the plan without executing it
+Optional variables:
 
-### Executing Deletion
+- `vm_name` - Filter by VM name (only shows AVDs matching `{vm_name}-avd-*`)
 
-To actually delete the VM:
+#### List AVD Device Profiles
+
+To list all hardware device profiles available for AVD creation:
 
 ```bash
-ansible-playbook delete.yml -i dev/inventory -e "vm_name=my-vm"
+ansible-playbook list_avd_profiles.yml -i dev/inventory
 ```
 
-### How It Works
+This runs `avdmanager list device` on the first available host and displays all device IDs that can be passed as `device_profile` when creating an AVD.
 
-1. **Capacity Check**: The system first checks the current capacity and running VMs on each host.
-2. **Planning**: Finds the VM by name and creates a deletion plan. The playbook fails if no VM with the given name is found.
-3. **Deletion**: Executes the deletion plan, removing the VM from its host.
+### VDI
 
-### Deleting a single VM
-
-If you want to delete a single VM run:
-
-```bash
-ansible-playbook vm.yml -i dev/inventory -e "vm_name=<vm_name>" -e "desired_state=absent"
-```
-
-where `vm_name` is the name of the VM you want to delete. If can be a partial match.
-
-**NOTE** - This playbook deletes all VMs matching the provided name. If you want to delete a VM on a specific host you need to use:
-
-```bash
-ansible-playbook vm.yml -i dev/inventory -e "vm_name=<vm_name>"   -e "desired_state=absent" --limit <host>
-```
-
-where `host` is the host you want to delete a VM from.
-
-### Stop a single VM
-
-If you want to stop a VM run:
-
-```bash
-ansible-playbook vm.yml -i dev/inventory -e "vm_name=<vm_name>" -e "desired_state=stopped"
-```
-
-where `vm_name` is the full name or partial match of the VM or VMs you want to stop.
-
-**NOTE** - This playbook stops all VMs matching that name. If you want to stop a VM on a specific host you need to use:
-
-```bash
-ansible-playbook vm.yml -i dev/inventory -e "vm_name=<vm_name>" --limit <host>
-```
-
-where `host` is the host you want to stop a VM from.
-
-### Start a single VM
-
-If you want to start a VM run:
-
-```bash
-ansible-playbook vm.yml -i dev/inventory -e "vm_name=<vm_name>" -e "desired_state=running"
-```
-
-where `vm_name` is matches name or names of the VM you want to start.
-
-**NOTE** - This playbook starts all VM with that name. If you want to start a VM on a specific host you need to use:
-
-```bash
-ansible-playbook vm.yml -i dev/inventory -e "vm_name=<vm_name>" -e "desired_state=running" --limit <host>
-```
-
-where `host` is the host you want to start a VM from.
-
-### Listing VMs by name
-
-To find a specific VM matching a given name:
-
-```bash
-ansible-playbook list.yml -i dev/inventory -e "vm_name=my-vm"
-```
-
-You can also list all VMs across all hosts:
-
-```bash
-ansible-playbook list.yml -i dev/inventory
-```
-
-### Pull OCI image to hosts
-
-To pull an OCI image to the hosts run:
-
-```bash
-ansible-playbook pull_image.yml -i dev/inventory -e "remote_image_name=<image_to_pull>"
-```
-
-where `image_to_pull` is the OCI image you want to pull. Optionally you could also specify the following variables:
-
-- `registry_username` - The username to authenticate to the registry with
-- `registry_password` - The password to authenticate to the registry with
-- `insecure_pull` - Whether to allow pulling via HTTP
-
-### Configure an OCI image and push it to a registry
-
-This workflow:
-
-1. Deploys a VM from a specified base image
-2. Configures the VM by running all bash scripts inside the [scripts](/scripts) folder
-3. Pushes an image from the VM to a specified remote OCI registry
-4. Deletes the VM
-
-**Note** By default, VMs are not accessible from outside of the host they are deployed on. To connect to the VMs and to configure them we use port forwarding. SSHPass is required on the Ansible runner in order to be able to connect to the VM.
-
-To configure and image and push it to a remote registry:
-
-1. Ensure you have added your bash scripts to the [scripts](/scripts) folder
-2. Run
-
-```bash
-ansible-playbook create_image.yml -i dev/inventory -e "remote_image_name=<remote_destination>" -e "vm_image=<base_image>"
-```
-
-where `remote_destination` is the OCI image you want to push to. `base_image` is the image you want to deploy from. Optionally you could also specify the following variables:
-
-- `registry_username` - The username to authenticate to the registry with
-- `registry_password` - The password to authenticate to the registry with
-- `insecure_push` - Whether to allow pushing via HTTP
-- `upgrade_os` - Whether you want the OS to be upgraded as part of the image creation process
-
-### Provisioning a user on a VM
-
-To provision an admin user account on a running VM:
-
-```bash
-ansible-playbook provision_user.yml -i dev/inventory \
-  -e "vm_name=<vm_name>" \
-  -e "vm_username=<vm_username>" \
-  -e "vm_password=<vm_password>" \
-  -e "new_username=<new_username>" \
-  -e "new_user_password=<new_user_password>"
-```
-
-where:
-
-- `vm_name` - the exact name of the running VM to provision the user on
-- `vm_username` - the existing admin username on the VM used to connect
-- `vm_password` - the password for the existing admin user
-- `new_username` - the username for the new account
-- `new_user_password` - the password for the new account
-
-The playbook is idempotent — if the user already exists it will skip creation.
-
-**Note** — VMs may not be directly accessible from outside the host they run on,
-depending on networking configuration. The playbook connects to the VM via SSH
-through the Mac host as a jump proxy. `sshpass` must be installed on the Ansible
-runner. Apple Command Line Tools will be installed on the VM automatically if not
-already present.
-
-### Installing Citrix VDA
+#### Install Citrix VDA
 
 To install Citrix Virtual Delivery Agent (VDA) on a running VM:
 
@@ -520,7 +495,7 @@ This playbook:
 
 **Note** — `sshpass` must be installed on the Ansible runner. The playbook connects to the VM via the Mac host as a jump proxy.
 
-### Registering Citrix VDA with a Delivery Controller
+#### Register Citrix VDA
 
 After installing Citrix VDA, register the VM with a Citrix Delivery Controller using an enrollment token:
 
@@ -539,7 +514,7 @@ where:
 - `vm_password` - the password for the existing admin user
 - `enrollment_token` - Citrix enrollment token for registering the VDA with the Delivery Controller
 
-# Best Practices for VM Management
+## Best Practices for VM Management
 
 You can group VMs together by having a shared prefix.
 This will allow you to manage start, stop, and delete multiple
