@@ -74,8 +74,8 @@
               'Device Profile: ' ~ (device_profile | default('pixel_9')),
               ('CPU: ' ~ cpu) if (run_avd | default(true) | bool and cpu is defined) else '',
               ('Memory: ' ~ memory) if (run_avd | default(true) | bool and memory is defined) else '',
-              ('Relay IP: ' ~ avd_result['relay_ip']) if (run_avd | default(true) | bool) else '',
-              ('Relay Port: ' ~ avd_result['relay_port']) if (run_avd | default(true) | bool) else '',
+              ('Relay IP: ' ~ avd_result['relay_ip']) if (run_avd | default(true) | bool and avd_result is defined and 'relay_ip' in avd_result) else '',
+              ('Relay Port: ' ~ avd_result['relay_port']) if (run_avd | default(true) | bool and avd_result is defined and 'relay_port' in avd_result) else '',
             ] | select | join(' | ')
           }}
   tags:
