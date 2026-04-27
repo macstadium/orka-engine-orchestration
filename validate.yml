@@ -75,5 +75,3 @@
           java={{ java_bin.stat.exists }},
           run-avd={{ run_avd.stat.exists }},
           socat={{ socat_bin.stat.exists }}
-      tags:
-        - always
