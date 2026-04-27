@@ -63,7 +63,13 @@
         cmd: "/usr/local/bin/orka-engine image list -o json"
       register: image_list
       changed_when: false
-      failed_when: image_name | default('sequoia') not in image_list.stdout
+      vars:
+        # Strip tag (everything after ':') — engine list output puts image and tag in separate JSON fields
+        validate_image_substring: "{{ (image_name | default('sequoia')).split(':')[0] }}"
+        validate_image_tag: "{{ (image_name | default('')).split(':')[1] | default('', true) }}"
+      failed_when: >-
+        validate_image_substring not in image_list.stdout
+        or (validate_image_tag != '' and validate_image_tag not in image_list.stdout)
       tags: images
 
     - name: "Validate: Summary"
