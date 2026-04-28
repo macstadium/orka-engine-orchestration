@@ -24,10 +24,10 @@ A web-based UI for running playbooks is available via [Ansible Semaphore](https:
 ├── create_image.yml         # Main playbook for creating an image and pushing it to a remote registry
 ├── list.yml                 # Main playbook for listing VMs
 ├── install-engine.yml       # Main playbook for installing Orka Engine
-├── install_android_sdk.yml    # Main playbook for installing Android SDK
-├── uninstall_android_sdk.yml  # Main playbook for uninstalling Android SDK and tooling
-├── sdkmanager_install.yml     # Main playbook for installing Android SDK platforms and system images
-├── sdkmanager_uninstall.yml   # Main playbook for uninstalling Android SDK platforms and system images
+├── install_android_sdk.yml  # Main playbook for installing Android SDK
+├── uninstall_android_sdk.yml # Main playbook for uninstalling Android SDK and tooling
+├── sdkmanager_install.yml   # Main playbook for installing Android SDK platforms and system images
+├── sdkmanager_uninstall.yml # Main playbook for uninstalling Android SDK platforms and system images
 ├── deploy_avd.yml           # Main playbook for creating and running Android Virtual Devices
 ├── list_avd_profiles.yml # Main playbook for listing available AVD device profiles
 ├── list_avds.yml            # Main playbook for listing Android Virtual Devices
