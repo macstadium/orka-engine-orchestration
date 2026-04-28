@@ -104,10 +104,13 @@ relay_port:
 import os
 import signal
 import subprocess
+import time
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.orka_utils import get_avd_list, get_running_avd_list
 
 CONSOLE_PORT_START = 5554
+STOP_WAIT_TIMEOUT = 30  # seconds to wait for AVD process to exit after SIGTERM
+STOP_WAIT_INTERVAL = 1  # seconds between checks
 
 
 class AVDManager:
@@ -214,11 +217,33 @@ class AVDManager:
             )
             return self.result
 
-        os.kill(running_avd["pid"], signal.SIGTERM)
+        pid = running_avd["pid"]
+        os.kill(pid, signal.SIGTERM)
+
+        # SIGTERM is asynchronous and the run-avd script may need a moment
+        # to clean up child processes (emulator, socat). Wait for the
+        # process to actually exit before returning.
+        deadline = time.monotonic() + STOP_WAIT_TIMEOUT
+        while time.monotonic() < deadline:
+            try:
+                # Sending signal 0 checks if the process exists without
+                # actually sending a signal.
+                os.kill(pid, 0)
+            except ProcessLookupError:
+                break
+            time.sleep(STOP_WAIT_INTERVAL)
+        else:
+            self.module.fail_json(
+                msg=(
+                    f"AVD {self.name} (PID {pid}) did not exit within "
+                    f"{STOP_WAIT_TIMEOUT}s of SIGTERM"
+                ),
+                **self.result,
+            )
 
         self.result["changed"] = True
-        self.result["process_id"] = running_avd["pid"]
-        self.result["message"] = f"Stopped AVD {self.name} (PID {running_avd['pid']})"
+        self.result["process_id"] = pid
+        self.result["message"] = f"Stopped AVD {self.name} (PID {pid})"
         return self.result
 
     def delete(self):
