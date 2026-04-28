@@ -42,14 +42,14 @@
       failed_when: not socat_bin.stat.exists
 
     # ── SDK Components ──
-    - name: "Validate: {{ validate_platform }} platform installed"
+    - name: "Validate platform installed: {{ validate_platform }}"
       ansible.builtin.stat:
         path: "/opt/android-sdk/platforms/{{ validate_platform }}"
       register: platform_check
       failed_when: not platform_check.stat.exists
       tags: sdk-components
 
-    - name: "Validate: system image installed ({{ item }})"
+    - name: "Validate system image installed: {{ item }}"
       ansible.builtin.stat:
         path: "/opt/android-sdk/system-images/{{ validate_platform }}/{{ item }}/arm64-v8a"
       register: image_check
