@@ -33,6 +33,7 @@ A web-based UI for running playbooks is available via [Ansible Semaphore](https:
 ├── list_avds.yml            # Main playbook for listing Android Virtual Devices
 ├── delete_avd.yml           # Main playbook for deleting Android Virtual Devices
 ├── avd.yml                  # Main playbook for managing (start, stop, delete) Android Virtual Devices
+├── validate.yml             # Main playbook for validating engine, SDK, and image setup
 ├── provision_user.yml       # Main playbook for provisioning an admin user on a VM
 ├── install_citrix_vda.yml   # Main playbook for installing Citrix VDA on a VM
 ├── register_citrix_vda.yml  # Main playbook for registering a Citrix VDA with a Delivery Controller
@@ -484,6 +485,50 @@ ansible-playbook list_avd_profiles.yml -i dev/inventory
 ```
 
 This runs `avdmanager list device` on the first available host and displays all device IDs that can be passed as `device_profile` when creating an AVD.
+
+### Validation
+
+#### Validate Setup
+
+The `validate.yml` playbook performs idempotent checks against target hosts to confirm the engine, Android SDK, SDK components, and OCI images are installed correctly. It uses `ansible.builtin.stat` and `ansible.builtin.command` rather than ad-hoc shell commands, which makes it safe to run alongside (or as part of) CI workflows.
+
+To run all validation checks:
+
+```bash
+ansible-playbook validate.yml -i dev/inventory
+```
+
+The playbook is tag-aware so you can run subsets that match each phase of the setup sequence:
+
+| Command | What it checks |
+|---------|----------------|
+| `ansible-playbook validate.yml -i dev/inventory --skip-tags sdk-components,images` | Engine binary + Android SDK base install (sdkmanager, Java, run-avd, socat) |
+| `ansible-playbook validate.yml -i dev/inventory --tags sdk-components` | Android platform and system images installed via `sdkmanager_install.yml` |
+| `ansible-playbook validate.yml -i dev/inventory --tags images` | OCI image is present in the engine image list |
+
+**Checks performed:**
+
+- Engine binary at `/usr/local/bin/orka-engine`
+- `sdkmanager` at `/opt/android-sdk/cmdline-tools/latest/bin/sdkmanager`
+- Java at `/Library/Java/JavaVirtualMachines/temurin-21.jre/Contents/Home/bin/java`
+- `run-avd` script at `/opt/orka/bin/run-avd`
+- `socat` at `/opt/homebrew/bin/socat`
+- Platform directory at `/opt/android-sdk/platforms/<platform>` (tagged `sdk-components`)
+- System image directories at `/opt/android-sdk/system-images/<platform>/<image_type>/arm64-v8a` for each image type (tagged `sdk-components`)
+- OCI image list contains an expected substring (tagged `images`)
+
+Optional variables:
+
+- `platform` - Android platform to check for (default: `android-36`)
+- `image_types` - Comma-separated list of system image types to check for (default: `default,google_apis`)
+- `image_name` - Substring to look for in the engine's image list output (default: `sequoia`). Use this when validating against a custom image. Supports `name:tag` format — both parts are matched independently against the engine's image list output.
+
+Example with custom values:
+
+```bash
+ansible-playbook validate.yml -i dev/inventory --tags sdk-components -e "platform=android-34" -e "image_types=default,google_apis_playstore"
+ansible-playbook validate.yml -i dev/inventory --tags images -e "image_name=ghcr.io/myorg/my-image:1.0"
+```
 
 ### VDI
 
