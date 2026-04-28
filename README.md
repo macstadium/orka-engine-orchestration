@@ -24,9 +24,10 @@ A web-based UI for running playbooks is available via [Ansible Semaphore](https:
 ├── create_image.yml         # Main playbook for creating an image and pushing it to a remote registry
 ├── list.yml                 # Main playbook for listing VMs
 ├── install-engine.yml       # Main playbook for installing Orka Engine
-├── install_android_sdk.yml  # Main playbook for installing Android SDK
-├── sdkmanager_install.yml   # Main playbook for installing Android SDK platforms and system images
-├── sdkmanager_uninstall.yml # Main playbook for uninstalling Android SDK platforms and system images
+├── install_android_sdk.yml    # Main playbook for installing Android SDK
+├── uninstall_android_sdk.yml  # Main playbook for uninstalling Android SDK and tooling
+├── sdkmanager_install.yml     # Main playbook for installing Android SDK platforms and system images
+├── sdkmanager_uninstall.yml   # Main playbook for uninstalling Android SDK platforms and system images
 ├── deploy_avd.yml           # Main playbook for creating and running Android Virtual Devices
 ├── list_avd_profiles.yml # Main playbook for listing available AVD device profiles
 ├── list_avds.yml            # Main playbook for listing Android Virtual Devices
@@ -90,7 +91,7 @@ where:
 
 #### Install Android SDK
 
-To install the Android SDK (including Java JDK, command-line tools, and platform-tools) on target hosts:
+To install the Android SDK and AVD runtime tooling on target hosts:
 
 ```bash
 ansible-playbook install_android_sdk.yml -i dev/inventory
@@ -98,13 +99,36 @@ ansible-playbook install_android_sdk.yml -i dev/inventory
 
 This will:
 
+- Install Homebrew (if not already present) and ensure `brew shellenv` is loaded in `.zprofile`
 - Install Eclipse Temurin JDK 21 (if not already present)
-- Download and set up Android command-line tools
+- Download and set up Android command-line tools at `/opt/android-sdk/cmdline-tools/latest/`
 - Accept Android SDK licenses
-- Install base SDK packages
+- Install base SDK packages (`platform-tools`, `emulator`)
 - Configure `JAVA_HOME`, `ANDROID_HOME`, and `PATH` in the user's `.zshrc`
+- Install `socat` via Homebrew (used to relay ADB connections to AVDs)
+- Create `/opt/orka/bin/` and `/opt/orka/logs/avd/` directories
+- Install the `run-avd` script at `/opt/orka/bin/run-avd`
 
 **Note** - To force reinstallation pass `-e "install_android_sdk_force=true"`.
+
+#### Uninstall Android SDK
+
+To remove the Android SDK and AVD runtime tooling from target hosts. This is the inverse of `install_android_sdk.yml`:
+
+```bash
+ansible-playbook uninstall_android_sdk.yml -i dev/inventory
+```
+
+This will:
+
+- Remove the `run-avd` script at `/opt/orka/bin/run-avd`
+- Remove the AVD log directory at `/opt/orka/logs/avd/`
+- Uninstall `socat` via Homebrew
+- Remove the `JAVA_HOME` / `ANDROID_HOME` / `PATH` block from the user's `.zshrc`
+- Remove the Android SDK directory at `/opt/android-sdk`
+- Remove the Eclipse Temurin JDK 21 installation
+
+Homebrew itself is left in place since it may be used by other tooling on the host. To remove Homebrew as well, uncomment the relevant tasks at the bottom of the playbook.
 
 #### Install Android SDK Platforms and System Images
 
