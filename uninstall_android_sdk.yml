@@ -1,0 +1,75 @@
+---
+- name: Uninstall Android SDK and tools from target hosts
+  hosts: hosts
+  gather_facts: false
+  module_defaults:
+    ansible.builtin.setup:
+      gather_timeout: 20
+  pre_tasks:
+    - name: Gather minimal facts
+      ansible.builtin.setup:
+        filter:
+          - "ansible_env"
+          - "ansible_user_gid"
+      tags:
+        - always
+  tasks:
+    # ── Reverse of install_orka_android_tools ──
+    - name: Remove run-avd script
+      become: true
+      ansible.builtin.file:
+        path: /opt/orka/bin/run-avd
+        state: absent
+
+    - name: Remove orka log directory
+      become: true
+      ansible.builtin.file:
+        path: /opt/orka/logs/avd
+        state: absent
+
+    - name: Remove orka bin directory (if empty)
+      become: true
+      ansible.builtin.shell:
+        cmd: "rmdir /opt/orka/bin 2>/dev/null || true"
+      changed_when: false
+
+    - name: Uninstall socat
+      community.general.homebrew:
+        path: /opt/homebrew/bin
+        name: socat
+        state: absent
+
+    # ── Reverse of install_android_sdk ──
+    - name: Remove ANDROID_HOME from shell profile
+      ansible.builtin.blockinfile:
+        path: "/Users/{{ ansible_user }}/.zshrc"
+        marker: "# {mark} ANDROID SDK"
+        state: absent
+
+    - name: Remove Android SDK directory
+      become: true
+      ansible.builtin.file:
+        path: /opt/android-sdk
+        state: absent
+
+    - name: Remove Java JDK
+      become: true
+      ansible.builtin.file:
+        path: /Library/Java/JavaVirtualMachines/temurin-21.jre
+        state: absent
+
+    # ── Reverse of install_homebrew ──
+    # Homebrew is left in place — it may be used by other tools.
+    # Uncomment the following to remove it entirely:
+    # - name: Uninstall Homebrew
+    #   ansible.builtin.shell:
+    #     cmd: |
+    #       NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/uninstall.sh)"
+    #   args:
+    #     removes: /opt/homebrew/bin/brew
+    #
+    # - name: Remove brew shellenv from zprofile
+    #   ansible.builtin.lineinfile:
+    #     path: "{{ ansible_env.HOME }}/.zprofile"
+    #     line: 'eval "$(/opt/homebrew/bin/brew shellenv)"'
+    #     state: absent
