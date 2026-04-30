@@ -226,8 +226,6 @@ class AVDManager:
         deadline = time.monotonic() + STOP_WAIT_TIMEOUT
         while time.monotonic() < deadline:
             try:
-                # Sending signal 0 checks if the process exists without
-                # actually sending a signal.
                 os.kill(pid, 0)
             except ProcessLookupError:
                 break
