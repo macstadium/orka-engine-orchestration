@@ -154,6 +154,9 @@ class AVDManager:
         if running_avd is not None:
             self.result["message"] = f"AVD {self.name} already running"
             self.result["avd_list"] = avd_list
+            self.result["process_id"] = running_avd["pid"]
+            self.result["relay_ip"] = running_avd["gateway_ip"]
+            self.result["relay_port"] = running_avd["relay_port"]
             return self.result
 
         if self.cpu is not None:
