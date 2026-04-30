@@ -1,0 +1,8 @@
+---
+validate_engine_path: "/usr/local/bin/orka-engine"
+validate_java_path: "/Library/Java/JavaVirtualMachines/temurin-21.jre/Contents/Home/bin/java"
+validate_run_avd_path: "/opt/orka/bin/run-avd"
+validate_socat_path: "/opt/homebrew/bin/socat"
+validate_platform: "android-36"
+validate_image_types: "default,google_apis"
+validate_image_name: "sequoia"

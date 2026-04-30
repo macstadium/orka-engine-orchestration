@@ -1,0 +1,68 @@
+---
+- name: "Validate: orka-engine binary exists"
+  ansible.builtin.stat:
+    path: "{{ validate_engine_path }}"
+  register: validate_engine_binary
+  failed_when: not validate_engine_binary.stat.exists
+
+- name: "Validate: sdkmanager exists"
+  ansible.builtin.stat:
+    path: "{{ android_sdk_common_home }}/cmdline-tools/latest/bin/sdkmanager"
+  register: validate_sdkmanager
+  failed_when: not validate_sdkmanager.stat.exists
+
+- name: "Validate: Java installed"
+  ansible.builtin.stat:
+    path: "{{ validate_java_path }}"
+  register: validate_java_bin
+  failed_when: not validate_java_bin.stat.exists
+
+- name: "Validate: run-avd script exists"
+  ansible.builtin.stat:
+    path: "{{ validate_run_avd_path }}"
+  register: validate_run_avd
+  failed_when: not validate_run_avd.stat.exists
+
+- name: "Validate: socat installed"
+  ansible.builtin.stat:
+    path: "{{ validate_socat_path }}"
+  register: validate_socat_bin
+  failed_when: not validate_socat_bin.stat.exists
+
+- name: "Validate platform installed: {{ validate_platform }}"
+  ansible.builtin.stat:
+    path: "{{ android_sdk_common_home }}/platforms/{{ validate_platform }}"
+  register: validate_platform_check
+  failed_when: not validate_platform_check.stat.exists
+  tags: sdk-components
+
+- name: "Validate system image installed: {{ item }}"
+  ansible.builtin.stat:
+    path: "{{ android_sdk_common_home }}/system-images/{{ validate_platform }}/{{ item }}/{{ android_sdk_common_image_arch }}"
+  register: validate_image_check
+  failed_when: not validate_image_check.stat.exists
+  loop: "{{ validate_image_types.split(',') | map('trim') | list }}"
+  tags: sdk-components
+
+- name: "Validate: OCI image pulled"
+  ansible.builtin.command:
+    cmd: "{{ validate_engine_path }} image list -o json"
+  register: validate_image_list
+  changed_when: false
+  vars:
+    validate_image_substring: "{{ validate_image_name.split(':')[0] }}"
+    validate_image_tag: "{{ validate_image_name.split(':')[1] | default('', true) }}"
+  failed_when: >-
+    validate_image_substring not in validate_image_list.stdout
+    or (validate_image_tag != '' and validate_image_tag not in validate_image_list.stdout)
+  tags: images
+
+- name: "Validate: Summary"
+  ansible.builtin.debug:
+    msg: >-
+      All checks passed on {{ inventory_hostname }}:
+      engine={{ validate_engine_binary.stat.exists }},
+      sdkmanager={{ validate_sdkmanager.stat.exists }},
+      java={{ validate_java_bin.stat.exists }},
+      run-avd={{ validate_run_avd.stat.exists }},
+      socat={{ validate_socat_bin.stat.exists }}

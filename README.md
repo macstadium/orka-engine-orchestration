@@ -495,15 +495,15 @@ The playbook is tag-aware so you can run subsets that match each phase of the se
 
 Optional variables:
 
-- `platform` - Android platform to check for (default: `android-36`)
-- `image_types` - Comma-separated list of system image types to check for (default: `default,google_apis`)
-- `image_name` - Substring to look for in the engine's image list output (default: `sequoia`). Use this when validating against a custom image. Supports `name:tag` format — both parts are matched independently against the engine's image list output.
+- `validate_platform` - Android platform to check for (default: `android-36`)
+- `validate_image_types` - Comma-separated list of system image types to check for (default: `default,google_apis`)
+- `validate_image_name` - Substring to look for in the engine's image list output (default: `sequoia`). Use this when validating against a custom image. Supports `name:tag` format — both parts are matched independently against the engine's image list output.
 
 Example with custom values:
 
 ```bash
-ansible-playbook validate.yml -i dev/inventory --tags sdk-components -e "platform=android-34" -e "image_types=default,google_apis_playstore"
-ansible-playbook validate.yml -i dev/inventory --tags images -e "image_name=ghcr.io/myorg/my-image:1.0"
+ansible-playbook validate.yml -i dev/inventory --tags sdk-components -e "validate_platform=android-34" -e "validate_image_types=default,google_apis_playstore"
+ansible-playbook validate.yml -i dev/inventory --tags images -e "validate_image_name=ghcr.io/myorg/my-image:1.0"
 ```
 
 ### VDI
