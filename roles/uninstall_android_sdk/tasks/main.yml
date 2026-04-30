@@ -1,0 +1,67 @@
+---
+# ── Reverse of install_orka_android_tools ──
+- name: Remove run-avd script
+  become: true
+  ansible.builtin.file:
+    path: "{{ uninstall_android_sdk_run_avd_path }}"
+    state: absent
+  when: uninstall_android_sdk_run_avd | bool
+
+- name: Remove orka log directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ uninstall_android_sdk_orka_log_path }}"
+    state: absent
+  when: uninstall_android_sdk_orka_dirs | bool
+
+- name: Remove orka bin directory (if empty)
+  become: true
+  ansible.builtin.shell:
+    cmd: "rmdir {{ uninstall_android_sdk_orka_bin_path }} 2>/dev/null || true"
+  changed_when: false
+  when: uninstall_android_sdk_orka_dirs | bool
+
+- name: Uninstall socat
+  community.general.homebrew:
+    path: /opt/homebrew/bin
+    name: socat
+    state: absent
+  when: uninstall_android_sdk_socat | bool
+
+# ── Reverse of install_android_sdk ──
+- name: Remove ANDROID SDK block from shell profile
+  ansible.builtin.blockinfile:
+    path: "/Users/{{ ansible_user }}/.zshrc"
+    marker: "# {mark} ANDROID SDK"
+    state: absent
+  when: uninstall_android_sdk_zshrc_block | bool
+
+- name: Remove Android SDK directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ uninstall_android_sdk_home }}"
+    state: absent
+  when: uninstall_android_sdk_sdk_directory | bool
+
+- name: Remove Java JDK
+  become: true
+  ansible.builtin.file:
+    path: "{{ uninstall_android_sdk_java_home }}"
+    state: absent
+  when: uninstall_android_sdk_java | bool
+
+# ── Reverse of install_homebrew ──
+- name: Uninstall Homebrew
+  ansible.builtin.shell:
+    cmd: |
+      NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/uninstall.sh)"
+  args:
+    removes: /opt/homebrew/bin/brew
+  when: uninstall_android_sdk_homebrew | bool
+
+- name: Remove brew shellenv from zprofile
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_env.HOME }}/.zprofile"
+    line: 'eval "$(/opt/homebrew/bin/brew shellenv)"'
+    state: absent
+  when: uninstall_android_sdk_homebrew | bool

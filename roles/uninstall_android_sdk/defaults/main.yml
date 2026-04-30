@@ -1,0 +1,19 @@
+---
+# Component toggles — set to false to skip removal of that component.
+# Defaults remove everything install_android_sdk.yml installs exclusively for
+# the Android SDK. Shared tooling (socat, Homebrew) defaults to false so it
+# isn't removed unless explicitly requested.
+uninstall_android_sdk_run_avd: true
+uninstall_android_sdk_orka_dirs: true
+uninstall_android_sdk_zshrc_block: true
+uninstall_android_sdk_sdk_directory: true
+uninstall_android_sdk_java: true
+uninstall_android_sdk_socat: false
+uninstall_android_sdk_homebrew: false
+
+# Paths
+uninstall_android_sdk_run_avd_path: "/opt/orka/bin/run-avd"
+uninstall_android_sdk_orka_log_path: "/opt/orka/logs/avd"
+uninstall_android_sdk_orka_bin_path: "/opt/orka/bin"
+uninstall_android_sdk_home: "/opt/android-sdk"
+uninstall_android_sdk_java_home: "/Library/Java/JavaVirtualMachines/temurin-21.jre"
