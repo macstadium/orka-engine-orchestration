@@ -1,7 +1,7 @@
 ---
 - name: Check if Java is installed
   ansible.builtin.stat:
-    path: "{{ install_android_sdk_java_home }}/bin/java"
+    path: "{{ android_sdk_common_java_home }}/bin/java"
   register: install_android_sdk_java_check
   changed_when: false
 
@@ -111,7 +111,7 @@
     path: "/Users/{{ ansible_user }}/.zshrc"
     marker: "# {mark} ANDROID SDK"
     block: |
-      export JAVA_HOME={{ install_android_sdk_java_home }}
+      export JAVA_HOME={{ android_sdk_common_java_home }}
       export ANDROID_HOME={{ android_sdk_common_home }}
       export PATH=$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH
     create: true

@@ -5,6 +5,5 @@ install_android_sdk_packages:
   - "platform-tools"
   - "emulator"
 install_android_sdk_force: false
-install_android_sdk_java_home: "/Library/Java/JavaVirtualMachines/temurin-21.jre/Contents/Home"
 install_android_sdk_java_dist_url: >
   https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jre_aarch64_mac_hotspot_21.0.10_7.pkg

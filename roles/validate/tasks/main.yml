@@ -13,7 +13,7 @@
 
 - name: "Validate: Java installed"
   ansible.builtin.stat:
-    path: "{{ validate_java_path }}"
+    path: "{{ android_sdk_common_java_home }}/bin/java"
   register: validate_java_bin
   failed_when: not validate_java_bin.stat.exists
 
