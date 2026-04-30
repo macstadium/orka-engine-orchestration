@@ -1,5 +1,4 @@
 ---
-# ── Reverse of install_orka_android_tools ──
 - name: Remove run-avd script
   become: true
   ansible.builtin.file:
@@ -28,7 +27,6 @@
     state: absent
   when: uninstall_android_sdk_socat | bool
 
-# ── Reverse of install_android_sdk ──
 - name: Remove ANDROID SDK block from shell profile
   ansible.builtin.blockinfile:
     path: "/Users/{{ ansible_user }}/.zshrc"
@@ -50,7 +48,6 @@
     state: absent
   when: uninstall_android_sdk_java | bool
 
-# ── Reverse of install_homebrew ──
 - name: Uninstall Homebrew
   ansible.builtin.shell:
     cmd: |
