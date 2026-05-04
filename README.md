@@ -466,7 +466,7 @@ This runs `avdmanager list device` on the first available host and displays all 
 
 #### Validate Setup
 
-The `validate.yml` playbook performs idempotent checks against target hosts to confirm the engine, Android SDK, SDK components, and OCI images are installed correctly. It uses `ansible.builtin.stat` and `ansible.builtin.command` rather than ad-hoc shell commands, which makes it safe to run alongside (or as part of) CI workflows.
+The `validate.yml` playbook performs idempotent checks against target hosts to confirm the Orka Engine, Android SDK, SDK components, and OCI images are installed correctly. It uses `ansible.builtin.stat` and `ansible.builtin.command` rather than ad-hoc shell commands, which makes it safe to run alongside (or as part of) CI workflows.
 
 To run all validation checks:
 
