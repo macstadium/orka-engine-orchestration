@@ -1,0 +1,6 @@
+---
+- name: Validate environment setup
+  hosts: hosts
+  gather_facts: false
+  roles:
+    - role: validate
