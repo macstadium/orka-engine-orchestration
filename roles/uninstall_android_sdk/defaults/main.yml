@@ -1,0 +1,11 @@
+---
+uninstall_android_sdk_run_avd: true
+uninstall_android_sdk_orka_dirs: true
+uninstall_android_sdk_sdk_directory: true
+uninstall_android_sdk_java: true
+uninstall_android_sdk_socat: false
+uninstall_android_sdk_homebrew: false
+uninstall_android_sdk_run_avd_path: "/opt/orka/bin/run-avd"
+uninstall_android_sdk_orka_log_path: "/opt/orka/logs/avd"
+uninstall_android_sdk_home: "/opt/android-sdk"
+uninstall_android_sdk_java_home: "/Library/Java/JavaVirtualMachines/temurin-21.jre"

@@ -1,0 +1,17 @@
+---
+- name: Uninstall Android SDK and tools from target hosts
+  hosts: hosts
+  gather_facts: false
+  module_defaults:
+    ansible.builtin.setup:
+      gather_timeout: 20
+  pre_tasks:
+    - name: Gather minimal facts
+      ansible.builtin.setup:
+        filter:
+          - "ansible_env"
+          - "ansible_user_gid"
+      tags:
+        - always
+  roles:
+    - role: uninstall_android_sdk
