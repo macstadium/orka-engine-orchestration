@@ -122,9 +122,8 @@ ansible-playbook uninstall_android_sdk.yml -i dev/inventory
 By default this will:
 
 - Remove the `run-avd` script at `/opt/orka/bin/run-avd`
-- Remove the AVD log directory at `/opt/orka/logs/avd/` and the `/opt/orka/bin` directory if empty
-- Remove the `JAVA_HOME` / `ANDROID_HOME` / `PATH` block from the user's `.zshrc`
-- Remove the Android SDK directory at `/opt/android-sdk`
+- Remove the AVD log directory at `/opt/orka/logs/avd/`
+- Remove the Android SDK directory at `/opt/android-sdk` along with the `JAVA_HOME` / `ANDROID_HOME` / `PATH` block from the user's `.zshrc`
 - Remove the Eclipse Temurin JDK 21 installation
 
 `socat` and Homebrew are left in place by default since both may be used by other tooling on the host. Pass the relevant variables to remove them as well (see below).
@@ -132,9 +131,8 @@ By default this will:
 Optional variables (all booleans):
 
 - `uninstall_android_sdk_run_avd` (default `true`) — remove the `run-avd` script
-- `uninstall_android_sdk_orka_dirs` (default `true`) — remove `/opt/orka/logs/avd/` and `/opt/orka/bin` (if empty)
-- `uninstall_android_sdk_zshrc_block` (default `true`) — remove the `ANDROID SDK` block from `.zshrc`
-- `uninstall_android_sdk_sdk_directory` (default `true`) — remove `/opt/android-sdk`
+- `uninstall_android_sdk_orka_dirs` (default `true`) — remove `/opt/orka/logs/avd/`
+- `uninstall_android_sdk_sdk_directory` (default `true`) — remove `/opt/android-sdk` and the `ANDROID SDK` block from `.zshrc`
 - `uninstall_android_sdk_java` (default `true`) — remove the Temurin JDK 21 installation
 - `uninstall_android_sdk_socat` (default `false`) — uninstall `socat` via Homebrew
 - `uninstall_android_sdk_homebrew` (default `false`) — uninstall Homebrew itself

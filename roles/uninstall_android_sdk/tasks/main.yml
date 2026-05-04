@@ -13,13 +13,6 @@
     state: absent
   when: uninstall_android_sdk_orka_dirs | bool
 
-- name: Remove orka bin directory (if empty)
-  become: true
-  ansible.builtin.shell:
-    cmd: "rmdir {{ uninstall_android_sdk_orka_bin_path }} 2>/dev/null || true"
-  changed_when: false
-  when: uninstall_android_sdk_orka_dirs | bool
-
 - name: Uninstall socat
   community.general.homebrew:
     path: /opt/homebrew/bin
@@ -27,17 +20,17 @@
     state: absent
   when: uninstall_android_sdk_socat | bool
 
-- name: Remove ANDROID SDK block from shell profile
-  ansible.builtin.blockinfile:
-    path: "/Users/{{ ansible_user }}/.zshrc"
-    marker: "# {mark} ANDROID SDK"
-    state: absent
-  when: uninstall_android_sdk_zshrc_block | bool
-
 - name: Remove Android SDK directory
   become: true
   ansible.builtin.file:
     path: "{{ uninstall_android_sdk_home }}"
+    state: absent
+  when: uninstall_android_sdk_sdk_directory | bool
+
+- name: Remove ANDROID SDK block from shell profile
+  ansible.builtin.blockinfile:
+    path: "/Users/{{ ansible_user }}/.zshrc"
+    marker: "# {mark} ANDROID SDK"
     state: absent
   when: uninstall_android_sdk_sdk_directory | bool
 
