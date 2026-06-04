@@ -59,6 +59,10 @@ Note that the `CITRIX_INSTALLER_URL` may store a URL that expires in a short tim
 You can manually update this value on the [Variable Groups](http://localhost:3000/project/1/environment)
 page by updating the appropriate field in the "Base VM Credentials" group.
 
+## Bulk Operations
+
+For customers who need to provision, configure, and tear down many VMs at once — including bulk user provisioning and bulk Citrix VDA installation — drive the templates below via the REST API using [`bulk_vm_lifecycle.py`](BULK_VM_LIFECYCLE.md). It groups VMs by a shared name prefix and handles the parallel task submission, polling, and manifest tracking for you.
+
 ## Task Templates
 
 The following templates are available in the **Orka Engine Orchestration** project. Each template prompts for its required inputs via a form when you click **Run**.
