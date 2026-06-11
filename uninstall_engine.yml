@@ -1,0 +1,6 @@
+---
+- name: Uninstall Orka Engine
+  hosts: hosts
+  gather_facts: false
+  roles:
+    - role: uninstall_engine
