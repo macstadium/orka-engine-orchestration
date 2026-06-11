@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 
 import subprocess
 
@@ -54,6 +55,7 @@ options:
         default: false
 author:
 - Ivan Spasov (@ispasov)
+- Spike Burton (@spikeburton)
 """
 
 EXAMPLES = r"""
