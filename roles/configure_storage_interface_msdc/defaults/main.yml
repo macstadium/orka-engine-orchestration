@@ -1,0 +1,10 @@
+---
+# msdc_storage_network: ""
+# msdc_storage_vlan: ""
+configure_storage_interface_msdc_remove: false
+configure_storage_interface_msdc_name: "storage"
+configure_storage_interface_msdc_data_network_address: "{{ ansible_default_ipv4.address }}"
+configure_storage_interface_msdc_storage_network_address: >-
+  {{ msdc_storage_network }}.{{ configure_storage_interface_msdc_data_network_address.split('.')[-1] }}
+configure_storage_interface_msdc_storage_network_gateway: "{{ msdc_storage_network }}.1"
+configure_storage_interface_msdc_storage_network_mask: "255.255.254.0"

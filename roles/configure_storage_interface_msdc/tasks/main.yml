@@ -1,0 +1,18 @@
+---
+- name: Add storage VLAN
+  network_setup:
+    name: "{{ configure_storage_interface_msdc_name }}"
+    device: en0
+    tag: "{{ msdc_storage_vlan }}"
+    ip: "{{ configure_storage_interface_msdc_storage_network_address }}"
+    mask: "{{ configure_storage_interface_msdc_storage_network_mask }}"
+    router: "{{ configure_storage_interface_msdc_storage_network_gateway }}"
+  when: not configure_storage_interface_msdc_remove | bool
+
+- name: Remove storage VLAN
+  network_setup:
+    name: "{{ configure_storage_interface_msdc_name }}"
+    device: en0
+    tag: "{{ msdc_storage_vlan }}"
+    state: absent
+  when: configure_storage_interface_msdc_remove | bool
