@@ -1,10 +1,10 @@
 ---
 - name: Unload Orka Engine LaunchDaemon
   become: true
-  community.general.launchd:
-    name: "{{ uninstall_engine_service_id }}"
-    state: unloaded
+  ansible.builtin.command: "launchctl unload {{ uninstall_engine_service_path }}"
+  register: uninstall_engine_unload
   failed_when: false
+  changed_when: uninstall_engine_unload.rc == 0
 
 - name: Remove Orka Engine LaunchDaemon plist
   become: true
