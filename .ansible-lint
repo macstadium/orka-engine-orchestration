@@ -7,6 +7,7 @@ mock_modules:
   - orka_image_list
   - orka_image_push
   - orka_image_delete
+  - network_setup
 
 exclude_paths:
   - roles/install_engine/tasks/main.yml
