@@ -1,0 +1,8 @@
+---
+# msdc_storage_network:
+# configure_harbor_msdc_region: # Should be one of 'atl', 'las' or 'dub'
+# configure_harbor_msdc_domain:
+# configure_harbor_msdc_ip:
+configure_harbor_msdc_s3_domain: 1.obj.{{ configure_harbor_msdc_region }}1.macstadiumcloud.com
+configure_harbor_msdc_s3_ip: "{{ msdc_storage_network }}.1"
+configure_harbor_msdc_remove: false
