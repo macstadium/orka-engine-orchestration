@@ -112,6 +112,30 @@ Optional variables:
 
 - `uninstall_engine_data` (default `true`) — remove `/opt/orka` (engine data, state, and logs). Set to `false` to preserve VM state across reinstalls.
 
+#### Configure Hosts for Harbor (MSDC)
+
+When running at MacStadium (MSDC) and using Harbor for OCI image storage, the Mac hosts must be configured to reach Harbor.
+
+The following variables are required:
+
+- `msdc_storage_network`: The first 3 octets of the storage network, e.g. 172.16.180
+- `msdc_storage_vlan`: The VLAN tag, e.g. 2870
+- `configure_harbor_msdc_region`: The MSDC region, must be one of 'atl', 'las' or 'dub'
+- `configure_harbor_msdc_domain`: The domain for Harbor, e.g. my-harbor-01.oci.las1.macstadiumcloud.com
+- `configure_harbor_msdc_ip`: The IP address for the Harbor server, e.g. 10.221.189.254
+
+To configure the hosts, run:
+
+```bash
+ansible-playbook configure_harbor_msdc.yml -i dev/inventory
+```
+
+**NOTE**: To completely remove the Harbor configuration and storage VLAN interface, run:
+
+```bash
+ansible-playbook configure_harbor_msdc.yml -i dev/inventory -e "configure_storage_interface_msdc_remove=true" -e "configure_harbor_msdc_remove=true"
+```
+
 #### Install Android SDK
 
 To install the Android SDK and AVD runtime tooling on target hosts:
