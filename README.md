@@ -23,7 +23,7 @@ A web-based UI for running playbooks is available via [Ansible Semaphore](https:
 ├── pull_image.yml           # Main playbook for pulling an image on all hosts
 ├── create_image.yml         # Main playbook for creating an image and pushing it to a remote registry
 ├── list.yml                 # Main playbook for listing VMs
-├── install-engine.yml       # Main playbook for installing Orka Engine
+├── install_engine.yml       # Main playbook for installing Orka Engine
 ├── uninstall_engine.yml     # Main playbook for uninstalling Orka Engine
 ├── install_android_sdk.yml  # Main playbook for installing Android SDK
 ├── uninstall_android_sdk.yml # Main playbook for uninstalling Android SDK and tooling
