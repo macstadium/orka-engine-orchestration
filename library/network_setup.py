@@ -125,13 +125,16 @@ class NetworkService(object):
         self.execute_command(cmd)
 
     def configure_service(self):
+        # An empty router leaves the service without a default gateway. Directly
+        # connected subnets (e.g. the MSDC storage VLAN) don't need one, and
+        # omitting it avoids ever competing for the host's default route.
         cmd = [
             "networksetup",
             "-setmanual",
             f"{self.name} Configuration",
             self.ip,
             self.mask,
-            self.router,
+            self.router or "",
         ]
         self.execute_command(cmd)
 
@@ -168,7 +171,7 @@ class NetworkService(object):
         return (
             service_ip != self.ip
             or service_mask != self.mask
-            or service_router != self.router
+            or service_router != (self.router or "")
         )
 
     def needs_update(self):
@@ -250,7 +253,7 @@ def main():
             force=dict(type="bool", default=False),
         ),
         required_if=[
-            ("state", "present", ("device", "tag", "ip", "mask", "router")),
+            ("state", "present", ("device", "tag", "ip", "mask")),
             ("state", "absent", ("device", "tag")),
         ],
         supports_check_mode=False,
