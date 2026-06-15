@@ -1,7 +1,7 @@
 ---
 - name: Unload Orka Engine LaunchDaemon
   become: true
-  ansible.builtin.command: "launchctl unload {{ uninstall_engine_service_path }}"
+  ansible.builtin.command: "launchctl bootout system/{{ uninstall_engine_service_id }}"
   register: uninstall_engine_unload
   failed_when: false
   changed_when: uninstall_engine_unload.rc == 0
