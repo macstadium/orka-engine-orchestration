@@ -1,0 +1,12 @@
+---
+uninstall_engine_service_id: "com.macstadium.orka-engine.server.managed"
+uninstall_engine_service_path: "/Library/LaunchDaemons/{{ uninstall_engine_service_id }}.plist"
+uninstall_engine_data_home: "/opt"
+uninstall_engine_state_home: "/opt"
+uninstall_engine_data_dir: "{{ uninstall_engine_data_home }}/orka"
+uninstall_engine_state_dir: "{{ uninstall_engine_state_home }}/orka"
+uninstall_engine_log_file: "{{ uninstall_engine_state_dir }}/logs/{{ uninstall_engine_service_id }}.log"
+uninstall_engine_app_path: "/usr/local/libexec/orka-engine.app"
+uninstall_engine_helper_path: "/usr/local/bin/orka-engine"
+uninstall_engine_process: "com.macstadium.orka-engine.runvz"
+uninstall_engine_data: true

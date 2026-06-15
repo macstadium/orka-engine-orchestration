@@ -1,0 +1,47 @@
+---
+- name: Unload Orka Engine LaunchDaemon
+  become: true
+  ansible.builtin.command: "launchctl bootout system/{{ uninstall_engine_service_id }}"
+  register: uninstall_engine_unload
+  failed_when: false
+  changed_when: uninstall_engine_unload.rc == 0
+
+- name: Remove Orka Engine LaunchDaemon plist
+  become: true
+  ansible.builtin.file:
+    path: "{{ uninstall_engine_service_path }}"
+    state: absent
+
+- name: Find Orka Engine processes
+  community.general.pids:
+    name: "{{ uninstall_engine_process }}"
+  register: uninstall_engine_pids
+
+- name: Kill Orka Engine processes
+  become: true
+  ansible.builtin.command: "kill {{ item }}"
+  loop: "{{ uninstall_engine_pids.pids }}"
+  changed_when: true
+
+- name: Remove Orka Engine data directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ uninstall_engine_data_dir }}"
+    - "{{ uninstall_engine_state_dir }}"
+    - "{{ uninstall_engine_log_file }}"
+  when: uninstall_engine_data | bool
+
+- name: Remove Orka Engine app
+  become: true
+  ansible.builtin.file:
+    path: "{{ uninstall_engine_app_path }}"
+    state: absent
+
+- name: Remove Orka Engine CLI helper
+  become: true
+  ansible.builtin.file:
+    path: "{{ uninstall_engine_helper_path }}"
+    state: absent

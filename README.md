@@ -23,7 +23,8 @@ A web-based UI for running playbooks is available via [Ansible Semaphore](https:
 ├── pull_image.yml           # Main playbook for pulling an image on all hosts
 ├── create_image.yml         # Main playbook for creating an image and pushing it to a remote registry
 ├── list.yml                 # Main playbook for listing VMs
-├── install-engine.yml       # Main playbook for installing Orka Engine
+├── install_engine.yml       # Main playbook for installing Orka Engine
+├── uninstall_engine.yml     # Main playbook for uninstalling Orka Engine
 ├── install_android_sdk.yml  # Main playbook for installing Android SDK
 ├── uninstall_android_sdk.yml # Main playbook for uninstalling Android SDK and tooling
 ├── sdkmanager_install.yml   # Main playbook for installing Android SDK platforms and system images
@@ -89,6 +90,27 @@ where:
 - `engine_url` - is the URL to download Engine from
 
 **Note** - To force redeployment or upgrade pass `-e "install_engine_force=true"`.
+
+#### Uninstall Engine
+
+To remove Orka Engine from target hosts. This is the inverse of `install_engine.yml`:
+
+```bash
+ansible-playbook uninstall_engine.yml -i dev/inventory
+```
+
+By default this will:
+
+- Unload the `com.macstadium.orka-engine.server.managed` LaunchDaemon
+- Kill any running `com.macstadium.orka-engine.runvz` processes
+- Remove the LaunchDaemon plist at `/Library/LaunchDaemons/com.macstadium.orka-engine.server.managed.plist`
+- Remove the engine data and state directories at `/opt/orka`
+- Remove the engine app at `/usr/local/libexec/orka-engine.app`
+- Remove the `orka-engine` CLI helper at `/usr/local/bin/orka-engine`
+
+Optional variables:
+
+- `uninstall_engine_data` (default `true`) — remove `/opt/orka` (engine data, state, and logs). Set to `false` to preserve VM state across reinstalls.
 
 #### Install Android SDK
 
