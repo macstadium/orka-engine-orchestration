@@ -1,0 +1,17 @@
+---
+- name: Configure access for Harbor on target hosts at MSDC
+  hosts: hosts
+  gather_facts: false
+  module_defaults:
+    ansible.builtin.setup:
+      gather_timeout: 20
+  pre_tasks:
+    - name: Gather minimal facts
+      ansible.builtin.setup:
+        filter:
+          - "ansible_default_ipv4"
+      tags:
+        - always
+  roles:
+    - configure_storage_interface_msdc
+    - configure_harbor_msdc

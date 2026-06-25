@@ -311,6 +311,14 @@
       ]
     },
     {
+      "name": "Hosts | Configure Hosts for Harbor (MSDC)",
+      "app": "ansible",
+      "playbook": "configure_harbor_msdc.yml",
+      "repository": "Local Playbooks",
+      "inventory": "Dev Inventory",
+      "environment": "Default"
+    },
+    {
       "name": "Hosts | Uninstall Android SDK Components",
       "app": "ansible",
       "playbook": "sdkmanager_uninstall.yml",

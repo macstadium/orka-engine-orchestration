@@ -1,0 +1,18 @@
+---
+- name: Add entries to /etc/hosts
+  become: true
+  ansible.builtin.blockinfile:
+    path: /etc/hosts
+    marker: "{{ configure_harbor_msdc_marker }}"
+    block: |
+      {{ configure_harbor_msdc_ip }} {{ configure_harbor_msdc_domain }}
+      {{ configure_harbor_msdc_s3_ip }} {{ configure_harbor_msdc_s3_domain }}
+  when: not configure_harbor_msdc_remove | bool
+
+- name: Remove entries from /etc/hosts
+  become: true
+  ansible.builtin.blockinfile:
+    path: /etc/hosts
+    marker: "{{ configure_harbor_msdc_marker }}"
+    state: absent
+  when: configure_harbor_msdc_remove | bool
