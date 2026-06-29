@@ -3,5 +3,6 @@
 dev/*
 
 semaphore/.env
+semaphore/.bulk_vms_*.json
 
 **/*.pyc

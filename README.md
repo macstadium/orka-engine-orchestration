@@ -14,6 +14,8 @@ This project provides an Ansible-based orchestration system for managing Orka VM
 
 A web-based UI for running playbooks is available via [Ansible Semaphore](https://semaphoreui.com/). This lets end users execute playbooks from a browser without needing CLI access. See [semaphore/README.md](semaphore/README.md) for setup instructions.
 
+For bulk-provisioning and lifecycle management of VMs sharing a common name prefix via the Semaphore REST API, see [semaphore/BULK_VM_LIFECYCLE.md](semaphore/BULK_VM_LIFECYCLE.md).
+
 ## Project Structure
 
 ```
