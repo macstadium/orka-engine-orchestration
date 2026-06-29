@@ -104,7 +104,7 @@ Each subcommand:
 1. Logs in to Semaphore via `POST /api/auth/login`.
 2. Resolves the project ID via `GET /api/projects`.
 3. Resolves the template ID via `GET /api/project/{id}/templates`.
-4. Submits one or more `POST /api/project/{id}/tasks` requests; the survey variables go in the `params` object.
+4. Submits one or more `POST /api/project/{id}/tasks` requests; the survey variables are JSON-encoded and sent in the `environment` field (the same wire format the Semaphore UI uses).
 5. If `--wait` (the default), polls `GET /api/project/{id}/tasks/{task_id}` every `--poll-interval` seconds (default 3 s) until the task reaches `success`, `error`, or `stopped`, or `--task-timeout` (default 1800 s) elapses.
 6. Logs out via `POST /api/auth/logout`.
 
@@ -149,3 +149,7 @@ Running `deploy` again with the same prefix merges new names into the existing l
 - `deploy`, `provision-user`, and `install-citrix` parallelize submissions through a thread pool. Lower `--concurrency` if Semaphore or the underlying hosts become saturated.
 - `manage` and `delete` are single Semaphore tasks; their wall-clock time scales with the number of matched VMs because the playbook loops over them inside one Ansible run.
 - For routine cleanup, schedule a wrapper such as `cron`/CI that runs `delete --prefix <prefix> --yes --no-wait`.
+
+## Troubleshooting
+
+When a task ends in `error` or `stopped`, the script prints the last ~40 lines of the task's Ansible output together with a link to the task in the Semaphore UI (e.g. `http://localhost:3000/project/1/templates?t=42`). Open that link for the full log, including the playbook command line and every host's output.

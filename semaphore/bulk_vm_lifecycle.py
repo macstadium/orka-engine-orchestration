@@ -177,24 +177,30 @@ def submit_task(
     base: str,
     project_id: int,
     template_id: int,
-    params: dict[str, Any],
+    survey_vars: dict[str, Any],
     message: str = "",
 ) -> int:
-    """Submit a task and return its ID."""
+    """Submit a task and return its ID.
+
+    Survey variables are passed via Semaphore's task ``environment`` field as a
+    JSON-encoded object — the same wire format the UI uses. The task-level
+    ``params`` field is reserved for ``AnsibleTaskParams`` (debug/tags/limit/etc.)
+    and silently drops unknown keys, so survey vars sent there never reach the
+    playbook.
+    """
     body = {
         "template_id": template_id,
         "playbook": "",
-        "environment": "",
+        "environment": json.dumps(survey_vars),
         "limit": "",
         "git_branch": "",
         "message": message,
-        "params": params,
     }
     resp = session.post(f"{base}/api/project/{project_id}/tasks", json=body)
     if resp.status_code not in (200, 201):
         die(
-            f"Failed to submit task for template {template_id} with params {params}: "
-            f"{resp.status_code} {resp.text}"
+            f"Failed to submit task for template {template_id} with vars "
+            f"{survey_vars}: {resp.status_code} {resp.text}"
         )
     data = resp.json()
     task_id = data.get("id") or data.get("task_id")
@@ -255,6 +261,33 @@ def wait_for_task(
         time.sleep(poll_interval)
 
 
+FAILURE_OUTPUT_TAIL_LINES = 40
+
+
+def task_ui_url(base: str, project_id: int, task_id: int) -> str:
+    return f"{base}/project/{project_id}/templates?t={task_id}"
+
+
+def print_failure_output(
+    session: requests.Session,
+    base: str,
+    project_id: int,
+    task_id: int,
+    label: str,
+) -> None:
+    """Print the tail of a failed task's Ansible output plus its UI URL."""
+    output = get_task_output(session, base, project_id, task_id)
+    lines = [line for line in output.splitlines() if line.strip()]
+    tail = lines[-FAILURE_OUTPUT_TAIL_LINES:]
+    print(f"  [{label}] last {len(tail)} output line(s):")
+    if tail:
+        for line in tail:
+            print(f"    | {line}")
+    else:
+        print("    | (no output captured)")
+    print(f"  [{label}] full log: {task_ui_url(base, project_id, task_id)}")
+
+
 def submit_and_wait(
     session: requests.Session,
     base: str,
@@ -275,6 +308,8 @@ def submit_and_wait(
         session, base, project_id, task_id, poll_interval, timeout, label
     )
     task["label"] = label
+    if task.get("status") not in {"success", "submitted"}:
+        print_failure_output(session, base, project_id, task_id, label)
     return task
 
 
